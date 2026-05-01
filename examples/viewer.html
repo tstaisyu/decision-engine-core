@@ -69,7 +69,7 @@
       .viewer-layout {
         display: grid;
         gap: 20px;
-        grid-template-columns: minmax(280px, 0.9fr) minmax(360px, 1.1fr) minmax(320px, 1fr);
+        grid-template-columns: minmax(300px, 0.9fr) minmax(380px, 1.1fr) minmax(320px, 1fr);
         align-items: start;
       }
 
@@ -83,6 +83,20 @@
 
       .viewer-column .panel-inner {
         height: 100%;
+      }
+
+      .viewer-column-left {
+        display: grid;
+        gap: 20px;
+        grid-template-rows: auto minmax(0, 1fr);
+      }
+
+      .viewer-column-left .panel:first-child {
+        height: auto;
+      }
+
+      .viewer-column-left .panel:last-child {
+        height: min(58vh, 760px);
       }
 
       .viewer-scroll {
@@ -133,6 +147,17 @@
         font: inherit;
       }
 
+      input[type="number"],
+      input[type="text"] {
+        width: 100%;
+        padding: 14px 16px;
+        border-radius: 16px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.86);
+        color: var(--text);
+        font: inherit;
+      }
+
       select,
       textarea {
         padding: 14px 16px;
@@ -171,6 +196,39 @@
         display: grid;
         gap: 12px;
         grid-template-columns: 1fr;
+      }
+
+      .input-form-grid {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: 1fr;
+      }
+
+      .field-stack {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: minmax(180px, 220px) minmax(0, 1fr);
+        align-items: center;
+      }
+
+      .field-stack label {
+        margin-bottom: 0;
+      }
+
+      .developer-view {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.48);
+      }
+
+      .developer-view summary {
+        padding: 14px 16px;
+        cursor: pointer;
+        font-weight: 700;
+      }
+
+      .developer-view-body {
+        padding: 0 16px 16px;
       }
 
       .table {
@@ -399,6 +457,20 @@
         color: var(--muted);
       }
 
+      .section-description {
+        margin: -4px 0 0;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .input-note {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
       @media (max-width: 960px) {
         .grid,
         .viewer-layout {
@@ -431,6 +503,20 @@
         .comparison-grid {
           grid-template-columns: 1fr;
         }
+
+        .input-form-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .field-stack {
+          grid-template-columns: 1fr;
+          gap: 6px;
+          align-items: stretch;
+        }
+
+        .field-stack label {
+          margin-bottom: 0;
+        }
       }
     </style>
   </head>
@@ -444,33 +530,106 @@
       </section>
 
       <section class="viewer-layout">
-        <section class="viewer-column">
+        <section class="viewer-column viewer-column-left">
+          <section class="panel">
+            <div class="panel-inner stack">
+              <p class="section-title">使用する定義と比較対象（Active / Comparison）</p>
+              <p class="section-description">
+                現在の定義を評価し、必要に応じて別の定義と結果を比較できます。
+              </p>
+              <div>
+                <label for="preset-a-select">比較するプリセット（Presets）</label>
+                <div class="preset-pair">
+                  <div>
+                    <label for="preset-a-select">現在の定義（Active Definition）</label>
+                    <select id="preset-a-select"></select>
+                  </div>
+                  <div>
+                    <label for="preset-b-select">比較対象の定義（Comparison Definition）</label>
+                    <select id="preset-b-select"></select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
           <section class="panel">
             <div class="panel-inner stack">
               <p class="section-title">入力（Input）</p>
               <div class="viewer-scroll stack">
                 <div>
-                  <label for="preset-a-select">プリセット選択（Preset Selection）</label>
-                  <div class="preset-pair">
-                    <div>
-                      <label for="preset-a-select">プリセットA（Preset A）</label>
-                      <select id="preset-a-select"></select>
-                    </div>
-                    <div>
-                      <label for="preset-b-select">プリセットB（Preset B）</label>
-                      <select id="preset-b-select"></select>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
                   <label for="sample-input-select">入力サンプル選択（Sample Input Preset）</label>
                   <select id="sample-input-select"></select>
+                  <p id="sample-expected-state" class="input-note"></p>
                 </div>
 
                 <div>
                   <label for="input-json">入力サンプル（Sample Input）JSON</label>
-                  <textarea id="input-json" spellcheck="false"></textarea>
+                  <p class="input-note">フォームを編集すると、内部の入力 JSON も同時に更新されます。</p>
+                  <div class="input-form-grid">
+                    <div class="field-stack">
+                      <label for="field-value">現在値（value）</label>
+                      <input id="field-value" type="number" step="any" />
+                    </div>
+                    <div class="field-stack">
+                      <label for="field-previous-value">前回値（previousValue）</label>
+                      <input id="field-previous-value" type="number" step="any" />
+                    </div>
+                    <div class="field-stack">
+                      <label for="field-temp-delta">変化量（tempDelta）</label>
+                      <input id="field-temp-delta" type="number" step="any" />
+                    </div>
+                    <div class="field-stack">
+                      <label for="field-temp-rate">変化率（tempRate）</label>
+                      <input id="field-temp-rate" type="number" step="any" />
+                    </div>
+                    <div class="field-stack">
+                      <label for="field-temp-rate-avg">平均変化率（tempRateAvg）</label>
+                      <input id="field-temp-rate-avg" type="number" step="any" />
+                    </div>
+                    <div class="field-stack">
+                      <label for="field-state-duration">継続時間 ms（stateDurationMs）</label>
+                      <input id="field-state-duration" type="number" step="1" />
+                    </div>
+                    <div class="field-stack">
+                      <label for="field-previous-state">前回状態（previousState）</label>
+                      <select id="field-previous-state">
+                        <option value="">-</option>
+                        <option value="normal">normal</option>
+                        <option value="warming">warming</option>
+                        <option value="cooling">cooling</option>
+                        <option value="hot">hot</option>
+                        <option value="critical">critical</option>
+                        <option value="warm">warm</option>
+                      </select>
+                    </div>
+                    <div class="field-stack">
+                      <label for="field-previous-action">前回アクション（previousAction）</label>
+                      <select id="field-previous-action">
+                        <option value="">-</option>
+                        <option value="no_action">no_action</option>
+                        <option value="fan_low">fan_low</option>
+                        <option value="fan_high">fan_high</option>
+                        <option value="alert">alert</option>
+                      </select>
+                    </div>
+                    <div class="field-stack">
+                      <label for="field-cooling-effect">冷却効果（coolingEffect）</label>
+                      <select id="field-cooling-effect">
+                        <option value="">-</option>
+                        <option value="true">true</option>
+                        <option value="false">false</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <details class="developer-view">
+                    <summary>JSONを確認する（Developer View）</summary>
+                    <div class="developer-view-body">
+                      <p class="input-note">この JSON が実際にエンジンへ入力されます。</p>
+                      <textarea id="input-json" spellcheck="false"></textarea>
+                    </div>
+                  </details>
                 </div>
               </div>
 
@@ -774,7 +933,8 @@
       const defaultConfig = presets.m5Temperature;
       const sampleInputs = {
         normal: {
-          label: "通常状態の入力",
+          label: "通常状態になる想定の入力",
+          expectedState: "normal",
           value: 25.0,
           previousValue: 25.0,
           tempDelta: 0,
@@ -786,7 +946,8 @@
           coolingEffect: false
         },
         warming: {
-          label: "温度上昇中の入力",
+          label: "上昇傾向になる想定の入力",
+          expectedState: "warming",
           value: 25.6,
           previousValue: 25.3,
           tempDelta: 0.3,
@@ -798,7 +959,8 @@
           coolingEffect: false
         },
         cooling: {
-          label: "冷却効果ありの入力",
+          label: "冷却中になる想定の入力",
+          expectedState: "cooling",
           value: 24.7,
           previousValue: 25.1,
           tempDelta: -0.4,
@@ -810,7 +972,8 @@
           coolingEffect: true
         },
         hot: {
-          label: "高温状態の入力",
+          label: "高温になる想定の入力",
+          expectedState: "hot",
           value: 26.4,
           previousValue: 25.9,
           tempDelta: 0.5,
@@ -822,7 +985,8 @@
           coolingEffect: false
         },
         critical: {
-          label: "危険状態の入力",
+          label: "危険状態になる想定の入力",
+          expectedState: "critical",
           value: 40.2,
           previousValue: 39.8,
           tempDelta: 0.4,
@@ -834,7 +998,8 @@
           coolingEffect: false
         },
         hotHysteresis: {
-          label: "高温維持の入力",
+          label: "高温維持になる想定の入力",
+          expectedState: "hot",
           value: 25.7,
           previousValue: 25.6,
           tempDelta: 0.1,
@@ -846,7 +1011,8 @@
           coolingEffect: false
         },
         fanLowEscalation: {
-          label: "送風強化の入力",
+          label: "送風強化になる想定の入力",
+          expectedState: "warming",
           value: 25.4,
           previousValue: 25.2,
           tempDelta: 0.2,
@@ -1204,7 +1370,19 @@
       const presetASelect = document.getElementById("preset-a-select");
       const presetBSelect = document.getElementById("preset-b-select");
       const sampleInputSelect = document.getElementById("sample-input-select");
+      const sampleExpectedState = document.getElementById("sample-expected-state");
       const inputJson = document.getElementById("input-json");
+      const formFields = {
+        value: document.getElementById("field-value"),
+        previousValue: document.getElementById("field-previous-value"),
+        tempDelta: document.getElementById("field-temp-delta"),
+        tempRate: document.getElementById("field-temp-rate"),
+        tempRateAvg: document.getElementById("field-temp-rate-avg"),
+        stateDurationMs: document.getElementById("field-state-duration"),
+        previousState: document.getElementById("field-previous-state"),
+        previousAction: document.getElementById("field-previous-action"),
+        coolingEffect: document.getElementById("field-cooling-effect")
+      };
       const rulesOutput = document.getElementById("rules-output");
       const actionsOutput = document.getElementById("actions-output");
       const stateEscalationsOutput = document.getElementById("state-escalations-output");
@@ -1348,18 +1526,88 @@
 
       function loadSampleInput(sampleName) {
         const name = sampleName || "normal";
-        const { label, ...sampleInput } = sampleInputs[name];
+        const { label, expectedState, ...sampleInput } = sampleInputs[name];
 
         sampleInputSelect.value = name;
-        inputJson.value = formatJson(sampleInput);
-        status.textContent = `入力サンプルを読み込みました: ${label} (${name})`;
+        populateForm(sampleInput);
+        syncJsonFromForm();
+        sampleExpectedState.textContent = `想定される状態（Expected State）: ${expectedState}`;
+        status.textContent = `入力サンプルを読み込みました: ${label} (expected: ${expectedState})`;
+      }
+
+      function parseOptionalNumber(value) {
+        if (value === "") {
+          return undefined;
+        }
+
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : undefined;
+      }
+
+      function parseOptionalBoolean(value) {
+        if (value === "true") {
+          return true;
+        }
+
+        if (value === "false") {
+          return false;
+        }
+
+        return undefined;
+      }
+
+      function buildInputFromForm() {
+        return {
+          value: parseOptionalNumber(formFields.value.value),
+          previousValue: parseOptionalNumber(formFields.previousValue.value),
+          tempDelta: parseOptionalNumber(formFields.tempDelta.value),
+          tempRate: parseOptionalNumber(formFields.tempRate.value),
+          tempRateAvg: parseOptionalNumber(formFields.tempRateAvg.value),
+          stateDurationMs: parseOptionalNumber(formFields.stateDurationMs.value),
+          previousState: formFields.previousState.value || undefined,
+          previousAction: formFields.previousAction.value || undefined,
+          coolingEffect: parseOptionalBoolean(formFields.coolingEffect.value)
+        };
+      }
+
+      function compactInput(input) {
+        return Object.fromEntries(Object.entries(input).filter(([, value]) => value !== undefined));
+      }
+
+      function syncJsonFromForm() {
+        inputJson.value = formatJson(compactInput(buildInputFromForm()));
+      }
+
+      function populateForm(input) {
+        formFields.value.value = input.value ?? "";
+        formFields.previousValue.value = input.previousValue ?? "";
+        formFields.tempDelta.value = input.tempDelta ?? "";
+        formFields.tempRate.value = input.tempRate ?? "";
+        formFields.tempRateAvg.value = input.tempRateAvg ?? "";
+        formFields.stateDurationMs.value = input.stateDurationMs ?? "";
+        formFields.previousState.value = input.previousState ?? "";
+        formFields.previousAction.value = input.previousAction ?? "";
+        formFields.coolingEffect.value =
+          typeof input.coolingEffect === "boolean" ? String(input.coolingEffect) : "";
+      }
+
+      function syncFormFromJson() {
+        try {
+          const parsed = JSON.parse(inputJson.value);
+          populateForm(parsed);
+          return true;
+        } catch (error) {
+          return false;
+        }
       }
 
       function renderResult(side, presetName, result) {
         const view = resultView[side];
 
         view.title.textContent =
-          side === "a" ? `プリセットA（Preset A）: ${presetName}` : `プリセットB（Preset B）: ${presetName}`;
+          side === "a"
+            ? `現在の定義（Active Definition）: ${presetName}`
+            : `比較対象の定義（Comparison Definition）: ${presetName}`;
         view.state.textContent = result.state;
         view.action.textContent = result.action;
         view.reason.textContent = result.reason;
@@ -1375,7 +1623,9 @@
         const view = resultView[side];
 
         view.title.textContent =
-          side === "a" ? `プリセットA（Preset A）: ${presetName}` : `プリセットB（Preset B）: ${presetName}`;
+          side === "a"
+            ? `現在の定義（Active Definition）: ${presetName}`
+            : `比較対象の定義（Comparison Definition）: ${presetName}`;
         view.state.textContent = "error";
         view.action.textContent = "-";
         view.reason.textContent = "-";
@@ -1428,7 +1678,7 @@
       Object.entries(sampleInputs).forEach(([name, sample]) => {
         const option = document.createElement("option");
         option.value = name;
-        option.textContent = `${sample.label} (${name})`;
+        option.textContent = `${sample.label} (expected: ${sample.expectedState})`;
         sampleInputSelect.appendChild(option);
       });
 
@@ -1439,6 +1689,13 @@
       presetBSelect.addEventListener("change", handleEvaluate);
       sampleInputSelect.addEventListener("change", () => {
         loadSampleInput(sampleInputSelect.value);
+      });
+      Object.values(formFields).forEach((field) => {
+        field.addEventListener("input", syncJsonFromForm);
+        field.addEventListener("change", syncJsonFromForm);
+      });
+      inputJson.addEventListener("input", () => {
+        syncFormFromJson();
       });
       evaluateButton.addEventListener("click", handleEvaluate);
       loadSampleButton.addEventListener("click", () => loadSampleInput("normal"));

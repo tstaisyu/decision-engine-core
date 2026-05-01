@@ -1,17 +1,21 @@
 # decision-engine-core
 
-`decision-engine-core` is a small decision engine that extracts temperature control logic from the M5 side into Node.js.
+`decision-engine-core` is a small decision engine that extracts
+temperature control logic from the M5 side into Node.js.
 
 ## Structure
 
-- `src/evaluate.js`: Entry point. Accepts input and returns `state` and `action`.
+- `src/evaluate.js`: Entry point. Accepts input and returns `state` and
+  `action`.
 - `src/rules.js`: Evaluates and resolves state rules.
 - `src/config.js`: Default config entry point.
-- `src/presets/m5TemperatureConfig.js`: Preset for the M5 temperature control logic.
+- `src/presets/m5TemperatureConfig.js`: Preset for the M5 temperature control
+  logic.
 
 ## Flow
 
-`input -> normalize -> rule evaluation -> state resolution -> duration handling -> action resolution -> output`
+`input -> normalize -> rule evaluation -> state resolution -> duration
+handling -> action resolution -> output`
 
 ## Characteristics
 

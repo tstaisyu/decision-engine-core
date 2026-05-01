@@ -96,9 +96,12 @@ function validateConfig(config) {
         typeof rule.name === "string" &&
         rule.name.length > 0
       ) {
-        const stateName = typeof rule.state === "string" ? rule.state : rule.name;
+        const stateName =
+          typeof rule.state === "string" ? rule.state : rule.name;
         if (typeof actionsByState[stateName] !== "string") {
-          errors.push(`actions.byState must define an action for state: ${stateName}`);
+          errors.push(
+            `actions.byState must define an action for state: ${stateName}`
+          );
         }
       }
     }

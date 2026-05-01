@@ -93,9 +93,7 @@ function deriveAction(normalized, stateContext, config) {
   const { state, effectiveStateDurationMs } = stateContext;
   const actionByState = config.actions.byState;
   const fanLowToHighEscalationConfig = config.escalations.action.fanLowToHigh;
-  const {
-    coolingEffectRateThreshold = -0.01
-  } = config;
+  const { coolingEffectRateThreshold = -0.01 } = config;
 
   const baseAction = actionByState[state] || "no_action";
   let action = baseAction;

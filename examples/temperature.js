@@ -8,7 +8,7 @@ const config = {
   coolingRateThreshold: -0.02,
   hotCriticalDurationMs: 5000,
   fanLowEscalationDurationMs: 1000,
-  coolingEffectRateThreshold: -0.01,
+  coolingEffectRateThreshold: -0.01
 };
 
 const inputs = [
@@ -23,8 +23,8 @@ const inputs = [
       previousState: "normal",
       previousAction: "no_action",
       stateDurationMs: 500,
-      coolingEffect: false,
-    },
+      coolingEffect: false
+    }
   },
   {
     label: "hot",
@@ -37,8 +37,8 @@ const inputs = [
       previousState: "warming",
       previousAction: "fan_low",
       stateDurationMs: 900,
-      coolingEffect: false,
-    },
+      coolingEffect: false
+    }
   },
   {
     label: "cooling_escalated",
@@ -51,9 +51,9 @@ const inputs = [
       previousState: "cooling",
       previousAction: "fan_low",
       stateDurationMs: 1200,
-      coolingEffect: false,
-    },
-  },
+      coolingEffect: false
+    }
+  }
 ];
 
 for (const { label, input } of inputs) {
@@ -63,9 +63,9 @@ for (const { label, input } of inputs) {
       sensorId: "si7021-001",
       valueType: "temperature",
       timestamp: Date.now(),
-      ...input,
+      ...input
     },
-    config,
+    config
   );
 
   console.log(label, result);

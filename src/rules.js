@@ -1,3 +1,6 @@
+// Copyright (c) 2025 tstaisyu
+// SPDX-License-Identifier: Apache-2.0
+
 function matchRule(rule, normalized) {
   if (rule.type === "value_gte") {
     return normalized.value >= rule.threshold;

@@ -1,3 +1,6 @@
+// Copyright (c) 2025 tstaisyu
+// SPDX-License-Identifier: Apache-2.0
+
 const fs = require("fs");
 const path = require("path");
 const { evaluate } = require("../src");

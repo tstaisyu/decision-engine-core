@@ -1,3 +1,6 @@
+// Copyright (c) 2025 tstaisyu
+// SPDX-License-Identifier: Apache-2.0
+
 const SUPPORTED_RULE_TYPES = new Set([
   "value_gte",
   "hysteresis",

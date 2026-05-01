@@ -1,3 +1,6 @@
+// Copyright (c) 2025 tstaisyu
+// SPDX-License-Identifier: Apache-2.0
+
 const { m5TemperatureConfig } = require("../src/presets/m5TemperatureConfig");
 const { validateConfig } = require("../src/validateConfig");
 

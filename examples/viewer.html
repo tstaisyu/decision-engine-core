@@ -142,6 +142,24 @@
         grid-template-columns: 1fr 1fr;
       }
 
+      .sample-button-grid {
+        display: grid;
+        gap: 8px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .sample-button-grid button {
+        padding: 12px 14px;
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.86);
+      }
+
+      .preset-pair {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: 1fr 1fr;
+      }
+
       .table {
         width: 100%;
         border-collapse: collapse;
@@ -160,6 +178,58 @@
         width: 140px;
         color: var(--muted);
         font-weight: 600;
+      }
+
+      .rules-table-wrap {
+        overflow-x: auto;
+      }
+
+      .rules-table {
+        width: 100%;
+        min-width: 680px;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+
+      .rules-table th,
+      .rules-table td {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+      }
+
+      .rules-table th {
+        color: var(--muted);
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .rules-table td {
+        font-family: "SFMono-Regular", Consolas, monospace;
+      }
+
+      .mapping-table {
+        width: 100%;
+        min-width: 320px;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+
+      .mapping-table th,
+      .mapping-table td {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+      }
+
+      .mapping-table th {
+        color: var(--muted);
+        font-weight: 700;
+      }
+
+      .mapping-table td {
+        font-family: "SFMono-Regular", Consolas, monospace;
       }
 
       .code-card,
@@ -208,6 +278,72 @@
         letter-spacing: -0.02em;
       }
 
+      .result-main strong {
+        font-size: 30px;
+        line-height: 1;
+      }
+
+      .debug-grid {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .debug-item {
+        padding: 14px 16px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.78);
+      }
+
+      .debug-item span {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .debug-item strong {
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: 18px;
+        line-height: 1.2;
+      }
+
+      .error-card {
+        padding: 14px 16px;
+        border: 1px solid rgba(183, 79, 45, 0.24);
+        border-radius: 16px;
+        color: #7c2e18;
+        background: rgba(183, 79, 45, 0.08);
+      }
+
+      .comparison-grid {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .result-panel {
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.68);
+      }
+
+      .result-panel-header {
+        margin: 0 0 12px;
+        font-size: 16px;
+        font-weight: 700;
+      }
+
+      .is-different {
+        border-color: rgba(183, 79, 45, 0.42);
+        background: linear-gradient(135deg, rgba(183, 79, 45, 0.18), rgba(211, 120, 50, 0.2));
+      }
+
       .muted {
         color: var(--muted);
       }
@@ -230,7 +366,9 @@
         }
 
         .button-row,
-        .result-header {
+        .result-header,
+        .preset-pair,
+        .comparison-grid {
           grid-template-columns: 1fr;
         }
       }
@@ -251,13 +389,30 @@
           <div class="panel-inner stack">
             <div>
               <p class="section-title">Preset</p>
-              <label for="preset-select">Select preset</label>
-              <select id="preset-select"></select>
+              <div class="preset-pair">
+                <div>
+                  <label for="preset-a-select">Preset A</label>
+                  <select id="preset-a-select"></select>
+                </div>
+                <div>
+                  <label for="preset-b-select">Preset B</label>
+                  <select id="preset-b-select"></select>
+                </div>
+              </div>
             </div>
 
             <div>
               <p class="section-title">Sample Input</p>
               <label for="input-json">Input JSON</label>
+              <div class="sample-button-grid">
+                <button type="button" class="secondary" data-sample="normal">Normal</button>
+                <button type="button" class="secondary" data-sample="warming">Warming</button>
+                <button type="button" class="secondary" data-sample="cooling">Cooling</button>
+                <button type="button" class="secondary" data-sample="hot">Hot</button>
+                <button type="button" class="secondary" data-sample="critical">Critical</button>
+                <button type="button" class="secondary" data-sample="hotHysteresis">Hot Hysteresis</button>
+                <button type="button" class="secondary" data-sample="fanLowEscalation">Fan Low Escalation</button>
+              </div>
               <textarea id="input-json" spellcheck="false"></textarea>
             </div>
 
@@ -279,24 +434,72 @@
                   <tr>
                     <th>Rules</th>
                     <td>
-                      <div class="code-card">
-                        <pre id="rules-output"></pre>
+                      <div class="code-card rules-table-wrap">
+                        <table class="rules-table">
+                          <thead>
+                            <tr>
+                              <th>order</th>
+                              <th>name</th>
+                              <th>type</th>
+                              <th>threshold</th>
+                              <th>state</th>
+                              <th>offThreshold</th>
+                            </tr>
+                          </thead>
+                          <tbody id="rules-output"></tbody>
+                        </table>
                       </div>
                     </td>
                   </tr>
                   <tr>
                     <th>Actions</th>
                     <td>
-                      <div class="code-card">
-                        <pre id="actions-output"></pre>
+                      <div class="code-card rules-table-wrap">
+                        <table class="mapping-table">
+                          <thead>
+                            <tr>
+                              <th>state</th>
+                              <th>action</th>
+                            </tr>
+                          </thead>
+                          <tbody id="actions-output"></tbody>
+                        </table>
                       </div>
                     </td>
                   </tr>
                   <tr>
                     <th>Escalations</th>
                     <td>
-                      <div class="code-card">
-                        <pre id="escalations-output"></pre>
+                      <div class="stack">
+                        <div class="code-card rules-table-wrap">
+                          <table class="mapping-table">
+                            <thead>
+                              <tr>
+                                <th colspan="2">state</th>
+                              </tr>
+                              <tr>
+                                <th>name</th>
+                                <th>durationMs</th>
+                              </tr>
+                            </thead>
+                            <tbody id="state-escalations-output"></tbody>
+                          </table>
+                        </div>
+                        <div class="code-card rules-table-wrap">
+                          <table class="mapping-table">
+                            <thead>
+                              <tr>
+                                <th colspan="3">action</th>
+                              </tr>
+                              <tr>
+                                <th>name</th>
+                                <th>durationMs</th>
+                                <th>requireNoCoolingEffect</th>
+                              </tr>
+                            </thead>
+                            <tbody id="action-escalations-output"></tbody>
+                          </table>
+                        </div>
                       </div>
                     </td>
                   </tr>
@@ -308,28 +511,105 @@
           <section class="panel">
             <div class="panel-inner">
               <p class="section-title">Evaluation Result</p>
-              <div class="result-card">
-                <div class="result-header">
-                  <div class="badge">
-                    <span>State</span>
-                    <strong id="result-state">-</strong>
-                  </div>
-                  <div class="badge">
-                    <span>Action</span>
-                    <strong id="result-action">-</strong>
-                  </div>
-                </div>
-                <div class="stack">
-                  <div>
-                    <label>Result JSON</label>
-                    <div class="code-card">
-                      <pre id="result-json"></pre>
+              <div class="comparison-grid">
+                <div class="result-panel">
+                  <p id="result-a-title" class="result-panel-header">Preset A</p>
+                  <div class="result-card">
+                    <div class="result-header">
+                      <div id="result-a-state-card" class="badge result-main">
+                        <span>State</span>
+                        <strong id="result-a-state">-</strong>
+                      </div>
+                      <div id="result-a-action-card" class="badge result-main">
+                        <span>Action</span>
+                        <strong id="result-a-action">-</strong>
+                      </div>
+                    </div>
+                    <div class="stack">
+                      <div>
+                        <label>Reason</label>
+                        <div class="code-card">
+                          <pre id="result-a-reason"></pre>
+                        </div>
+                      </div>
+                      <div>
+                        <label>Debug</label>
+                        <div class="debug-grid">
+                          <div class="debug-item">
+                            <span>baseState</span>
+                            <strong id="debug-a-base-state">-</strong>
+                          </div>
+                          <div class="debug-item">
+                            <span>rawStateDurationMs</span>
+                            <strong id="debug-a-raw-duration">-</strong>
+                          </div>
+                          <div class="debug-item">
+                            <span>effectiveStateDurationMs</span>
+                            <strong id="debug-a-effective-duration">-</strong>
+                          </div>
+                          <div class="debug-item">
+                            <span>actionEscalated</span>
+                            <strong id="debug-a-action-escalated">-</strong>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <label>Error</label>
+                        <div id="result-a-error" class="error-card" hidden>
+                          <pre id="error-a-message"></pre>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div>
-                    <label>Debug</label>
-                    <div class="code-card">
-                      <pre id="debug-json"></pre>
+                </div>
+
+                <div class="result-panel">
+                  <p id="result-b-title" class="result-panel-header">Preset B</p>
+                  <div class="result-card">
+                    <div class="result-header">
+                      <div id="result-b-state-card" class="badge result-main">
+                        <span>State</span>
+                        <strong id="result-b-state">-</strong>
+                      </div>
+                      <div id="result-b-action-card" class="badge result-main">
+                        <span>Action</span>
+                        <strong id="result-b-action">-</strong>
+                      </div>
+                    </div>
+                    <div class="stack">
+                      <div>
+                        <label>Reason</label>
+                        <div class="code-card">
+                          <pre id="result-b-reason"></pre>
+                        </div>
+                      </div>
+                      <div>
+                        <label>Debug</label>
+                        <div class="debug-grid">
+                          <div class="debug-item">
+                            <span>baseState</span>
+                            <strong id="debug-b-base-state">-</strong>
+                          </div>
+                          <div class="debug-item">
+                            <span>rawStateDurationMs</span>
+                            <strong id="debug-b-raw-duration">-</strong>
+                          </div>
+                          <div class="debug-item">
+                            <span>effectiveStateDurationMs</span>
+                            <strong id="debug-b-effective-duration">-</strong>
+                          </div>
+                          <div class="debug-item">
+                            <span>actionEscalated</span>
+                            <strong id="debug-b-action-escalated">-</strong>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <label>Error</label>
+                        <div id="result-b-error" class="error-card" hidden>
+                          <pre id="error-b-message"></pre>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -438,25 +718,82 @@
 
       const defaultConfig = presets.m5Temperature;
       const sampleInputs = {
-        m5Temperature: {
-          value: 26.4,
-          previousValue: 25.9,
-          tempDelta: 0.5,
-          tempRate: 0.5,
-          tempRateAvg: 0.03,
-          previousState: "hot",
-          previousAction: "fan_high",
-          stateDurationMs: 3200,
-          coolingEffect: false
-        },
-        simpleTemperature: {
-          value: 27.2,
+        normal: {
+          value: 25.0,
+          previousValue: 25.0,
           tempDelta: 0,
           tempRate: 0,
           tempRateAvg: 0,
           previousState: "normal",
           previousAction: "no_action",
-          stateDurationMs: 400
+          stateDurationMs: 500,
+          coolingEffect: false
+        },
+        warming: {
+          value: 25.6,
+          previousValue: 25.3,
+          tempDelta: 0.3,
+          tempRate: 0.3,
+          tempRateAvg: 0.03,
+          previousState: "normal",
+          previousAction: "no_action",
+          stateDurationMs: 900,
+          coolingEffect: false
+        },
+        cooling: {
+          value: 24.7,
+          previousValue: 25.1,
+          tempDelta: -0.4,
+          tempRate: -0.4,
+          tempRateAvg: -0.03,
+          previousState: "warming",
+          previousAction: "fan_low",
+          stateDurationMs: 1200,
+          coolingEffect: true
+        },
+        hot: {
+          value: 26.4,
+          previousValue: 25.9,
+          tempDelta: 0.5,
+          tempRate: 0.5,
+          tempRateAvg: 0.03,
+          previousState: "normal",
+          previousAction: "fan_low",
+          stateDurationMs: 1000,
+          coolingEffect: false
+        },
+        critical: {
+          value: 40.2,
+          previousValue: 39.8,
+          tempDelta: 0.4,
+          tempRate: 0.4,
+          tempRateAvg: 0.04,
+          previousState: "hot",
+          previousAction: "fan_high",
+          stateDurationMs: 5200,
+          coolingEffect: false
+        },
+        hotHysteresis: {
+          value: 25.7,
+          previousValue: 25.6,
+          tempDelta: 0.1,
+          tempRate: 0.1,
+          tempRateAvg: 0.01,
+          previousState: "hot",
+          previousAction: "fan_high",
+          stateDurationMs: 2800,
+          coolingEffect: false
+        },
+        fanLowEscalation: {
+          value: 25.4,
+          previousValue: 25.2,
+          tempDelta: 0.2,
+          tempRate: 0.2,
+          tempRateAvg: 0.03,
+          previousState: "warming",
+          previousAction: "fan_low",
+          stateDurationMs: 1600,
+          coolingEffect: false
         }
       };
 
@@ -802,64 +1139,213 @@
         return buildResult(stateContext, actionContext);
       }
 
-      const presetSelect = document.getElementById("preset-select");
+      const presetASelect = document.getElementById("preset-a-select");
+      const presetBSelect = document.getElementById("preset-b-select");
       const inputJson = document.getElementById("input-json");
       const rulesOutput = document.getElementById("rules-output");
       const actionsOutput = document.getElementById("actions-output");
-      const escalationsOutput = document.getElementById("escalations-output");
-      const resultState = document.getElementById("result-state");
-      const resultAction = document.getElementById("result-action");
-      const resultJson = document.getElementById("result-json");
-      const debugJson = document.getElementById("debug-json");
+      const stateEscalationsOutput = document.getElementById("state-escalations-output");
+      const actionEscalationsOutput = document.getElementById("action-escalations-output");
       const status = document.getElementById("status");
       const evaluateButton = document.getElementById("evaluate-button");
       const loadSampleButton = document.getElementById("load-sample-button");
+      const sampleButtons = document.querySelectorAll("[data-sample]");
+
+      const resultView = {
+        a: {
+          title: document.getElementById("result-a-title"),
+          stateCard: document.getElementById("result-a-state-card"),
+          actionCard: document.getElementById("result-a-action-card"),
+          state: document.getElementById("result-a-state"),
+          action: document.getElementById("result-a-action"),
+          reason: document.getElementById("result-a-reason"),
+          debugBaseState: document.getElementById("debug-a-base-state"),
+          debugRawDuration: document.getElementById("debug-a-raw-duration"),
+          debugEffectiveDuration: document.getElementById("debug-a-effective-duration"),
+          debugActionEscalated: document.getElementById("debug-a-action-escalated"),
+          errorCard: document.getElementById("result-a-error"),
+          errorMessage: document.getElementById("error-a-message")
+        },
+        b: {
+          title: document.getElementById("result-b-title"),
+          stateCard: document.getElementById("result-b-state-card"),
+          actionCard: document.getElementById("result-b-action-card"),
+          state: document.getElementById("result-b-state"),
+          action: document.getElementById("result-b-action"),
+          reason: document.getElementById("result-b-reason"),
+          debugBaseState: document.getElementById("debug-b-base-state"),
+          debugRawDuration: document.getElementById("debug-b-raw-duration"),
+          debugEffectiveDuration: document.getElementById("debug-b-effective-duration"),
+          debugActionEscalated: document.getElementById("debug-b-action-escalated"),
+          errorCard: document.getElementById("result-b-error"),
+          errorMessage: document.getElementById("error-b-message")
+        }
+      };
 
       function formatJson(value) {
         return JSON.stringify(value, null, 2);
       }
 
-      function getPresetName() {
-        return presetSelect.value;
+      function getPresetName(side) {
+        return side === "b" ? presetBSelect.value : presetASelect.value;
       }
 
-      function getSelectedPreset() {
-        return presets[getPresetName()];
+      function getSelectedPreset(side) {
+        return presets[getPresetName(side)];
+      }
+
+      function formatRuleValue(value) {
+        return value === undefined || value === null || value === "" ? "-" : String(value);
+      }
+
+      function renderRulesTable(rules) {
+        rulesOutput.innerHTML = rules
+          .map((rule, index) => {
+            return `
+              <tr>
+                <td>${index + 1}</td>
+                <td>${formatRuleValue(rule.name)}</td>
+                <td>${formatRuleValue(rule.type)}</td>
+                <td>${formatRuleValue(rule.threshold)}</td>
+                <td>${formatRuleValue(rule.state)}</td>
+                <td>${formatRuleValue(rule.offThreshold)}</td>
+              </tr>
+            `;
+          })
+          .join("");
+      }
+
+      function renderActionsTable(actionsByState) {
+        actionsOutput.innerHTML = Object.entries(actionsByState)
+          .map(([state, action]) => {
+            return `
+              <tr>
+                <td>${formatRuleValue(state)}</td>
+                <td>${formatRuleValue(action)}</td>
+              </tr>
+            `;
+          })
+          .join("");
+      }
+
+      function renderStateEscalationsTable(stateEscalations) {
+        const entries = Object.entries(stateEscalations || {});
+
+        stateEscalationsOutput.innerHTML = entries.length
+          ? entries
+              .map(([name, escalation]) => {
+                return `
+                  <tr>
+                    <td>${formatRuleValue(name)}</td>
+                    <td>${formatRuleValue(escalation && escalation.durationMs)}</td>
+                  </tr>
+                `;
+              })
+              .join("")
+          : `
+              <tr>
+                <td>-</td>
+                <td>-</td>
+              </tr>
+            `;
+      }
+
+      function renderActionEscalationsTable(actionEscalations) {
+        const entries = Object.entries(actionEscalations || {});
+
+        actionEscalationsOutput.innerHTML = entries.length
+          ? entries
+              .map(([name, escalation]) => {
+                return `
+                  <tr>
+                    <td>${formatRuleValue(name)}</td>
+                    <td>${formatRuleValue(escalation && escalation.durationMs)}</td>
+                    <td>${formatRuleValue(escalation && escalation.requireNoCoolingEffect)}</td>
+                  </tr>
+                `;
+              })
+              .join("")
+          : `
+              <tr>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+              </tr>
+            `;
       }
 
       function renderPresetDetails() {
-        const preset = getSelectedPreset();
+        const preset = getSelectedPreset("a");
         const resolved = resolveConfig(preset, defaultConfig);
 
-        rulesOutput.textContent = formatJson(resolved.states.rules);
-        actionsOutput.textContent = formatJson(resolved.actions.byState);
-        escalationsOutput.textContent = formatJson(resolved.escalations);
+        renderRulesTable(resolved.states.rules);
+        renderActionsTable(resolved.actions.byState);
+        renderStateEscalationsTable(resolved.escalations.state);
+        renderActionEscalationsTable(resolved.escalations.action);
       }
 
-      function loadSampleInput() {
-        inputJson.value = formatJson(sampleInputs[getPresetName()]);
-        status.textContent = "Loaded sample input for the selected preset.";
+      function loadSampleInput(sampleName) {
+        const name = sampleName || "normal";
+        inputJson.value = formatJson(sampleInputs[name]);
+        status.textContent = `Loaded sample input: ${name}.`;
       }
 
-      function renderResult(result) {
-        resultState.textContent = result.state;
-        resultAction.textContent = result.action;
-        resultJson.textContent = formatJson(result);
-        debugJson.textContent = formatJson(result.debug);
+      function renderResult(side, presetName, result) {
+        const view = resultView[side];
+
+        view.title.textContent = side === "a" ? `Preset A: ${presetName}` : `Preset B: ${presetName}`;
+        view.state.textContent = result.state;
+        view.action.textContent = result.action;
+        view.reason.textContent = result.reason;
+        view.debugBaseState.textContent = formatRuleValue(result.debug.baseState);
+        view.debugRawDuration.textContent = formatRuleValue(result.debug.rawStateDurationMs);
+        view.debugEffectiveDuration.textContent = formatRuleValue(result.debug.effectiveStateDurationMs);
+        view.debugActionEscalated.textContent = formatRuleValue(result.debug.actionEscalated);
+        view.errorCard.hidden = true;
+        view.errorMessage.textContent = "";
+      }
+
+      function renderError(side, presetName, message) {
+        const view = resultView[side];
+
+        view.title.textContent = side === "a" ? `Preset A: ${presetName}` : `Preset B: ${presetName}`;
+        view.state.textContent = "error";
+        view.action.textContent = "-";
+        view.reason.textContent = "-";
+        view.debugBaseState.textContent = "-";
+        view.debugRawDuration.textContent = "-";
+        view.debugEffectiveDuration.textContent = "-";
+        view.debugActionEscalated.textContent = "-";
+        view.errorMessage.textContent = message;
+        view.errorCard.hidden = false;
+      }
+
+      function updateComparisonHighlight(resultA, resultB) {
+        const stateDifferent = resultA && resultB && resultA.state !== resultB.state;
+        const actionDifferent = resultA && resultB && resultA.action !== resultB.action;
+
+        resultView.a.stateCard.classList.toggle("is-different", stateDifferent);
+        resultView.b.stateCard.classList.toggle("is-different", stateDifferent);
+        resultView.a.actionCard.classList.toggle("is-different", actionDifferent);
+        resultView.b.actionCard.classList.toggle("is-different", actionDifferent);
       }
 
       function handleEvaluate() {
         try {
           const input = JSON.parse(inputJson.value);
-          const result = evaluate(input, getSelectedPreset());
+          const presetNameA = getPresetName("a");
+          const presetNameB = getPresetName("b");
+          const resultA = evaluate(input, getSelectedPreset("a"));
+          const resultB = evaluate(input, getSelectedPreset("b"));
 
-          renderResult(result);
+          renderResult("a", presetNameA, resultA);
+          renderResult("b", presetNameB, resultB);
+          updateComparisonHighlight(resultA, resultB);
           status.textContent = "Evaluation completed.";
         } catch (error) {
-          resultState.textContent = "error";
-          resultAction.textContent = "-";
-          resultJson.textContent = error.message;
-          debugJson.textContent = "";
+          renderError("a", getPresetName("a"), error.message);
+          renderError("b", getPresetName("b"), error.message);
+          updateComparisonHighlight(null, null);
           status.textContent = "Input JSON could not be evaluated.";
         }
       }
@@ -868,20 +1354,27 @@
         const option = document.createElement("option");
         option.value = name;
         option.textContent = name;
-        presetSelect.appendChild(option);
+        presetASelect.appendChild(option.cloneNode(true));
+        presetBSelect.appendChild(option);
       });
 
-      presetSelect.addEventListener("change", () => {
+      presetASelect.addEventListener("change", () => {
         renderPresetDetails();
-        loadSampleInput();
         handleEvaluate();
       });
+      presetBSelect.addEventListener("change", handleEvaluate);
       evaluateButton.addEventListener("click", handleEvaluate);
-      loadSampleButton.addEventListener("click", loadSampleInput);
+      loadSampleButton.addEventListener("click", () => loadSampleInput("normal"));
+      sampleButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          loadSampleInput(button.dataset.sample);
+        });
+      });
 
-      presetSelect.value = "m5Temperature";
+      presetASelect.value = "m5Temperature";
+      presetBSelect.value = "simpleTemperature";
       renderPresetDetails();
-      loadSampleInput();
+      loadSampleInput("normal");
       handleEvaluate();
     </script>
   </body>

@@ -78,6 +78,8 @@ open examples/viewer.html
 
 Or open `examples/viewer.html` directly in a browser.
 
+This viewer uses a Japanese-first UI with English terms shown alongside key concepts.
+
 This viewer is for inspection only. It does not support editing or saving presets.
 
 You can:

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>decision-engine-core Preset Viewer</title>
+    <title>decision-engine-core プリセットビューアー（Preset Viewer）</title>
     <style>
       :root {
         --bg: #f4efe6;
@@ -33,7 +33,7 @@
       }
 
       .shell {
-        width: min(1240px, calc(100% - 32px));
+        width: min(95vw, 1800px);
         margin: 32px auto;
       }
 
@@ -64,6 +64,31 @@
         display: grid;
         gap: 20px;
         grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
+      }
+
+      .viewer-layout {
+        display: grid;
+        gap: 20px;
+        grid-template-columns: minmax(280px, 0.9fr) minmax(360px, 1.1fr) minmax(320px, 1fr);
+        align-items: start;
+      }
+
+      .viewer-column {
+        display: grid;
+      }
+
+      .viewer-column .panel {
+        height: min(78vh, 980px);
+      }
+
+      .viewer-column .panel-inner {
+        height: 100%;
+      }
+
+      .viewer-scroll {
+        min-height: 0;
+        overflow: auto;
+        padding-right: 4px;
       }
 
       .panel {
@@ -142,22 +167,10 @@
         grid-template-columns: 1fr 1fr;
       }
 
-      .sample-button-grid {
-        display: grid;
-        gap: 8px;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .sample-button-grid button {
-        padding: 12px 14px;
-        color: var(--text);
-        background: rgba(255, 255, 255, 0.86);
-      }
-
       .preset-pair {
         display: grid;
         gap: 12px;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr;
       }
 
       .table {
@@ -181,14 +194,16 @@
       }
 
       .rules-table-wrap {
+        width: 100%;
+        max-width: 100%;
         overflow-x: auto;
       }
 
       .rules-table {
         width: 100%;
-        min-width: 680px;
         border-collapse: collapse;
         font-size: 13px;
+        table-layout: fixed;
       }
 
       .rules-table th,
@@ -207,13 +222,14 @@
 
       .rules-table td {
         font-family: "SFMono-Regular", Consolas, monospace;
+        word-break: break-word;
       }
 
       .mapping-table {
         width: 100%;
-        min-width: 320px;
         border-collapse: collapse;
         font-size: 13px;
+        table-layout: fixed;
       }
 
       .mapping-table th,
@@ -230,6 +246,31 @@
 
       .mapping-table td {
         font-family: "SFMono-Regular", Consolas, monospace;
+        word-break: break-word;
+      }
+
+      .rules-table th:nth-child(1),
+      .rules-table td:nth-child(1) {
+        width: 56px;
+      }
+
+      .rules-table th:nth-child(2),
+      .rules-table td:nth-child(2) {
+        width: 110px;
+      }
+
+      .rules-table th:nth-child(3),
+      .rules-table td:nth-child(3) {
+        width: 96px;
+      }
+
+      .rules-table th:nth-child(4),
+      .rules-table td:nth-child(4),
+      .rules-table th:nth-child(5),
+      .rules-table td:nth-child(5),
+      .rules-table th:nth-child(6),
+      .rules-table td:nth-child(6) {
+        width: calc((100% - 262px) / 3);
       }
 
       .code-card,
@@ -276,6 +317,8 @@
       .badge strong {
         font-size: 22px;
         letter-spacing: -0.02em;
+        overflow-wrap: anywhere;
+        word-break: break-word;
       }
 
       .result-main strong {
@@ -310,6 +353,14 @@
         font-family: "SFMono-Regular", Consolas, monospace;
         font-size: 18px;
         line-height: 1.2;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+
+      .result-card .code-card pre,
+      .error-card pre {
+        overflow-wrap: anywhere;
+        word-break: break-word;
       }
 
       .error-card {
@@ -322,8 +373,8 @@
 
       .comparison-grid {
         display: grid;
-        gap: 16px;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        grid-template-columns: 1fr;
       }
 
       .result-panel {
@@ -349,14 +400,24 @@
       }
 
       @media (max-width: 960px) {
-        .grid {
+        .grid,
+        .viewer-layout {
           grid-template-columns: 1fr;
+        }
+
+        .viewer-column .panel {
+          height: auto;
+        }
+
+        .viewer-scroll {
+          overflow: visible;
+          padding-right: 0;
         }
       }
 
       @media (max-width: 640px) {
         .shell {
-          width: min(100% - 20px, 1240px);
+          width: min(100% - 20px, 1800px);
           margin: 20px auto;
         }
 
@@ -367,7 +428,6 @@
 
         .button-row,
         .result-header,
-        .preset-pair,
         .comparison-grid {
           grid-template-columns: 1fr;
         }
@@ -377,184 +437,179 @@
   <body>
     <main class="shell">
       <section class="hero">
-        <h1>Preset Viewer</h1>
+        <h1>プリセットビューアー</h1>
         <p>
-          Inspect preset rules, actions, and escalations, then run a sample input through the current decision logic
-          directly in the browser.
+          プリセットの状態ルール、アクション、継続時間による昇格を確認し、同じ入力に対する判定結果をブラウザ上で比較できます。
         </p>
       </section>
 
-      <section class="grid">
-        <aside class="panel">
-          <div class="panel-inner stack">
-            <div>
-              <p class="section-title">Preset</p>
-              <div class="preset-pair">
-                <div>
-                  <label for="preset-a-select">Preset A</label>
-                  <select id="preset-a-select"></select>
-                </div>
-                <div>
-                  <label for="preset-b-select">Preset B</label>
-                  <select id="preset-b-select"></select>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <p class="section-title">Sample Input</p>
-              <label for="input-json">Input JSON</label>
-              <div class="sample-button-grid">
-                <button type="button" class="secondary" data-sample="normal">Normal</button>
-                <button type="button" class="secondary" data-sample="warming">Warming</button>
-                <button type="button" class="secondary" data-sample="cooling">Cooling</button>
-                <button type="button" class="secondary" data-sample="hot">Hot</button>
-                <button type="button" class="secondary" data-sample="critical">Critical</button>
-                <button type="button" class="secondary" data-sample="hotHysteresis">Hot Hysteresis</button>
-                <button type="button" class="secondary" data-sample="fanLowEscalation">Fan Low Escalation</button>
-              </div>
-              <textarea id="input-json" spellcheck="false"></textarea>
-            </div>
-
-            <div class="button-row">
-              <button id="evaluate-button" type="button">Evaluate</button>
-              <button id="load-sample-button" class="secondary" type="button">Load sample</button>
-            </div>
-
-            <p id="status" class="muted"></p>
-          </div>
-        </aside>
-
-        <div class="stack">
+      <section class="viewer-layout">
+        <section class="viewer-column">
           <section class="panel">
-            <div class="panel-inner">
-              <p class="section-title">Preset Structure</p>
-              <table class="table">
-                <tbody>
-                  <tr>
-                    <th>Rules</th>
-                    <td>
-                      <div class="code-card rules-table-wrap">
-                        <table class="rules-table">
-                          <thead>
-                            <tr>
-                              <th>order</th>
-                              <th>name</th>
-                              <th>type</th>
-                              <th>threshold</th>
-                              <th>state</th>
-                              <th>offThreshold</th>
-                            </tr>
-                          </thead>
-                          <tbody id="rules-output"></tbody>
-                        </table>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th>Actions</th>
-                    <td>
-                      <div class="code-card rules-table-wrap">
-                        <table class="mapping-table">
-                          <thead>
-                            <tr>
-                              <th>state</th>
-                              <th>action</th>
-                            </tr>
-                          </thead>
-                          <tbody id="actions-output"></tbody>
-                        </table>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th>Escalations</th>
-                    <td>
-                      <div class="stack">
-                        <div class="code-card rules-table-wrap">
-                          <table class="mapping-table">
-                            <thead>
-                              <tr>
-                                <th colspan="2">state</th>
-                              </tr>
-                              <tr>
-                                <th>name</th>
-                                <th>durationMs</th>
-                              </tr>
-                            </thead>
-                            <tbody id="state-escalations-output"></tbody>
-                          </table>
-                        </div>
-                        <div class="code-card rules-table-wrap">
-                          <table class="mapping-table">
-                            <thead>
-                              <tr>
-                                <th colspan="3">action</th>
-                              </tr>
-                              <tr>
-                                <th>name</th>
-                                <th>durationMs</th>
-                                <th>requireNoCoolingEffect</th>
-                              </tr>
-                            </thead>
-                            <tbody id="action-escalations-output"></tbody>
-                          </table>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            <div class="panel-inner stack">
+              <p class="section-title">入力（Input）</p>
+              <div class="viewer-scroll stack">
+                <div>
+                  <label for="preset-a-select">プリセット選択（Preset Selection）</label>
+                  <div class="preset-pair">
+                    <div>
+                      <label for="preset-a-select">プリセットA（Preset A）</label>
+                      <select id="preset-a-select"></select>
+                    </div>
+                    <div>
+                      <label for="preset-b-select">プリセットB（Preset B）</label>
+                      <select id="preset-b-select"></select>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label for="sample-input-select">入力サンプル選択（Sample Input Preset）</label>
+                  <select id="sample-input-select"></select>
+                </div>
+
+                <div>
+                  <label for="input-json">入力サンプル（Sample Input）JSON</label>
+                  <textarea id="input-json" spellcheck="false"></textarea>
+                </div>
+              </div>
+
+              <div class="button-row">
+                <button id="evaluate-button" type="button">評価する（Evaluate）</button>
+                <button id="load-sample-button" class="secondary" type="button">標準入力を読み込む</button>
+              </div>
+
+              <p id="status" class="muted"></p>
             </div>
           </section>
+        </section>
 
+        <section class="viewer-column">
           <section class="panel">
-            <div class="panel-inner">
-              <p class="section-title">Evaluation Result</p>
-              <div class="comparison-grid">
+            <div class="panel-inner stack">
+              <p class="section-title">定義（Definition）</p>
+              <div class="viewer-scroll stack">
+                <div>
+                  <label>状態ルール（Rules）</label>
+                  <div class="code-card rules-table-wrap">
+                    <table class="rules-table">
+                      <thead>
+                        <tr>
+                          <th>order</th>
+                          <th>name</th>
+                          <th>type</th>
+                          <th>threshold</th>
+                          <th>state</th>
+                          <th>offThreshold</th>
+                        </tr>
+                      </thead>
+                      <tbody id="rules-output"></tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div>
+                  <label>アクション（Actions）</label>
+                  <div class="code-card rules-table-wrap">
+                    <table class="mapping-table">
+                      <thead>
+                        <tr>
+                          <th>state</th>
+                          <th>action</th>
+                        </tr>
+                      </thead>
+                      <tbody id="actions-output"></tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div>
+                  <label>継続時間による昇格（Escalations）</label>
+                  <div class="stack">
+                    <div class="code-card rules-table-wrap">
+                      <table class="mapping-table">
+                        <thead>
+                          <tr>
+                            <th colspan="2">state</th>
+                          </tr>
+                          <tr>
+                            <th>name</th>
+                            <th>durationMs</th>
+                          </tr>
+                        </thead>
+                        <tbody id="state-escalations-output"></tbody>
+                      </table>
+                    </div>
+                    <div class="code-card rules-table-wrap">
+                      <table class="mapping-table">
+                        <thead>
+                          <tr>
+                            <th colspan="3">action</th>
+                          </tr>
+                          <tr>
+                            <th>name</th>
+                            <th>durationMs</th>
+                            <th>requireNoCoolingEffect</th>
+                          </tr>
+                        </thead>
+                        <tbody id="action-escalations-output"></tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <section class="viewer-column">
+          <section class="panel">
+            <div class="panel-inner stack">
+              <p class="section-title">結果（Result）</p>
+              <div class="viewer-scroll comparison-grid">
                 <div class="result-panel">
-                  <p id="result-a-title" class="result-panel-header">Preset A</p>
+                  <p id="result-a-title" class="result-panel-header">プリセットA（Preset A）</p>
                   <div class="result-card">
                     <div class="result-header">
                       <div id="result-a-state-card" class="badge result-main">
-                        <span>State</span>
+                        <span>状態（State）</span>
                         <strong id="result-a-state">-</strong>
                       </div>
                       <div id="result-a-action-card" class="badge result-main">
-                        <span>Action</span>
+                        <span>アクション（Action）</span>
                         <strong id="result-a-action">-</strong>
                       </div>
                     </div>
                     <div class="stack">
                       <div>
-                        <label>Reason</label>
+                        <label>判定理由（Reason）</label>
                         <div class="code-card">
                           <pre id="result-a-reason"></pre>
                         </div>
                       </div>
                       <div>
-                        <label>Debug</label>
+                        <label>判定詳細（Debug）</label>
                         <div class="debug-grid">
                           <div class="debug-item">
-                            <span>baseState</span>
+                            <span>基準状態（baseState）</span>
                             <strong id="debug-a-base-state">-</strong>
                           </div>
                           <div class="debug-item">
-                            <span>rawStateDurationMs</span>
+                            <span>元の継続時間（rawStateDurationMs）</span>
                             <strong id="debug-a-raw-duration">-</strong>
                           </div>
                           <div class="debug-item">
-                            <span>effectiveStateDurationMs</span>
+                            <span>有効継続時間（effectiveStateDurationMs）</span>
                             <strong id="debug-a-effective-duration">-</strong>
                           </div>
                           <div class="debug-item">
-                            <span>actionEscalated</span>
+                            <span>アクション昇格（actionEscalated）</span>
                             <strong id="debug-a-action-escalated">-</strong>
                           </div>
                         </div>
                       </div>
                       <div>
-                        <label>Error</label>
+                        <label>エラー（Error）</label>
                         <div id="result-a-error" class="error-card" hidden>
                           <pre id="error-a-message"></pre>
                         </div>
@@ -564,48 +619,48 @@
                 </div>
 
                 <div class="result-panel">
-                  <p id="result-b-title" class="result-panel-header">Preset B</p>
+                  <p id="result-b-title" class="result-panel-header">プリセットB（Preset B）</p>
                   <div class="result-card">
                     <div class="result-header">
                       <div id="result-b-state-card" class="badge result-main">
-                        <span>State</span>
+                        <span>状態（State）</span>
                         <strong id="result-b-state">-</strong>
                       </div>
                       <div id="result-b-action-card" class="badge result-main">
-                        <span>Action</span>
+                        <span>アクション（Action）</span>
                         <strong id="result-b-action">-</strong>
                       </div>
                     </div>
                     <div class="stack">
                       <div>
-                        <label>Reason</label>
+                        <label>判定理由（Reason）</label>
                         <div class="code-card">
                           <pre id="result-b-reason"></pre>
                         </div>
                       </div>
                       <div>
-                        <label>Debug</label>
+                        <label>判定詳細（Debug）</label>
                         <div class="debug-grid">
                           <div class="debug-item">
-                            <span>baseState</span>
+                            <span>基準状態（baseState）</span>
                             <strong id="debug-b-base-state">-</strong>
                           </div>
                           <div class="debug-item">
-                            <span>rawStateDurationMs</span>
+                            <span>元の継続時間（rawStateDurationMs）</span>
                             <strong id="debug-b-raw-duration">-</strong>
                           </div>
                           <div class="debug-item">
-                            <span>effectiveStateDurationMs</span>
+                            <span>有効継続時間（effectiveStateDurationMs）</span>
                             <strong id="debug-b-effective-duration">-</strong>
                           </div>
                           <div class="debug-item">
-                            <span>actionEscalated</span>
+                            <span>アクション昇格（actionEscalated）</span>
                             <strong id="debug-b-action-escalated">-</strong>
                           </div>
                         </div>
                       </div>
                       <div>
-                        <label>Error</label>
+                        <label>エラー（Error）</label>
                         <div id="result-b-error" class="error-card" hidden>
                           <pre id="error-b-message"></pre>
                         </div>
@@ -616,7 +671,7 @@
               </div>
             </div>
           </section>
-        </div>
+        </section>
       </section>
     </main>
 
@@ -719,6 +774,7 @@
       const defaultConfig = presets.m5Temperature;
       const sampleInputs = {
         normal: {
+          label: "通常状態の入力",
           value: 25.0,
           previousValue: 25.0,
           tempDelta: 0,
@@ -730,6 +786,7 @@
           coolingEffect: false
         },
         warming: {
+          label: "温度上昇中の入力",
           value: 25.6,
           previousValue: 25.3,
           tempDelta: 0.3,
@@ -741,6 +798,7 @@
           coolingEffect: false
         },
         cooling: {
+          label: "冷却効果ありの入力",
           value: 24.7,
           previousValue: 25.1,
           tempDelta: -0.4,
@@ -752,6 +810,7 @@
           coolingEffect: true
         },
         hot: {
+          label: "高温状態の入力",
           value: 26.4,
           previousValue: 25.9,
           tempDelta: 0.5,
@@ -763,6 +822,7 @@
           coolingEffect: false
         },
         critical: {
+          label: "危険状態の入力",
           value: 40.2,
           previousValue: 39.8,
           tempDelta: 0.4,
@@ -774,6 +834,7 @@
           coolingEffect: false
         },
         hotHysteresis: {
+          label: "高温維持の入力",
           value: 25.7,
           previousValue: 25.6,
           tempDelta: 0.1,
@@ -785,6 +846,7 @@
           coolingEffect: false
         },
         fanLowEscalation: {
+          label: "送風強化の入力",
           value: 25.4,
           previousValue: 25.2,
           tempDelta: 0.2,
@@ -1141,6 +1203,7 @@
 
       const presetASelect = document.getElementById("preset-a-select");
       const presetBSelect = document.getElementById("preset-b-select");
+      const sampleInputSelect = document.getElementById("sample-input-select");
       const inputJson = document.getElementById("input-json");
       const rulesOutput = document.getElementById("rules-output");
       const actionsOutput = document.getElementById("actions-output");
@@ -1149,7 +1212,6 @@
       const status = document.getElementById("status");
       const evaluateButton = document.getElementById("evaluate-button");
       const loadSampleButton = document.getElementById("load-sample-button");
-      const sampleButtons = document.querySelectorAll("[data-sample]");
 
       const resultView = {
         a: {
@@ -1286,14 +1348,18 @@
 
       function loadSampleInput(sampleName) {
         const name = sampleName || "normal";
-        inputJson.value = formatJson(sampleInputs[name]);
-        status.textContent = `Loaded sample input: ${name}.`;
+        const { label, ...sampleInput } = sampleInputs[name];
+
+        sampleInputSelect.value = name;
+        inputJson.value = formatJson(sampleInput);
+        status.textContent = `入力サンプルを読み込みました: ${label} (${name})`;
       }
 
       function renderResult(side, presetName, result) {
         const view = resultView[side];
 
-        view.title.textContent = side === "a" ? `Preset A: ${presetName}` : `Preset B: ${presetName}`;
+        view.title.textContent =
+          side === "a" ? `プリセットA（Preset A）: ${presetName}` : `プリセットB（Preset B）: ${presetName}`;
         view.state.textContent = result.state;
         view.action.textContent = result.action;
         view.reason.textContent = result.reason;
@@ -1308,7 +1374,8 @@
       function renderError(side, presetName, message) {
         const view = resultView[side];
 
-        view.title.textContent = side === "a" ? `Preset A: ${presetName}` : `Preset B: ${presetName}`;
+        view.title.textContent =
+          side === "a" ? `プリセットA（Preset A）: ${presetName}` : `プリセットB（Preset B）: ${presetName}`;
         view.state.textContent = "error";
         view.action.textContent = "-";
         view.reason.textContent = "-";
@@ -1341,12 +1408,12 @@
           renderResult("a", presetNameA, resultA);
           renderResult("b", presetNameB, resultB);
           updateComparisonHighlight(resultA, resultB);
-          status.textContent = "Evaluation completed.";
+          status.textContent = "評価が完了しました。";
         } catch (error) {
           renderError("a", getPresetName("a"), error.message);
           renderError("b", getPresetName("b"), error.message);
           updateComparisonHighlight(null, null);
-          status.textContent = "Input JSON could not be evaluated.";
+          status.textContent = "入力 JSON を評価できませんでした。";
         }
       }
 
@@ -1358,21 +1425,27 @@
         presetBSelect.appendChild(option);
       });
 
+      Object.entries(sampleInputs).forEach(([name, sample]) => {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = `${sample.label} (${name})`;
+        sampleInputSelect.appendChild(option);
+      });
+
       presetASelect.addEventListener("change", () => {
         renderPresetDetails();
         handleEvaluate();
       });
       presetBSelect.addEventListener("change", handleEvaluate);
+      sampleInputSelect.addEventListener("change", () => {
+        loadSampleInput(sampleInputSelect.value);
+      });
       evaluateButton.addEventListener("click", handleEvaluate);
       loadSampleButton.addEventListener("click", () => loadSampleInput("normal"));
-      sampleButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-          loadSampleInput(button.dataset.sample);
-        });
-      });
 
       presetASelect.value = "m5Temperature";
       presetBSelect.value = "simpleTemperature";
+      sampleInputSelect.value = "normal";
       renderPresetDetails();
       loadSampleInput("normal");
       handleEvaluate();

@@ -1,12 +1,7 @@
 // Copyright (c) 2025 tstaisyu
 // SPDX-License-Identifier: Apache-2.0
 
-const SUPPORTED_RULE_TYPES = new Set([
-  "value_gte",
-  "hysteresis",
-  "rate_gt",
-  "rate_lt"
-]);
+const SUPPORTED_RULE_TYPES = new Set(["value_gte", "hysteresis", "rate_gt", "rate_lt"]);
 
 function matchRule(rule, normalized) {
   if (rule.type === "value_gte") {
@@ -14,10 +9,7 @@ function matchRule(rule, normalized) {
   }
 
   if (rule.type === "hysteresis") {
-    return (
-      normalized.previousStateSafe === rule.state &&
-      normalized.value > rule.offThreshold
-    );
+    return normalized.previousStateSafe === rule.state && normalized.value > rule.offThreshold;
   }
 
   if (rule.type === "rate_gt") {
@@ -43,10 +35,7 @@ function resolveStateRules(config, defaultConfig) {
       threshold:
         typeof config.criticalThreshold === "number"
           ? config.criticalThreshold
-          : config &&
-              config.states &&
-              config.states.critical &&
-              typeof config.states.critical.threshold === "number"
+          : config && config.states && config.states.critical && typeof config.states.critical.threshold === "number"
             ? config.states.critical.threshold
             : defaultConfig.states.critical.threshold
     },
@@ -56,10 +45,7 @@ function resolveStateRules(config, defaultConfig) {
       threshold:
         typeof config.hotOnThreshold === "number"
           ? config.hotOnThreshold
-          : config &&
-              config.states &&
-              config.states.hot &&
-              typeof config.states.hot.onThreshold === "number"
+          : config && config.states && config.states.hot && typeof config.states.hot.onThreshold === "number"
             ? config.states.hot.onThreshold
             : defaultConfig.states.hot.onThreshold
     },
@@ -70,19 +56,13 @@ function resolveStateRules(config, defaultConfig) {
       onThreshold:
         typeof config.hotOnThreshold === "number"
           ? config.hotOnThreshold
-          : config &&
-              config.states &&
-              config.states.hot &&
-              typeof config.states.hot.onThreshold === "number"
+          : config && config.states && config.states.hot && typeof config.states.hot.onThreshold === "number"
             ? config.states.hot.onThreshold
             : defaultConfig.states.hot.onThreshold,
       offThreshold:
         typeof config.hotOffThreshold === "number"
           ? config.hotOffThreshold
-          : config &&
-              config.states &&
-              config.states.hot &&
-              typeof config.states.hot.offThreshold === "number"
+          : config && config.states && config.states.hot && typeof config.states.hot.offThreshold === "number"
             ? config.states.hot.offThreshold
             : defaultConfig.states.hot.offThreshold
     },
@@ -92,10 +72,7 @@ function resolveStateRules(config, defaultConfig) {
       threshold:
         typeof config.warmingRateThreshold === "number"
           ? config.warmingRateThreshold
-          : config &&
-              config.states &&
-              config.states.warming &&
-              typeof config.states.warming.rateThreshold === "number"
+          : config && config.states && config.states.warming && typeof config.states.warming.rateThreshold === "number"
             ? config.states.warming.rateThreshold
             : defaultConfig.states.warming.rateThreshold
     },
@@ -105,10 +82,7 @@ function resolveStateRules(config, defaultConfig) {
       threshold:
         typeof config.coolingRateThreshold === "number"
           ? config.coolingRateThreshold
-          : config &&
-              config.states &&
-              config.states.cooling &&
-              typeof config.states.cooling.rateThreshold === "number"
+          : config && config.states && config.states.cooling && typeof config.states.cooling.rateThreshold === "number"
             ? config.states.cooling.rateThreshold
             : defaultConfig.states.cooling.rateThreshold
     }

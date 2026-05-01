@@ -13,11 +13,7 @@ function validateConfig(config) {
     };
   }
 
-  if (
-    !config.states ||
-    typeof config.states !== "object" ||
-    Array.isArray(config.states)
-  ) {
+  if (!config.states || typeof config.states !== "object" || Array.isArray(config.states)) {
     errors.push("states must be an object");
   }
 
@@ -26,28 +22,16 @@ function validateConfig(config) {
     errors.push("states.rules must be an array");
   }
 
-  if (
-    !config.actions ||
-    typeof config.actions !== "object" ||
-    Array.isArray(config.actions)
-  ) {
+  if (!config.actions || typeof config.actions !== "object" || Array.isArray(config.actions)) {
     errors.push("actions must be an object");
   }
 
   const actionsByState = config.actions && config.actions.byState;
-  if (
-    !actionsByState ||
-    typeof actionsByState !== "object" ||
-    Array.isArray(actionsByState)
-  ) {
+  if (!actionsByState || typeof actionsByState !== "object" || Array.isArray(actionsByState)) {
     errors.push("actions.byState must be an object");
   }
 
-  if (
-    !config.escalations ||
-    typeof config.escalations !== "object" ||
-    Array.isArray(config.escalations)
-  ) {
+  if (!config.escalations || typeof config.escalations !== "object" || Array.isArray(config.escalations)) {
     errors.push("escalations must be an object");
   }
 
@@ -65,15 +49,11 @@ function validateConfig(config) {
       if (typeof rule.type !== "string" || rule.type.length === 0) {
         errors.push(`states.rules[${index}].type must be a non-empty string`);
       } else if (!SUPPORTED_RULE_TYPES.has(rule.type)) {
-        errors.push(
-          `states.rules[${index}].type is not supported: ${rule.type}`
-        );
+        errors.push(`states.rules[${index}].type is not supported: ${rule.type}`);
       }
 
       if (
-        (rule.type === "value_gte" ||
-          rule.type === "rate_gt" ||
-          rule.type === "rate_lt") &&
+        (rule.type === "value_gte" || rule.type === "rate_gt" || rule.type === "rate_lt") &&
         typeof rule.threshold !== "number"
       ) {
         errors.push(`states.rules[${index}].threshold must be a number`);
@@ -96,12 +76,9 @@ function validateConfig(config) {
         typeof rule.name === "string" &&
         rule.name.length > 0
       ) {
-        const stateName =
-          typeof rule.state === "string" ? rule.state : rule.name;
+        const stateName = typeof rule.state === "string" ? rule.state : rule.name;
         if (typeof actionsByState[stateName] !== "string") {
-          errors.push(
-            `actions.byState must define an action for state: ${stateName}`
-          );
+          errors.push(`actions.byState must define an action for state: ${stateName}`);
         }
       }
     }

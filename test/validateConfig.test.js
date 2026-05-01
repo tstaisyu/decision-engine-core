@@ -50,8 +50,5 @@ test("missing action mapping for a rule state is invalid", () => {
   });
 
   assert.equal(result.valid, false);
-  assert.match(
-    result.errors.join("\n"),
-    /must define an action for state: warm/
-  );
+  assert.match(result.errors.join("\n"), /must define an action for state: warm/);
 });

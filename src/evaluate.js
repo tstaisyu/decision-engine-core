@@ -26,14 +26,10 @@ function normalizeInput(input) {
       : typeof value === "number" && typeof previousValue === "number"
         ? value - previousValue
         : 0;
-  const effectiveTempRate =
-    typeof tempRate === "number" ? tempRate : effectiveTempDelta;
-  const stateRate =
-    typeof tempRateAvg === "number" ? tempRateAvg : effectiveTempRate;
-  const previousStateSafe =
-    typeof previousState === "string" ? previousState : "normal";
-  const rawStateDurationMs =
-    typeof stateDurationMs === "number" ? stateDurationMs : 0;
+  const effectiveTempRate = typeof tempRate === "number" ? tempRate : effectiveTempDelta;
+  const stateRate = typeof tempRateAvg === "number" ? tempRateAvg : effectiveTempRate;
+  const previousStateSafe = typeof previousState === "string" ? previousState : "normal";
+  const rawStateDurationMs = typeof stateDurationMs === "number" ? stateDurationMs : 0;
 
   return {
     value,
@@ -67,8 +63,7 @@ function deriveState(normalized, config) {
     baseState = matchedRule.state || matchedRule.name;
   }
 
-  const effectiveStateDurationMs =
-    baseState === previousStateSafe ? rawStateDurationMs : 0;
+  const effectiveStateDurationMs = baseState === previousStateSafe ? rawStateDurationMs : 0;
 
   let state = baseState;
   if (
@@ -125,13 +120,7 @@ function deriveAction(normalized, stateContext, config) {
 }
 
 function buildResult(stateContext, actionContext) {
-  const {
-    state,
-    baseState,
-    previousStateSafe,
-    rawStateDurationMs,
-    effectiveStateDurationMs
-  } = stateContext;
+  const { state, baseState, previousStateSafe, rawStateDurationMs, effectiveStateDurationMs } = stateContext;
   const { action, actionEscalated } = actionContext;
   const reason =
     `baseState=${baseState}; previousState=${previousStateSafe}; ` +

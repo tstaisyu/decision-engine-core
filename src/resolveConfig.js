@@ -25,8 +25,7 @@ function resolveConfig(config, defaultConfig) {
                   config.escalations &&
                   config.escalations.action &&
                   config.escalations.action.fanLowToHigh &&
-                  typeof config.escalations.action.fanLowToHigh.durationMs ===
-                    "number"
+                  typeof config.escalations.action.fanLowToHigh.durationMs === "number"
                 ? config.escalations.action.fanLowToHigh.durationMs
                 : defaultConfig.escalations.action.fanLowToHigh.durationMs,
           requireNoCoolingEffect:
@@ -34,11 +33,9 @@ function resolveConfig(config, defaultConfig) {
             config.escalations &&
             config.escalations.action &&
             config.escalations.action.fanLowToHigh &&
-            typeof config.escalations.action.fanLowToHigh
-              .requireNoCoolingEffect === "boolean"
+            typeof config.escalations.action.fanLowToHigh.requireNoCoolingEffect === "boolean"
               ? config.escalations.action.fanLowToHigh.requireNoCoolingEffect
-              : defaultConfig.escalations.action.fanLowToHigh
-                  .requireNoCoolingEffect
+              : defaultConfig.escalations.action.fanLowToHigh.requireNoCoolingEffect
         }
       },
       state: {
@@ -51,8 +48,7 @@ function resolveConfig(config, defaultConfig) {
                   config.escalations &&
                   config.escalations.state &&
                   config.escalations.state.hotToCritical &&
-                  typeof config.escalations.state.hotToCritical.durationMs ===
-                    "number"
+                  typeof config.escalations.state.hotToCritical.durationMs === "number"
                 ? config.escalations.state.hotToCritical.durationMs
                 : defaultConfig.escalations.state.hotToCritical.durationMs
         }
@@ -64,10 +60,7 @@ function resolveConfig(config, defaultConfig) {
         threshold:
           typeof config.criticalThreshold === "number"
             ? config.criticalThreshold
-            : config &&
-                config.states &&
-                config.states.critical &&
-                typeof config.states.critical.threshold === "number"
+            : config && config.states && config.states.critical && typeof config.states.critical.threshold === "number"
               ? config.states.critical.threshold
               : defaultConfig.states.critical.threshold
       },
@@ -75,19 +68,13 @@ function resolveConfig(config, defaultConfig) {
         onThreshold:
           typeof config.hotOnThreshold === "number"
             ? config.hotOnThreshold
-            : config &&
-                config.states &&
-                config.states.hot &&
-                typeof config.states.hot.onThreshold === "number"
+            : config && config.states && config.states.hot && typeof config.states.hot.onThreshold === "number"
               ? config.states.hot.onThreshold
               : defaultConfig.states.hot.onThreshold,
         offThreshold:
           typeof config.hotOffThreshold === "number"
             ? config.hotOffThreshold
-            : config &&
-                config.states &&
-                config.states.hot &&
-                typeof config.states.hot.offThreshold === "number"
+            : config && config.states && config.states.hot && typeof config.states.hot.offThreshold === "number"
               ? config.states.hot.offThreshold
               : defaultConfig.states.hot.offThreshold
       },

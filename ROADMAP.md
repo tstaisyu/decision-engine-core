@@ -10,10 +10,10 @@
 ## Phase 1: Config仕様の固定
 
 目的：
-UIや外部連携の前に、状態定義・action定義・昇格条件の設定形式を
-安定させる。
+UIや外部連携の前に、状態定義・action定義・昇格条件の設定形式を安定させる。
 
 やること：
+
 - config schema の整理
 - rules type の一覧化
 - action mapping の仕様化
@@ -26,6 +26,7 @@ UIや外部連携の前に、状態定義・action定義・昇格条件の設定
 壊れたconfigを読み込んでも安全に検出できるようにする。
 
 やること：
+
 - validateConfig(config) の追加
 - 必須項目チェック
 - 未対応rule typeチェック
@@ -37,6 +38,7 @@ UIや外部連携の前に、状態定義・action定義・昇格条件の設定
 UIなしでもconfigを読み込んで評価できるようにする。
 
 やること：
+
 - configファイルを指定してevaluateするCLI追加
 - サンプル入力JSONでstate/actionを確認
 - プリセット選択
@@ -47,6 +49,7 @@ UIなしでもconfigを読み込んで評価できるようにする。
 ブラウザ上でプリセット作成・編集・確認をできるようにする。
 
 やること：
+
 - state rule編集
 - threshold / unit設定
 - action mapping編集
@@ -59,6 +62,7 @@ UIなしでもconfigを読み込んで評価できるようにする。
 PlatformIO / Arduino IDE / M5Stack側との接続を強化する。
 
 やること：
+
 - configからC/C++定数生成
 - M5側ログとの比較
 - firmware側との同期方法検討
@@ -66,4 +70,4 @@ PlatformIO / Arduino IDE / M5Stack側との接続を強化する。
 ## 優先順位
 
 まずは UI ではなく config仕様・validator・CLI を優先する。
-UIは config仕様が固まってから作る。
+UI は config仕様が固まってから作る。

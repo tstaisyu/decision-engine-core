@@ -1,0 +1,11 @@
+{
+  "name": "decision-engine-core",
+  "version": "0.1.0",
+  "description": "Minimal decision core for evaluating sensor inputs and returning state/action.",
+  "main": "src/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "example": "node examples/temperature.js"
+  },
+  "license": "MIT"
+}

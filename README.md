@@ -70,6 +70,15 @@ npm run evaluate -- examples/input.simple-warm.json --preset simpleTemperature
 - `examples/input.normal.json`
 - `examples/input.simple-warm.json`
 
+## Local Preset Viewer
+
+Open `examples/viewer.html` directly in a browser.
+
+- Double-click `examples/viewer.html`
+- Or run `xdg-open examples/viewer.html` on Linux
+- Select `m5Temperature` or `simpleTemperature`
+- Edit the sample input JSON and click `Evaluate`
+
 ## License
 
 Apache-2.0. See `LICENSE`.

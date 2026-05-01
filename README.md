@@ -1,46 +1,36 @@
 # decision-engine-core
 
-`decision-engine-core` は、M5側ファームウェアに埋め込まれていた state/action 判定ロジックを外出しするためのコアです。
+`decision-engine-core` is a small decision engine that extracts temperature control logic from the M5 side into Node.js.
 
-現時点では M5 temperature control v1 の判定ロジックを移植しています。
+## Structure
 
-M5 へ action を返す処理はまだ行いません。
+- `src/evaluate.js`: Entry point. Accepts input and returns `state` and `action`.
+- `src/rules.js`: Evaluates and resolves state rules.
+- `src/config.js`: Default config entry point.
+- `src/presets/m5TemperatureConfig.js`: Preset for the M5 temperature control logic.
 
-`tools/serial-dashboard/server.js` は、M5側 state/action と `decision-engine-core` 出力を比較する検証フェーズ用です。
+## Flow
 
-## 使い方
+`input -> normalize -> rule evaluation -> state resolution -> duration handling -> action resolution -> output`
+
+## Characteristics
+
+- States are defined with a `rules` array instead of fixed `if` branches.
+- State resolution and action resolution are separated.
+- Duration-based escalation is supported.
+- Different control logic can be introduced by swapping configs.
+
+## Rule Example
 
 ```js
-const { evaluate } = require("./src");
-
-const input = {
-  deviceId: "m5-gray-001",
-  sensorId: "si7021-001",
-  valueType: "temperature",
-  value: 25.3,
-  previousValue: 25.1,
-  tempDelta: 0.2,
-  tempRate: 0.2,
-  tempRateAvg: 0.03,
-  coolingEffect: false,
-  maxTemp: 26.0,
-  previousState: "normal",
-  previousAction: "no_action",
-  stateDurationMs: 500,
-  timestamp: 1710000000000,
-};
-
-const config = {
-  criticalThreshold: 40.0,
-  hotOnThreshold: 26.0,
-  hotOffThreshold: 25.5,
-  warmingRateThreshold: 0.02,
-  coolingRateThreshold: -0.02,
-  hotCriticalDurationMs: 5000,
-  fanLowEscalationDurationMs: 1000,
-  coolingEffectRateThreshold: -0.01,
-};
-
-const result = evaluate(input, config);
-console.log(result);
+{
+  states: {
+    rules: [
+      { name: "critical", type: "value_gte", threshold: 40.0 },
+      { name: "hot", type: "value_gte", threshold: 26.0 },
+      { name: "warming", type: "rate_gt", threshold: 0.02 },
+      { name: "cooling", type: "rate_lt", threshold: -0.02 }
+    ]
+  }
+}
 ```

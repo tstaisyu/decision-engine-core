@@ -5,7 +5,8 @@
   "main": "src/index.js",
   "type": "commonjs",
   "scripts": {
-    "example": "node examples/temperature.js"
+    "example": "node examples/temperature.js",
+    "check:evaluate": "node scripts/check-evaluate.js"
   },
   "license": "MIT"
 }

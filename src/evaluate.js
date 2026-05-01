@@ -1,4 +1,6 @@
-function evaluate(input, config) {
+const { config: defaultConfig } = require("./config");
+
+function normalizeInput(input) {
   const {
     value,
     previousValue,
@@ -13,17 +15,6 @@ function evaluate(input, config) {
     timestamp
   } = input;
 
-  const {
-    criticalThreshold = 40.0,
-    hotOnThreshold = 26.0,
-    hotOffThreshold = 25.5,
-    warmingRateThreshold = 0.02,
-    coolingRateThreshold = -0.02,
-    hotCriticalDurationMs = 5000,
-    fanLowEscalationDurationMs = 1000,
-    coolingEffectRateThreshold = -0.01
-  } = config;
-
   const effectiveTempDelta =
     typeof tempDelta === "number"
       ? tempDelta
@@ -36,23 +27,64 @@ function evaluate(input, config) {
     typeof tempRateAvg === "number" ? tempRateAvg : effectiveTempRate;
   const previousStateSafe =
     typeof previousState === "string" ? previousState : "normal";
+  const rawStateDurationMs =
+    typeof stateDurationMs === "number" ? stateDurationMs : 0;
+
+  return {
+    value,
+    previousValue,
+    tempDelta,
+    tempRate,
+    tempRateAvg,
+    coolingEffect,
+    maxTemp,
+    previousState,
+    previousAction,
+    stateDurationMs,
+    timestamp,
+    effectiveTempDelta,
+    effectiveTempRate,
+    stateRate,
+    previousStateSafe,
+    rawStateDurationMs
+  };
+}
+
+function matchRule(rule, normalized) {
+  if (rule.type === "value_gte") {
+    return normalized.value >= rule.threshold;
+  }
+
+  if (rule.type === "hysteresis") {
+    return (
+      normalized.previousStateSafe === rule.state &&
+      normalized.value > rule.offThreshold
+    );
+  }
+
+  if (rule.type === "rate_gt") {
+    return normalized.stateRate > rule.threshold;
+  }
+
+  if (rule.type === "rate_lt") {
+    return normalized.stateRate < rule.threshold;
+  }
+
+  return false;
+}
+
+function deriveState(normalized, config) {
+  const { previousStateSafe, rawStateDurationMs } = normalized;
+  const hotToCriticalEscalationConfig = config.escalations.state.hotToCritical;
+  const stateRules = config.states.rules;
 
   let baseState = "normal";
 
-  if (value >= criticalThreshold) {
-    baseState = "critical";
-  } else if (value >= hotOnThreshold) {
-    baseState = "hot";
-  } else if (value > hotOffThreshold && previousStateSafe === "hot") {
-    baseState = "hot";
-  } else if (stateRate > warmingRateThreshold) {
-    baseState = "warming";
-  } else if (stateRate < coolingRateThreshold) {
-    baseState = "cooling";
+  const matchedRule = stateRules.find((rule) => matchRule(rule, normalized));
+  if (matchedRule) {
+    baseState = matchedRule.state || matchedRule.name;
   }
 
-  const rawStateDurationMs =
-    typeof stateDurationMs === "number" ? stateDurationMs : 0;
   const effectiveStateDurationMs =
     baseState === previousStateSafe ? rawStateDurationMs : 0;
 
@@ -60,19 +92,30 @@ function evaluate(input, config) {
   if (
     baseState === "hot" &&
     previousStateSafe === "hot" &&
-    effectiveStateDurationMs >= hotCriticalDurationMs
+    effectiveStateDurationMs >= hotToCriticalEscalationConfig.durationMs
   ) {
     state = "critical";
   }
 
-  let baseAction = "no_action";
-  if (state === "critical") {
-    baseAction = "alert";
-  } else if (state === "hot") {
-    baseAction = "fan_high";
-  } else if (state === "warming" || state === "cooling") {
-    baseAction = "fan_low";
-  }
+  return {
+    baseState,
+    state,
+    previousStateSafe,
+    rawStateDurationMs,
+    effectiveStateDurationMs
+  };
+}
+
+function deriveAction(normalized, stateContext, config) {
+  const { coolingEffect, stateRate } = normalized;
+  const { state, effectiveStateDurationMs } = stateContext;
+  const actionByState = config.actions.byState;
+  const fanLowToHighEscalationConfig = config.escalations.action.fanLowToHigh;
+  const {
+    coolingEffectRateThreshold = -0.01
+  } = config;
+
+  const baseAction = actionByState[state] || "no_action";
   let action = baseAction;
 
   const hasCoolingEffectForDecision =
@@ -85,13 +128,31 @@ function evaluate(input, config) {
 
   if (
     baseAction === "fan_low" &&
-    effectiveStateDurationMs >= fanLowEscalationDurationMs &&
-    !hasCoolingEffectForDecision
+    effectiveStateDurationMs >= fanLowToHighEscalationConfig.durationMs &&
+    (fanLowToHighEscalationConfig.requireNoCoolingEffect === false
+      ? !hasCoolingEffectForDecision
+      : hasCoolingEffectForDecision)
   ) {
     action = "fan_high";
     actionEscalated = true;
   }
 
+  return {
+    baseAction,
+    action,
+    actionEscalated
+  };
+}
+
+function buildResult(stateContext, actionContext) {
+  const {
+    state,
+    baseState,
+    previousStateSafe,
+    rawStateDurationMs,
+    effectiveStateDurationMs
+  } = stateContext;
+  const { action, actionEscalated } = actionContext;
   const reason =
     `baseState=${baseState}; previousState=${previousStateSafe}; ` +
     `rawDuration=${rawStateDurationMs}; ` +
@@ -109,6 +170,207 @@ function evaluate(input, config) {
       actionEscalated
     }
   };
+}
+
+function evaluate(input, config) {
+  const normalized = normalizeInput(input);
+  const effectiveConfig = {
+    ...config,
+    actions: {
+      ...(config && config.actions),
+      byState: {
+        ...defaultConfig.actions.byState,
+        ...(config && config.actions && config.actions.byState)
+      }
+    },
+    escalations: {
+      ...(config && config.escalations),
+      action: {
+        ...(config && config.escalations && config.escalations.action),
+        fanLowToHigh: {
+          durationMs:
+            typeof config.fanLowEscalationDurationMs === "number"
+              ? config.fanLowEscalationDurationMs
+              : config &&
+                  config.escalations &&
+                  config.escalations.action &&
+                  config.escalations.action.fanLowToHigh &&
+                  typeof config.escalations.action.fanLowToHigh.durationMs ===
+                    "number"
+                ? config.escalations.action.fanLowToHigh.durationMs
+                : defaultConfig.escalations.action.fanLowToHigh.durationMs,
+          requireNoCoolingEffect:
+            config &&
+            config.escalations &&
+            config.escalations.action &&
+            config.escalations.action.fanLowToHigh &&
+            typeof config.escalations.action.fanLowToHigh
+              .requireNoCoolingEffect === "boolean"
+              ? config.escalations.action.fanLowToHigh.requireNoCoolingEffect
+              : defaultConfig.escalations.action.fanLowToHigh
+                  .requireNoCoolingEffect
+        }
+      },
+      state: {
+        ...(config && config.escalations && config.escalations.state),
+        hotToCritical: {
+          durationMs:
+            typeof config.hotCriticalDurationMs === "number"
+              ? config.hotCriticalDurationMs
+              : config &&
+                  config.escalations &&
+                  config.escalations.state &&
+                  config.escalations.state.hotToCritical &&
+                  typeof config.escalations.state.hotToCritical.durationMs ===
+                    "number"
+                ? config.escalations.state.hotToCritical.durationMs
+                : defaultConfig.escalations.state.hotToCritical.durationMs
+        }
+      }
+    },
+    states: {
+      ...(config && config.states),
+      critical: {
+        threshold:
+          typeof config.criticalThreshold === "number"
+            ? config.criticalThreshold
+            : config &&
+                config.states &&
+                config.states.critical &&
+                typeof config.states.critical.threshold === "number"
+              ? config.states.critical.threshold
+              : defaultConfig.states.critical.threshold
+      },
+      hot: {
+        onThreshold:
+          typeof config.hotOnThreshold === "number"
+            ? config.hotOnThreshold
+            : config &&
+                config.states &&
+                config.states.hot &&
+                typeof config.states.hot.onThreshold === "number"
+              ? config.states.hot.onThreshold
+              : defaultConfig.states.hot.onThreshold,
+        offThreshold:
+          typeof config.hotOffThreshold === "number"
+            ? config.hotOffThreshold
+            : config &&
+                config.states &&
+                config.states.hot &&
+                typeof config.states.hot.offThreshold === "number"
+              ? config.states.hot.offThreshold
+              : defaultConfig.states.hot.offThreshold
+      },
+      rules:
+        config &&
+        config.states &&
+        Array.isArray(config.states.rules)
+          ? config.states.rules
+          : [
+              {
+                name: "critical",
+                type: "value_gte",
+                threshold:
+                  typeof config.criticalThreshold === "number"
+                    ? config.criticalThreshold
+                    : config &&
+                        config.states &&
+                        config.states.critical &&
+                        typeof config.states.critical.threshold === "number"
+                      ? config.states.critical.threshold
+                      : defaultConfig.states.critical.threshold
+              },
+              {
+                name: "hot",
+                type: "value_gte",
+                threshold:
+                  typeof config.hotOnThreshold === "number"
+                    ? config.hotOnThreshold
+                    : config &&
+                        config.states &&
+                        config.states.hot &&
+                        typeof config.states.hot.onThreshold === "number"
+                      ? config.states.hot.onThreshold
+                      : defaultConfig.states.hot.onThreshold
+              },
+              {
+                name: "hot_hysteresis",
+                type: "hysteresis",
+                state: "hot",
+                onThreshold:
+                  typeof config.hotOnThreshold === "number"
+                    ? config.hotOnThreshold
+                    : config &&
+                        config.states &&
+                        config.states.hot &&
+                        typeof config.states.hot.onThreshold === "number"
+                      ? config.states.hot.onThreshold
+                      : defaultConfig.states.hot.onThreshold,
+                offThreshold:
+                  typeof config.hotOffThreshold === "number"
+                    ? config.hotOffThreshold
+                    : config &&
+                        config.states &&
+                        config.states.hot &&
+                        typeof config.states.hot.offThreshold === "number"
+                      ? config.states.hot.offThreshold
+                      : defaultConfig.states.hot.offThreshold
+              },
+              {
+                name: "warming",
+                type: "rate_gt",
+                threshold:
+                  typeof config.warmingRateThreshold === "number"
+                    ? config.warmingRateThreshold
+                    : config &&
+                        config.states &&
+                        config.states.warming &&
+                        typeof config.states.warming.rateThreshold === "number"
+                      ? config.states.warming.rateThreshold
+                      : defaultConfig.states.warming.rateThreshold
+              },
+              {
+                name: "cooling",
+                type: "rate_lt",
+                threshold:
+                  typeof config.coolingRateThreshold === "number"
+                    ? config.coolingRateThreshold
+                    : config &&
+                        config.states &&
+                        config.states.cooling &&
+                        typeof config.states.cooling.rateThreshold === "number"
+                      ? config.states.cooling.rateThreshold
+                      : defaultConfig.states.cooling.rateThreshold
+              }
+            ],
+      warming: {
+        rateThreshold:
+          typeof config.warmingRateThreshold === "number"
+            ? config.warmingRateThreshold
+            : config &&
+                config.states &&
+                config.states.warming &&
+                typeof config.states.warming.rateThreshold === "number"
+              ? config.states.warming.rateThreshold
+              : defaultConfig.states.warming.rateThreshold
+      },
+      cooling: {
+        rateThreshold:
+          typeof config.coolingRateThreshold === "number"
+            ? config.coolingRateThreshold
+            : config &&
+                config.states &&
+                config.states.cooling &&
+                typeof config.states.cooling.rateThreshold === "number"
+              ? config.states.cooling.rateThreshold
+              : defaultConfig.states.cooling.rateThreshold
+      }
+    }
+  };
+  const stateContext = deriveState(normalized, effectiveConfig);
+  const actionContext = deriveAction(normalized, stateContext, effectiveConfig);
+
+  return buildResult(stateContext, actionContext);
 }
 
 module.exports = {

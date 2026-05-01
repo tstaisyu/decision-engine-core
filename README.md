@@ -1,6 +1,8 @@
 # decision-engine-core
 
-`decision-engine-core` is a small decision engine that extracts temperature control logic from the M5 side into Node.js.
+`decision-engine-core` is a lightweight decision engine that converts sensor inputs into state and action using configurable rules.
+
+Originally extracted from temperature control logic on M5 devices, it can be reused for any control scenario that requires state transitions and action decisions.
 
 ## Structure
 

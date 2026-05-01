@@ -1,0 +1,8 @@
+{
+  "value": 25.0,
+  "tempDelta": 0,
+  "tempRate": 0,
+  "tempRateAvg": 0,
+  "previousState": "normal",
+  "stateDurationMs": 500
+}

@@ -8,7 +8,8 @@
     "example": "node examples/temperature.js",
     "check:evaluate": "node scripts/check-evaluate.js",
     "check:config": "node scripts/check-config.js",
-    "evaluate": "node scripts/evaluate-cli.js"
+    "evaluate": "node scripts/evaluate-cli.js",
+    "test": "node --test"
   },
   "repository": {
     "type": "git",

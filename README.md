@@ -45,6 +45,11 @@ handling -> action resolution -> output`
 npm run check:config
 ```
 
+## CI
+
+GitHub Actions runs `npm test`, `npm run lint`, and `npm run format:check`
+on `push` and `pull_request` with Node.js 20 and 22.
+
 ## Evaluate With Default Preset
 
 ```bash

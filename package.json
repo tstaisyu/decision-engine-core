@@ -1,7 +1,7 @@
 {
   "name": "decision-engine-core",
   "version": "0.1.0",
-  "description": "Minimal decision core for evaluating sensor inputs and returning state/action.",
+  "description": "Rule-driven decision core for evaluating sensor input and returning state and action.",
   "main": "src/index.js",
   "type": "commonjs",
   "scripts": {
@@ -10,5 +10,16 @@
     "check:config": "node scripts/check-config.js",
     "evaluate": "node scripts/evaluate-cli.js"
   },
-  "license": "MIT"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tstaisyu/decision-engine-core.git"
+  },
+  "keywords": [
+    "decision-engine",
+    "rules",
+    "temperature-control",
+    "m5stack",
+    "nodejs"
+  ],
+  "license": "Apache-2.0"
 }

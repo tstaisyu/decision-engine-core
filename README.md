@@ -62,3 +62,7 @@ npm run evaluate -- examples/input.simple-warm.json --preset simpleTemperature
 
 - `examples/input.normal.json`
 - `examples/input.simple-warm.json`
+
+## License
+
+Apache-2.0. See `LICENSE`.

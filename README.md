@@ -72,12 +72,22 @@ npm run evaluate -- examples/input.simple-warm.json --preset simpleTemperature
 
 ## Local Preset Viewer
 
-Open `examples/viewer.html` directly in a browser.
+```bash
+open examples/viewer.html
+```
 
-- Double-click `examples/viewer.html`
-- Or run `xdg-open examples/viewer.html` on Linux
-- Select `m5Temperature` or `simpleTemperature`
-- Edit the sample input JSON and click `Evaluate`
+Or open `examples/viewer.html` directly in a browser.
+
+This viewer is for inspection only. It does not support editing or saving presets.
+
+You can:
+
+- Select a preset
+- Inspect `states.rules`
+- Inspect `actions.byState`
+- Inspect `escalations`
+- Edit sample input JSON
+- Check the evaluate result
 
 ## License
 

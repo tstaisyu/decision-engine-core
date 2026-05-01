@@ -34,3 +34,31 @@
   }
 }
 ```
+
+## Config Validation
+
+```bash
+npm run check:config
+```
+
+## Evaluate With Default Preset
+
+```bash
+npm run evaluate -- examples/input.normal.json
+```
+
+## Evaluate With Specific Preset
+
+```bash
+npm run evaluate -- examples/input.simple-warm.json --preset simpleTemperature
+```
+
+## Available Presets
+
+- `m5Temperature`
+- `simpleTemperature`
+
+## Examples
+
+- `examples/input.normal.json`
+- `examples/input.simple-warm.json`

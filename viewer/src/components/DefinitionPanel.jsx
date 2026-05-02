@@ -59,6 +59,21 @@ function DefinitionPanel({
     onConfigChange(nextConfig);
   }
 
+  function updateActionEscalationBoolean(name, rawValue) {
+    const nextConfig = structuredClone(selectedConfig);
+    if (!nextConfig?.escalations?.action?.[name]) {
+      return;
+    }
+
+    if (rawValue === "") {
+      delete nextConfig.escalations.action[name].requireNoCoolingEffect;
+    } else {
+      nextConfig.escalations.action[name].requireNoCoolingEffect = rawValue === "true";
+    }
+
+    onConfigChange(nextConfig);
+  }
+
   function renderActionRow([state, action]) {
     const availableActions = Array.from(new Set(Object.values(actions)));
 
@@ -80,6 +95,61 @@ function DefinitionPanel({
         </td>
       </tr>
     );
+  }
+
+  function renderRuleCondition(rule, index) {
+    const thresholdInput = (key) => (
+      <input
+        className="editable-field"
+        type="number"
+        step="any"
+        value={rule[key]}
+        onChange={(event) => updateRuleNumber(index, key, event.target.value)}
+      />
+    );
+
+    if (rule.type === "value_gte" && typeof rule.threshold === "number") {
+      return (
+        <div className="rule-condition-inline">
+          value &gt;= {thresholdInput("threshold")}
+        </div>
+      );
+    }
+
+    if (rule.type === "rate_gt" && typeof rule.threshold === "number") {
+      return (
+        <div className="rule-condition-inline">
+          tempRateAvg &gt; {thresholdInput("threshold")}
+        </div>
+      );
+    }
+
+    if (rule.type === "rate_lt" && typeof rule.threshold === "number") {
+      return (
+        <div className="rule-condition-inline">
+          tempRateAvg &lt; {thresholdInput("threshold")}
+        </div>
+      );
+    }
+
+    if (
+      rule.type === "hysteresis" &&
+      typeof rule.threshold === "number" &&
+      typeof rule.offThreshold === "number"
+    ) {
+      return (
+        <div className="rule-condition-cell">
+          <div className="rule-condition-inline">
+            value &gt;= {thresholdInput("threshold")}
+          </div>
+          <div className="rule-condition-inline">
+            previousState = {rule.state || rule.name} かつ value &gt; {thresholdInput("offThreshold")}
+          </div>
+        </div>
+      );
+    }
+
+    return <span>{rule.type || "-"}</span>;
   }
 
   function buildChanges() {
@@ -144,6 +214,16 @@ function DefinitionPanel({
           target: name
         });
       }
+
+      const baseRequireNoCoolingEffect = baseEscalation?.requireNoCoolingEffect;
+      if (baseEscalation && escalation.requireNoCoolingEffect !== baseRequireNoCoolingEffect) {
+        changes.push({
+          key: `action-escalation-cooling-effect-${name}`,
+          label: `Escalations: ${name} requireNoCoolingEffect ${String(baseRequireNoCoolingEffect)} -> ${String(escalation.requireNoCoolingEffect)}`,
+          resetType: "action-escalation-cooling-effect",
+          target: name
+        });
+      }
     });
 
     return changes;
@@ -173,6 +253,15 @@ function DefinitionPanel({
 
     if (resetType === "action-escalation" && nextConfig.escalations?.action?.[target]) {
       nextConfig.escalations.action[target].durationMs = baseActionEscalations[target]?.durationMs;
+    }
+
+    if (resetType === "action-escalation-cooling-effect" && nextConfig.escalations?.action?.[target]) {
+      const baseValue = baseActionEscalations[target]?.requireNoCoolingEffect;
+      if (baseValue === undefined) {
+        delete nextConfig.escalations.action[target].requireNoCoolingEffect;
+      } else {
+        nextConfig.escalations.action[target].requireNoCoolingEffect = baseValue;
+      }
     }
 
     onConfigChange(nextConfig);
@@ -238,43 +327,17 @@ function DefinitionPanel({
         <table className="definition-table">
           <thead>
             <tr>
+              <th>順</th>
               <th>状態名（Name）</th>
-              <th>種類（Type）</th>
-              <th>閾値（Threshold）</th>
-              <th>解除閾値（Off Threshold）</th>
+              <th>条件</th>
             </tr>
           </thead>
           <tbody>
             {rules.map((rule, index) => (
               <tr key={`${rule.name}-${index}`}>
+                <td>{index + 1}</td>
                 <td>{rule.name}</td>
-                <td>{rule.type}</td>
-                <td>
-                  {typeof rule.threshold === "number" ? (
-                    <input
-                      className="editable-field"
-                      type="number"
-                      step="any"
-                      value={rule.threshold}
-                      onChange={(event) => updateRuleNumber(index, "threshold", event.target.value)}
-                    />
-                  ) : (
-                    "-"
-                  )}
-                </td>
-                <td>
-                  {typeof rule.offThreshold === "number" ? (
-                    <input
-                      className="editable-field"
-                      type="number"
-                      step="any"
-                      value={rule.offThreshold}
-                      onChange={(event) => updateRuleNumber(index, "offThreshold", event.target.value)}
-                    />
-                  ) : (
-                    "-"
-                  )}
-                </td>
+                <td>{renderRuleCondition(rule, index)}</td>
               </tr>
             ))}
           </tbody>
@@ -303,6 +366,7 @@ function DefinitionPanel({
                 <th>分類（Group）</th>
                 <th>名前（Name）</th>
                 <th>継続時間（durationMs）</th>
+                <th>冷却効果なし必須（requireNoCoolingEffect）</th>
               </tr>
             </thead>
             <tbody>
@@ -319,6 +383,7 @@ function DefinitionPanel({
                       onChange={(event) => updateEscalationDuration("state", name, event.target.value)}
                     />
                   </td>
+                  <td>-</td>
                 </tr>
               ))}
               {Object.entries(actionEscalations).map(([name, escalation]) => (
@@ -333,6 +398,23 @@ function DefinitionPanel({
                       value={escalation.durationMs ?? ""}
                       onChange={(event) => updateEscalationDuration("action", name, event.target.value)}
                     />
+                  </td>
+                  <td>
+                    <select
+                      className="editable-field"
+                      value={
+                        escalation.requireNoCoolingEffect === true
+                          ? "true"
+                          : escalation.requireNoCoolingEffect === false
+                            ? "false"
+                            : ""
+                      }
+                      onChange={(event) => updateActionEscalationBoolean(name, event.target.value)}
+                    >
+                      <option value="">未指定</option>
+                      <option value="true">true</option>
+                      <option value="false">false</option>
+                    </select>
                   </td>
                 </tr>
               ))}

@@ -355,6 +355,18 @@ details > label {
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16);
 }
 
+.rule-condition-cell {
+  display: grid;
+  gap: 6px;
+}
+
+.rule-condition-inline {
+  display: grid;
+  grid-template-columns: auto minmax(90px, 160px);
+  align-items: center;
+  gap: 8px;
+}
+
 .changes-panel {
   display: grid;
   gap: 8px;

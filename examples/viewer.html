@@ -451,6 +451,21 @@
         font-weight: 700;
       }
 
+      .result-summary {
+        display: grid;
+        gap: 10px;
+      }
+
+      .flow-line {
+        padding: 12px 14px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.76);
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
       .is-different {
         border-color: rgba(183, 79, 45, 0.42);
         background: linear-gradient(135deg, rgba(183, 79, 45, 0.18), rgba(211, 120, 50, 0.2));
@@ -742,34 +757,46 @@
                         <strong id="result-a-action">-</strong>
                       </div>
                     </div>
-                    <div class="stack">
+                    <div class="result-summary">
                       <div>
-                        <label>判定理由（Reason）</label>
+                        <label>適用ルール（Applied Rule）</label>
                         <div class="code-card">
-                          <pre id="result-a-reason"></pre>
+                          <pre id="result-a-rule"></pre>
                         </div>
                       </div>
                       <div>
-                        <label>判定詳細（Debug）</label>
-                        <div class="debug-grid">
-                          <div class="debug-item">
-                            <span>基準状態（baseState）</span>
-                            <strong id="debug-a-base-state">-</strong>
+                        <label>フロー（Flow）</label>
+                        <div class="flow-line" id="result-a-flow">-</div>
+                      </div>
+                      <details class="developer-view">
+                        <summary>判定の詳細（Debug）</summary>
+                        <div class="developer-view-body">
+                          <div class="debug-grid">
+                            <div class="debug-item">
+                              <span>基準状態（baseState）</span>
+                              <strong id="debug-a-base-state">-</strong>
+                            </div>
+                            <div class="debug-item">
+                              <span>元の継続時間（rawStateDurationMs）</span>
+                              <strong id="debug-a-raw-duration">-</strong>
+                            </div>
+                            <div class="debug-item">
+                              <span>有効継続時間（effectiveStateDurationMs）</span>
+                              <strong id="debug-a-effective-duration">-</strong>
+                            </div>
+                            <div class="debug-item">
+                              <span>アクション昇格（actionEscalated）</span>
+                              <strong id="debug-a-action-escalated">-</strong>
+                            </div>
                           </div>
-                          <div class="debug-item">
-                            <span>元の継続時間（rawStateDurationMs）</span>
-                            <strong id="debug-a-raw-duration">-</strong>
-                          </div>
-                          <div class="debug-item">
-                            <span>有効継続時間（effectiveStateDurationMs）</span>
-                            <strong id="debug-a-effective-duration">-</strong>
-                          </div>
-                          <div class="debug-item">
-                            <span>アクション昇格（actionEscalated）</span>
-                            <strong id="debug-a-action-escalated">-</strong>
+                          <div>
+                            <label>判定理由（Reason）</label>
+                            <div class="code-card">
+                              <pre id="result-a-reason"></pre>
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      </details>
                       <div>
                         <label>エラー（Error）</label>
                         <div id="result-a-error" class="error-card" hidden>
@@ -793,34 +820,46 @@
                         <strong id="result-b-action">-</strong>
                       </div>
                     </div>
-                    <div class="stack">
+                    <div class="result-summary">
                       <div>
-                        <label>判定理由（Reason）</label>
+                        <label>適用ルール（Applied Rule）</label>
                         <div class="code-card">
-                          <pre id="result-b-reason"></pre>
+                          <pre id="result-b-rule"></pre>
                         </div>
                       </div>
                       <div>
-                        <label>判定詳細（Debug）</label>
-                        <div class="debug-grid">
-                          <div class="debug-item">
-                            <span>基準状態（baseState）</span>
-                            <strong id="debug-b-base-state">-</strong>
+                        <label>フロー（Flow）</label>
+                        <div class="flow-line" id="result-b-flow">-</div>
+                      </div>
+                      <details class="developer-view">
+                        <summary>判定の詳細（Debug）</summary>
+                        <div class="developer-view-body">
+                          <div class="debug-grid">
+                            <div class="debug-item">
+                              <span>基準状態（baseState）</span>
+                              <strong id="debug-b-base-state">-</strong>
+                            </div>
+                            <div class="debug-item">
+                              <span>元の継続時間（rawStateDurationMs）</span>
+                              <strong id="debug-b-raw-duration">-</strong>
+                            </div>
+                            <div class="debug-item">
+                              <span>有効継続時間（effectiveStateDurationMs）</span>
+                              <strong id="debug-b-effective-duration">-</strong>
+                            </div>
+                            <div class="debug-item">
+                              <span>アクション昇格（actionEscalated）</span>
+                              <strong id="debug-b-action-escalated">-</strong>
+                            </div>
                           </div>
-                          <div class="debug-item">
-                            <span>元の継続時間（rawStateDurationMs）</span>
-                            <strong id="debug-b-raw-duration">-</strong>
-                          </div>
-                          <div class="debug-item">
-                            <span>有効継続時間（effectiveStateDurationMs）</span>
-                            <strong id="debug-b-effective-duration">-</strong>
-                          </div>
-                          <div class="debug-item">
-                            <span>アクション昇格（actionEscalated）</span>
-                            <strong id="debug-b-action-escalated">-</strong>
+                          <div>
+                            <label>判定理由（Reason）</label>
+                            <div class="code-card">
+                              <pre id="result-b-reason"></pre>
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      </details>
                       <div>
                         <label>エラー（Error）</label>
                         <div id="result-b-error" class="error-card" hidden>
@@ -1401,6 +1440,8 @@
           actionCard: document.getElementById("result-a-action-card"),
           state: document.getElementById("result-a-state"),
           action: document.getElementById("result-a-action"),
+          appliedRule: document.getElementById("result-a-rule"),
+          flow: document.getElementById("result-a-flow"),
           reason: document.getElementById("result-a-reason"),
           debugBaseState: document.getElementById("debug-a-base-state"),
           debugRawDuration: document.getElementById("debug-a-raw-duration"),
@@ -1415,6 +1456,8 @@
           actionCard: document.getElementById("result-b-action-card"),
           state: document.getElementById("result-b-state"),
           action: document.getElementById("result-b-action"),
+          appliedRule: document.getElementById("result-b-rule"),
+          flow: document.getElementById("result-b-flow"),
           reason: document.getElementById("result-b-reason"),
           debugBaseState: document.getElementById("debug-b-base-state"),
           debugRawDuration: document.getElementById("debug-b-raw-duration"),
@@ -1459,6 +1502,20 @@
         }
 
         return formatRuleValue(rule.type);
+      }
+
+      function describeAppliedRule(rule) {
+        if (!rule) {
+          return "normal (no rule matched)";
+        }
+
+        return `${rule.name} (${formatRuleCondition(rule)})`;
+      }
+
+      function findMatchedRule(input, presetName) {
+        const normalized = normalizeInput(input);
+        const effectiveConfig = resolveConfig(presets[presetName], defaultConfig);
+        return effectiveConfig.states.rules.find((rule) => matchRule(rule, normalized)) || null;
       }
 
       function renderRulesTable(rules) {
@@ -1635,7 +1692,7 @@
         }
       }
 
-      function renderResult(side, presetName, result) {
+      function renderResult(side, presetName, result, appliedRule) {
         const view = resultView[side];
 
         view.title.textContent =
@@ -1644,6 +1701,8 @@
             : `比較対象の定義（Comparison Definition）: ${presetName}`;
         view.state.textContent = result.state;
         view.action.textContent = result.action;
+        view.appliedRule.textContent = describeAppliedRule(appliedRule);
+        view.flow.textContent = `入力 -> ${result.debug.baseState} -> ${result.state} -> ${result.action}`;
         view.reason.textContent = result.reason;
         view.debugBaseState.textContent = formatRuleValue(result.debug.baseState);
         view.debugRawDuration.textContent = formatRuleValue(result.debug.rawStateDurationMs);
@@ -1662,6 +1721,8 @@
             : `比較対象の定義（Comparison Definition）: ${presetName}`;
         view.state.textContent = "error";
         view.action.textContent = "-";
+        view.appliedRule.textContent = "-";
+        view.flow.textContent = "-";
         view.reason.textContent = "-";
         view.debugBaseState.textContent = "-";
         view.debugRawDuration.textContent = "-";
@@ -1686,11 +1747,13 @@
           const input = JSON.parse(inputJson.value);
           const presetNameA = getPresetName("a");
           const presetNameB = getPresetName("b");
+          const appliedRuleA = findMatchedRule(input, presetNameA);
+          const appliedRuleB = findMatchedRule(input, presetNameB);
           const resultA = evaluate(input, getSelectedPreset("a"));
           const resultB = evaluate(input, getSelectedPreset("b"));
 
-          renderResult("a", presetNameA, resultA);
-          renderResult("b", presetNameB, resultB);
+          renderResult("a", presetNameA, resultA, appliedRuleA);
+          renderResult("b", presetNameB, resultB, appliedRuleB);
           updateComparisonHighlight(resultA, resultB);
           status.textContent = "評価が完了しました。";
         } catch (error) {

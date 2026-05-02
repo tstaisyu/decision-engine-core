@@ -38,6 +38,23 @@ body {
   font-size: 15px;
 }
 
+.workspace-controls {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.workspace-controls button {
+  margin-top: 0;
+}
+
+.workspace-status {
+  font-size: 12px;
+  color: #64748b;
+}
+
 .dashboard-grid {
   margin-top: 20px;
   display: grid;
@@ -447,6 +464,10 @@ details > label {
   .dashboard-grid {
     grid-template-columns: 1fr;
     gap: 14px;
+  }
+
+  .workspace-controls {
+    gap: 6px;
   }
 
   .dashboard-grid > .panel:first-child {

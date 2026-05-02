@@ -21,7 +21,11 @@ function App() {
     setSequenceText,
     timelineRows,
     timelineError,
-    runSimulation
+    runSimulation,
+    saveWorkspace,
+    loadWorkspace,
+    clearWorkspace,
+    workspaceStatus
   } = useSimulation();
 
   return (
@@ -31,6 +35,18 @@ function App() {
         <p className="subtitle">
           プリセットの状態ルール、アクション、継続時間による昇格を確認し、入力に対する判定結果を比較できます。
         </p>
+        <div className="workspace-controls">
+          <button type="button" className="secondary button-small" onClick={saveWorkspace}>
+            Save
+          </button>
+          <button type="button" className="secondary button-small" onClick={loadWorkspace}>
+            Load
+          </button>
+          <button type="button" className="secondary button-small" onClick={clearWorkspace}>
+            Clear
+          </button>
+          <span className="workspace-status">{workspaceStatus}</span>
+        </div>
       </header>
 
       <section className="dashboard-grid">

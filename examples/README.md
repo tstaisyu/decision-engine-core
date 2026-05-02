@@ -2,6 +2,19 @@
 
 `viewer.html` is a sample UI for visualizing how `decision-engine-core` works.
 
+## Adapter Examples (M5 Temperature + Fan)
+
+実運用連携を想定した実験用サンプルを追加しています。
+
+- Node シミュレーション実行:
+  - `npm run example:node-temp-sim`
+- アダプター:
+  - `examples/adapters/temperature-input-adapter.js`
+  - `examples/adapters/fan-action-adapter.js`
+- M5 連携メモ:
+  - `examples/m5-temp-fan/README.md`
+  - `examples/m5-temp-fan/flow.md`
+
 - It is intended to help you inspect the flow of `Input -> Definition -> Result`.
 - It is not designed for production use.
 - In the future, it may evolve into a separate product such as a config editor or dedicated UI.

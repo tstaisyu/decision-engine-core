@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { evaluateWithPreset, getPresets } from "../lib/engineAdapter";
 
+const WORKSPACE_STORAGE_KEY = "decision-engine-viewer.workspace.v1";
+
 const defaultInput = {
   value: 31.5,
   previousValue: 30.8,
@@ -50,6 +52,7 @@ export function useSimulation() {
   const [sequenceText, setSequenceText] = useState(JSON.stringify(defaultSequence, null, 2));
   const [timelineRows, setTimelineRows] = useState([]);
   const [timelineError, setTimelineError] = useState("");
+  const [workspaceStatus, setWorkspaceStatus] = useState("");
   const baseSelectedConfig = selectedPreset ? presets[selectedPreset] : null;
 
   function changePreset(presetName) {
@@ -165,6 +168,85 @@ export function useSimulation() {
     }
   }
 
+  function saveWorkspace() {
+    try {
+      if (typeof window === "undefined" || !window.localStorage) {
+        throw new Error("localStorage が利用できません。");
+      }
+
+      const payload = {
+        version: 1,
+        selectedPreset,
+        selectedConfig,
+        inputText,
+        sequenceText
+      };
+
+      window.localStorage.setItem(WORKSPACE_STORAGE_KEY, JSON.stringify(payload));
+      setWorkspaceStatus("saved");
+    } catch (err) {
+      setWorkspaceStatus(`save error: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
+  function loadWorkspace() {
+    try {
+      if (typeof window === "undefined" || !window.localStorage) {
+        throw new Error("localStorage が利用できません。");
+      }
+
+      const raw = window.localStorage.getItem(WORKSPACE_STORAGE_KEY);
+      if (!raw) {
+        setWorkspaceStatus("no saved data");
+        return;
+      }
+
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") {
+        throw new Error("保存データ形式が不正です。");
+      }
+      if (parsed.version !== 1) {
+        throw new Error(`未対応バージョンです: ${String(parsed.version)}`);
+      }
+      if (typeof parsed.selectedPreset !== "string" || !presets[parsed.selectedPreset]) {
+        throw new Error("selectedPreset が不正です。");
+      }
+      if (typeof parsed.inputText !== "string") {
+        throw new Error("inputText が不正です。");
+      }
+      if (typeof parsed.sequenceText !== "string") {
+        throw new Error("sequenceText が不正です。");
+      }
+      if (!parsed.selectedConfig || typeof parsed.selectedConfig !== "object") {
+        throw new Error("selectedConfig が不正です。");
+      }
+
+      setSelectedPreset(parsed.selectedPreset);
+      setSelectedConfig(parsed.selectedConfig);
+      setInputText(parsed.inputText);
+      setSequenceText(parsed.sequenceText);
+      setResult(null);
+      setError("");
+      setTimelineRows([]);
+      setTimelineError("");
+      setWorkspaceStatus("loaded");
+    } catch (err) {
+      setWorkspaceStatus(`load error: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
+  function clearWorkspace() {
+    try {
+      if (typeof window === "undefined" || !window.localStorage) {
+        throw new Error("localStorage が利用できません。");
+      }
+      window.localStorage.removeItem(WORKSPACE_STORAGE_KEY);
+      setWorkspaceStatus("cleared");
+    } catch (err) {
+      setWorkspaceStatus(`clear error: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
   return {
     presetNames,
     selectedPreset,
@@ -181,6 +263,10 @@ export function useSimulation() {
     setSequenceText,
     timelineRows,
     timelineError,
-    runSimulation
+    runSimulation,
+    saveWorkspace,
+    loadWorkspace,
+    clearWorkspace,
+    workspaceStatus
   };
 }

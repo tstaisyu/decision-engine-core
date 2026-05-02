@@ -6,6 +6,7 @@
   "type": "commonjs",
   "scripts": {
     "example": "node examples/temperature.js",
+    "example:node-temp-sim": "node examples/node-temp-sim/index.js",
     "check:evaluate": "node scripts/check-evaluate.js",
     "check:config": "node scripts/check-config.js",
     "evaluate": "node scripts/evaluate-cli.js",

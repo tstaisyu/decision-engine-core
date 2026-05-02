@@ -324,6 +324,19 @@
         vertical-align: middle;
       }
 
+      .inline-action-select {
+        display: inline-block;
+        width: 140px;
+        padding: 6px 8px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.92);
+        color: var(--text);
+        font: inherit;
+        font-size: 12px;
+        vertical-align: middle;
+      }
+
       .inline-threshold-editor {
         display: inline-flex;
         align-items: center;
@@ -360,6 +373,37 @@
         align-items: center;
         justify-content: space-between;
         gap: 12px;
+      }
+
+      .changes-panel {
+        padding: 14px 16px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.72);
+      }
+
+      .changes-list {
+        display: grid;
+        gap: 8px;
+        margin-top: 10px;
+      }
+
+      .changes-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.82);
+      }
+
+      .changes-item-text {
+        min-width: 0;
+        font-size: 13px;
+        line-height: 1.5;
+        word-break: break-word;
       }
 
       .mapping-table {
@@ -652,19 +696,15 @@
               </div>
               <div class="stack">
                 <div>
-                  <label for="preset-a-select">使用する定義と比較対象（Active / Comparison）</label>
+                  <label for="preset-a-select">使用する定義（Active Definition）</label>
                   <p class="section-description">
-                    現在の定義を評価し、必要に応じて別の定義と結果を比較できます。
+                    現在の定義を編集し、編集前の定義との差分を結果で比較できます。
                   </p>
                 </div>
                 <div class="preset-pair">
                   <div>
-                    <label for="preset-a-select">現在の定義（Active Definition）</label>
+                    <label for="preset-a-select">現在の定義（Edited Definition）</label>
                     <select id="preset-a-select"></select>
-                  </div>
-                  <div>
-                    <label for="preset-b-select">比較対象の定義（Comparison Definition）</label>
-                    <select id="preset-b-select"></select>
                   </div>
                 </div>
               </div>
@@ -674,6 +714,10 @@
                 <strong>Definition</strong>
                 <span>→</span>
                 <span>Result</span>
+              </div>
+              <div class="changes-panel">
+                <label>変更内容（Changes）</label>
+                <div id="definition-changes-output" class="changes-list"></div>
               </div>
               <div class="viewer-scroll stack">
                 <div>
@@ -847,7 +891,7 @@
                 <p class="section-title">結果（Result）</p>
                 <div class="viewer-scroll comparison-grid">
                   <div class="result-panel">
-                    <p id="result-a-title" class="result-panel-header">プリセットA（Preset A）</p>
+                    <p id="result-a-title" class="result-panel-header">編集後の結果（Edited Result）</p>
                     <div class="result-card">
                       <div class="result-header">
                         <div id="result-a-state-card" class="badge result-main">
@@ -910,7 +954,7 @@
                   </div>
 
                   <div class="result-panel">
-                    <p id="result-b-title" class="result-panel-header">プリセットB（Preset B）</p>
+                  <p id="result-b-title" class="result-panel-header">編集前の結果（Original Result）</p>
                     <div class="result-card">
                       <div class="result-header">
                         <div id="result-b-state-card" class="badge result-main">
@@ -1175,6 +1219,7 @@
       }
 
       let activeDefinitionConfig = deepClone(presets.m5Temperature);
+      let originalDefinitionConfig = deepClone(presets.m5Temperature);
 
       function matchRule(rule, normalized) {
         if (rule.type === "value_gte") {
@@ -1519,7 +1564,6 @@
       }
 
       const presetASelect = document.getElementById("preset-a-select");
-      const presetBSelect = document.getElementById("preset-b-select");
       const sampleInputSelect = document.getElementById("sample-input-select");
       const sampleExpectedState = document.getElementById("sample-expected-state");
       const inputJson = document.getElementById("input-json");
@@ -1538,6 +1582,7 @@
       const actionsOutput = document.getElementById("actions-output");
       const stateEscalationsOutput = document.getElementById("state-escalations-output");
       const actionEscalationsOutput = document.getElementById("action-escalations-output");
+      const definitionChangesOutput = document.getElementById("definition-changes-output");
       const status = document.getElementById("status");
       const evaluateButton = document.getElementById("evaluate-button");
       const loadSampleButton = document.getElementById("load-sample-button");
@@ -1583,11 +1628,11 @@
       }
 
       function getPresetName(side) {
-        return side === "b" ? presetBSelect.value : presetASelect.value;
+        return side === "b" ? "original" : presetASelect.value;
       }
 
       function getSelectedPreset(side) {
-        return side === "b" ? presets[getPresetName(side)] : activeDefinitionConfig;
+        return side === "b" ? originalDefinitionConfig : activeDefinitionConfig;
       }
 
       function formatRuleValue(value) {
@@ -1629,6 +1674,136 @@
       function getInitialRule(index) {
         const basePreset = getBasePresetConfig();
         return basePreset && basePreset.states && Array.isArray(basePreset.states.rules) ? basePreset.states.rules[index] : null;
+      }
+
+      function getInitialActionForState(state) {
+        const basePreset = getBasePresetConfig();
+        return basePreset && basePreset.actions && basePreset.actions.byState ? basePreset.actions.byState[state] : undefined;
+      }
+
+      function getInitialStateEscalation(name) {
+        const basePreset = getBasePresetConfig();
+        return basePreset &&
+          basePreset.escalations &&
+          basePreset.escalations.state &&
+          basePreset.escalations.state[name]
+          ? basePreset.escalations.state[name]
+          : undefined;
+      }
+
+      function getInitialActionEscalation(name) {
+        const basePreset = getBasePresetConfig();
+        return basePreset &&
+          basePreset.escalations &&
+          basePreset.escalations.action &&
+          basePreset.escalations.action[name]
+          ? basePreset.escalations.action[name]
+          : undefined;
+      }
+
+      function getAvailableActions() {
+        return Array.from(new Set(Object.values(activeDefinitionConfig.actions.byState || {}))).sort();
+      }
+
+      function getDefinitionChanges() {
+        const changes = [];
+        const activeRules = (activeDefinitionConfig.states && activeDefinitionConfig.states.rules) || [];
+
+        activeRules.forEach((rule, index) => {
+          const initialRule = getInitialRule(index);
+          if (!initialRule) {
+            return;
+          }
+
+          if (isRuleThresholdChanged(rule, index)) {
+            changes.push({
+              key: `rule-threshold-${index}`,
+              label: `Rules: ${rule.name} threshold ${initialRule.threshold} → ${rule.threshold}`,
+              resetType: "rule-threshold",
+              target: index
+            });
+          }
+
+          if (isRuleOffThresholdChanged(rule, index)) {
+            changes.push({
+              key: `rule-off-threshold-${index}`,
+              label: `Rules: ${rule.name} offThreshold ${initialRule.offThreshold} → ${rule.offThreshold}`,
+              resetType: "rule-off-threshold",
+              target: index
+            });
+          }
+        });
+
+        Object.entries((activeDefinitionConfig.actions && activeDefinitionConfig.actions.byState) || {}).forEach(
+          ([state, action]) => {
+            const initialAction = getInitialActionForState(state);
+            if (initialAction !== undefined && initialAction !== action) {
+              changes.push({
+                key: `action-${state}`,
+                label: `Actions: ${state} ${initialAction} → ${action}`,
+                resetType: "action",
+                target: state
+              });
+            }
+          }
+        );
+
+        Object.entries((activeDefinitionConfig.escalations && activeDefinitionConfig.escalations.state) || {}).forEach(
+          ([name, escalation]) => {
+            const initialEscalation = getInitialStateEscalation(name);
+            if (initialEscalation && initialEscalation.durationMs !== escalation.durationMs) {
+              changes.push({
+                key: `state-escalation-${name}`,
+                label: `Escalations: ${name} ${formatDuration(initialEscalation.durationMs)} → ${formatDuration(escalation.durationMs)}`,
+                resetType: "state-escalation",
+                target: name
+              });
+            }
+          }
+        );
+
+        Object.entries((activeDefinitionConfig.escalations && activeDefinitionConfig.escalations.action) || {}).forEach(
+          ([name, escalation]) => {
+            const initialEscalation = getInitialActionEscalation(name);
+            if (initialEscalation && initialEscalation.durationMs !== escalation.durationMs) {
+              changes.push({
+                key: `action-escalation-${name}`,
+                label: `Escalations: ${name} ${formatDuration(initialEscalation.durationMs)} → ${formatDuration(escalation.durationMs)}`,
+                resetType: "action-escalation",
+                target: name
+              });
+            }
+          }
+        );
+
+        return changes;
+      }
+
+      function renderDefinitionChanges() {
+        const changes = getDefinitionChanges();
+
+        if (!changes.length) {
+          definitionChangesOutput.innerHTML = `<div class="changes-item"><span class="changes-item-text">変更なし</span></div>`;
+          return;
+        }
+
+        definitionChangesOutput.innerHTML = changes
+          .map((change) => {
+            return `
+              <div class="changes-item">
+                <span class="changes-item-text">${change.label}</span>
+                <button
+                  class="secondary button-small"
+                  type="button"
+                  data-change-reset-type="${change.resetType}"
+                  data-change-reset-target="${change.target}"
+                >
+                  戻す
+                </button>
+              </div>
+            `;
+          })
+          .join("");
       }
 
       function isRuleThresholdChanged(rule, index) {
@@ -1732,12 +1907,30 @@
       }
 
       function renderActionsTable(actionsByState) {
+        const availableActions = getAvailableActions();
+
         actionsOutput.innerHTML = Object.entries(actionsByState)
           .map(([state, action]) => {
+            const initialAction = getInitialActionForState(state);
+            const changed = action !== initialAction;
+            const options = availableActions
+              .map((candidate) => {
+                const selected = candidate === action ? "selected" : "";
+                return `<option value="${candidate}" ${selected}>${candidate}</option>`;
+              })
+              .join("");
+
             return `
-              <tr>
+              <tr class="${changed ? "rule-changed" : ""}">
                 <td>${formatRuleValue(state)}</td>
-                <td>${formatRuleValue(action)}</td>
+                <td>
+                  <select class="inline-action-select" data-action-state="${state}">
+                    ${options}
+                  </select>
+                  ${changed ? '<span class="changed-badge">変更済み</span>' : ""}
+                  <span class="rule-threshold-meta">現在: ${formatRuleValue(action)} / 初期値: ${formatRuleValue(initialAction)}</span>
+                  ${changed ? `<button class="secondary button-small" type="button" data-reset-action-state="${state}">戻す</button>` : ""}
+                </td>
               </tr>
             `;
           })
@@ -1753,16 +1946,51 @@
         return Number.isInteger(seconds) ? `${value} ms (${seconds}秒)` : `${value} ms (${seconds.toFixed(2)}秒)`;
       }
 
+      function formatDurationSeconds(value) {
+        if (typeof value !== "number") {
+          return "-";
+        }
+
+        const seconds = value / 1000;
+        return Number.isInteger(seconds) ? String(seconds) : seconds.toFixed(2);
+      }
+
+      function isStateEscalationChanged(name, escalation) {
+        const initialEscalation = getInitialStateEscalation(name);
+        return !!initialEscalation && escalation.durationMs !== initialEscalation.durationMs;
+      }
+
+      function isActionEscalationChanged(name, escalation) {
+        const initialEscalation = getInitialActionEscalation(name);
+        return !!initialEscalation && escalation.durationMs !== initialEscalation.durationMs;
+      }
+
       function renderStateEscalationsTable(stateEscalations) {
         const entries = Object.entries(stateEscalations || {});
 
         stateEscalationsOutput.innerHTML = entries.length
           ? entries
               .map(([name, escalation]) => {
+                const initialEscalation = getInitialStateEscalation(name);
+                const changed = isStateEscalationChanged(name, escalation);
                 return `
-                  <tr>
+                  <tr class="${changed ? "rule-changed" : ""}">
                     <td>${formatRuleValue(name)}</td>
-                    <td>${formatDuration(escalation && escalation.durationMs)}</td>
+                    <td>
+                      <span class="inline-threshold-editor">
+                        <input
+                          class="inline-threshold-input"
+                          type="number"
+                          step="any"
+                          data-state-escalation-duration="${name}"
+                          value="${formatDurationSeconds(escalation && escalation.durationMs)}"
+                        />
+                        秒
+                      </span>
+                      ${changed ? '<span class="changed-badge">変更済み</span>' : ""}
+                      <span class="rule-threshold-meta">現在: ${formatDuration(escalation && escalation.durationMs)} / 初期値: ${formatDuration(initialEscalation && initialEscalation.durationMs)}</span>
+                      ${changed ? `<button class="secondary button-small" type="button" data-reset-state-escalation="${name}">戻す</button>` : ""}
+                    </td>
                   </tr>
                 `;
               })
@@ -1781,10 +2009,26 @@
         actionEscalationsOutput.innerHTML = entries.length
           ? entries
               .map(([name, escalation]) => {
+                const initialEscalation = getInitialActionEscalation(name);
+                const changed = isActionEscalationChanged(name, escalation);
                 return `
-                  <tr>
+                  <tr class="${changed ? "rule-changed" : ""}">
                     <td>${formatRuleValue(name)}</td>
-                    <td>${formatDuration(escalation && escalation.durationMs)}</td>
+                    <td>
+                      <span class="inline-threshold-editor">
+                        <input
+                          class="inline-threshold-input"
+                          type="number"
+                          step="any"
+                          data-action-escalation-duration="${name}"
+                          value="${formatDurationSeconds(escalation && escalation.durationMs)}"
+                        />
+                        秒
+                      </span>
+                      ${changed ? '<span class="changed-badge">変更済み</span>' : ""}
+                      <span class="rule-threshold-meta">現在: ${formatDuration(escalation && escalation.durationMs)} / 初期値: ${formatDuration(initialEscalation && initialEscalation.durationMs)}</span>
+                      ${changed ? `<button class="secondary button-small" type="button" data-reset-action-escalation="${name}">戻す</button>` : ""}
+                    </td>
                     <td>${formatRuleValue(escalation && escalation.requireNoCoolingEffect)}</td>
                   </tr>
                 `;
@@ -1803,6 +2047,7 @@
         const preset = activeDefinitionConfig;
         const resolved = resolveConfig(preset, defaultConfig);
 
+        renderDefinitionChanges();
         renderRulesTable(resolved.states.rules);
         renderActionsTable(resolved.actions.byState);
         renderStateEscalationsTable(resolved.escalations.state);
@@ -1887,7 +2132,9 @@
       }
 
       function resetActiveDefinitionConfig() {
-        activeDefinitionConfig = deepClone(getBasePresetConfig());
+        const basePreset = getBasePresetConfig();
+        activeDefinitionConfig = deepClone(basePreset);
+        originalDefinitionConfig = deepClone(basePreset);
       }
 
       function updateActiveRuleThreshold(index, value) {
@@ -1942,13 +2189,87 @@
         rule.offThreshold = initialRule.offThreshold;
       }
 
+      function updateActiveAction(state, action) {
+        if (!activeDefinitionConfig.actions || !activeDefinitionConfig.actions.byState || !state) {
+          return;
+        }
+
+        activeDefinitionConfig.actions.byState[state] = action;
+      }
+
+      function resetActiveAction(state) {
+        const initialAction = getInitialActionForState(state);
+
+        if (!activeDefinitionConfig.actions || !activeDefinitionConfig.actions.byState || !state || !initialAction) {
+          return;
+        }
+
+        activeDefinitionConfig.actions.byState[state] = initialAction;
+      }
+
+      function updateStateEscalationDuration(name, secondsValue) {
+        const seconds = Number(secondsValue);
+        if (
+          !Number.isFinite(seconds) ||
+          !activeDefinitionConfig.escalations ||
+          !activeDefinitionConfig.escalations.state ||
+          !activeDefinitionConfig.escalations.state[name]
+        ) {
+          return;
+        }
+
+        activeDefinitionConfig.escalations.state[name].durationMs = Math.round(seconds * 1000);
+      }
+
+      function updateActionEscalationDuration(name, secondsValue) {
+        const seconds = Number(secondsValue);
+        if (
+          !Number.isFinite(seconds) ||
+          !activeDefinitionConfig.escalations ||
+          !activeDefinitionConfig.escalations.action ||
+          !activeDefinitionConfig.escalations.action[name]
+        ) {
+          return;
+        }
+
+        activeDefinitionConfig.escalations.action[name].durationMs = Math.round(seconds * 1000);
+      }
+
+      function resetStateEscalationDuration(name) {
+        const initialEscalation = getInitialStateEscalation(name);
+        if (
+          !initialEscalation ||
+          !activeDefinitionConfig.escalations ||
+          !activeDefinitionConfig.escalations.state ||
+          !activeDefinitionConfig.escalations.state[name]
+        ) {
+          return;
+        }
+
+        activeDefinitionConfig.escalations.state[name].durationMs = initialEscalation.durationMs;
+      }
+
+      function resetActionEscalationDuration(name) {
+        const initialEscalation = getInitialActionEscalation(name);
+        if (
+          !initialEscalation ||
+          !activeDefinitionConfig.escalations ||
+          !activeDefinitionConfig.escalations.action ||
+          !activeDefinitionConfig.escalations.action[name]
+        ) {
+          return;
+        }
+
+        activeDefinitionConfig.escalations.action[name].durationMs = initialEscalation.durationMs;
+      }
+
       function renderResult(side, presetName, result, appliedRule) {
         const view = resultView[side];
 
         view.title.textContent =
           side === "a"
-            ? `現在の定義（Active Definition）: ${presetName}`
-            : `比較対象の定義（Comparison Definition）: ${presetName}`;
+            ? `編集後の結果（Edited Result）: ${presetName}`
+            : `編集前の結果（Original Result）: ${presetName}`;
         view.state.textContent = result.state;
         view.action.textContent = result.action;
         view.appliedRule.textContent = describeAppliedRule(appliedRule);
@@ -1967,8 +2288,8 @@
 
         view.title.textContent =
           side === "a"
-            ? `現在の定義（Active Definition）: ${presetName}`
-            : `比較対象の定義（Comparison Definition）: ${presetName}`;
+            ? `編集後の結果（Edited Result）: ${presetName}`
+            : `編集前の結果（Original Result）: ${presetName}`;
         view.state.textContent = "error";
         view.action.textContent = "-";
         view.appliedRule.textContent = "-";
@@ -1997,19 +2318,18 @@
           renderPresetDetails();
           const input = JSON.parse(inputJson.value);
           const presetNameA = getPresetName("a");
-          const presetNameB = getPresetName("b");
           const appliedRuleA = findMatchedRule(input, getSelectedPreset("a"));
           const appliedRuleB = findMatchedRule(input, getSelectedPreset("b"));
           const resultA = evaluate(input, getSelectedPreset("a"));
           const resultB = evaluate(input, getSelectedPreset("b"));
 
           renderResult("a", presetNameA, resultA, appliedRuleA);
-          renderResult("b", presetNameB, resultB, appliedRuleB);
+          renderResult("b", presetNameA, resultB, appliedRuleB);
           updateComparisonHighlight(resultA, resultB);
           status.textContent = "評価が完了しました。";
         } catch (error) {
           renderError("a", getPresetName("a"), error.message);
-          renderError("b", getPresetName("b"), error.message);
+          renderError("b", getPresetName("a"), error.message);
           updateComparisonHighlight(null, null);
           status.textContent = "入力 JSON を評価できませんでした。";
         }
@@ -2019,8 +2339,7 @@
         const option = document.createElement("option");
         option.value = name;
         option.textContent = name;
-        presetASelect.appendChild(option.cloneNode(true));
-        presetBSelect.appendChild(option);
+        presetASelect.appendChild(option);
       });
 
       Object.entries(sampleInputs).forEach(([name, sample]) => {
@@ -2035,7 +2354,6 @@
         renderPresetDetails();
         handleEvaluate();
       });
-      presetBSelect.addEventListener("change", handleEvaluate);
       sampleInputSelect.addEventListener("change", () => {
         loadSampleInput(sampleInputSelect.value);
       });
@@ -2095,6 +2413,118 @@
 
         renderPresetDetails();
       });
+      actionsOutput.addEventListener("change", (event) => {
+        const target = event.target;
+
+        if (!(target instanceof HTMLSelectElement) || !target.dataset.actionState) {
+          return;
+        }
+
+        updateActiveAction(target.dataset.actionState, target.value);
+        renderPresetDetails();
+      });
+      actionsOutput.addEventListener("click", (event) => {
+        const target = event.target;
+
+        if (!(target instanceof HTMLButtonElement) || !target.dataset.resetActionState) {
+          return;
+        }
+
+        resetActiveAction(target.dataset.resetActionState);
+        renderPresetDetails();
+      });
+      definitionChangesOutput.addEventListener("click", (event) => {
+        const target = event.target;
+
+        if (!(target instanceof HTMLButtonElement)) {
+          return;
+        }
+
+        const { changeResetType, changeResetTarget } = target.dataset;
+        if (!changeResetType) {
+          return;
+        }
+
+        if (changeResetType === "rule-threshold") {
+          resetActiveRuleThreshold(Number(changeResetTarget));
+        }
+
+        if (changeResetType === "rule-off-threshold") {
+          resetActiveRuleOffThreshold(Number(changeResetTarget));
+        }
+
+        if (changeResetType === "action") {
+          resetActiveAction(changeResetTarget);
+        }
+
+        if (changeResetType === "state-escalation") {
+          resetStateEscalationDuration(changeResetTarget);
+        }
+
+        if (changeResetType === "action-escalation") {
+          resetActionEscalationDuration(changeResetTarget);
+        }
+
+        renderPresetDetails();
+      });
+      stateEscalationsOutput.addEventListener("input", (event) => {
+        const target = event.target;
+
+        if (!(target instanceof HTMLInputElement) || !target.dataset.stateEscalationDuration) {
+          return;
+        }
+
+        updateStateEscalationDuration(target.dataset.stateEscalationDuration, target.value);
+      });
+      stateEscalationsOutput.addEventListener("change", (event) => {
+        const target = event.target;
+
+        if (!(target instanceof HTMLInputElement) || !target.dataset.stateEscalationDuration) {
+          return;
+        }
+
+        updateStateEscalationDuration(target.dataset.stateEscalationDuration, target.value);
+        renderPresetDetails();
+      });
+      stateEscalationsOutput.addEventListener("click", (event) => {
+        const target = event.target;
+
+        if (!(target instanceof HTMLButtonElement) || !target.dataset.resetStateEscalation) {
+          return;
+        }
+
+        resetStateEscalationDuration(target.dataset.resetStateEscalation);
+        renderPresetDetails();
+      });
+      actionEscalationsOutput.addEventListener("input", (event) => {
+        const target = event.target;
+
+        if (!(target instanceof HTMLInputElement) || !target.dataset.actionEscalationDuration) {
+          return;
+        }
+
+        updateActionEscalationDuration(target.dataset.actionEscalationDuration, target.value);
+      });
+      actionEscalationsOutput.addEventListener("change", (event) => {
+        const target = event.target;
+
+        if (!(target instanceof HTMLInputElement) || !target.dataset.actionEscalationDuration) {
+          return;
+        }
+
+        updateActionEscalationDuration(target.dataset.actionEscalationDuration, target.value);
+        renderPresetDetails();
+      });
+      actionEscalationsOutput.addEventListener("click", (event) => {
+        const target = event.target;
+
+        if (!(target instanceof HTMLButtonElement) || !target.dataset.resetActionEscalation) {
+          return;
+        }
+
+        resetActionEscalationDuration(target.dataset.resetActionEscalation);
+        renderPresetDetails();
+      });
       evaluateButton.addEventListener("click", handleEvaluate);
       loadSampleButton.addEventListener("click", () => loadSampleInput("normal"));
       resetDefinitionButton.addEventListener("click", () => {
@@ -2103,7 +2533,6 @@
       });
 
       presetASelect.value = "m5Temperature";
-      presetBSelect.value = "simpleTemperature";
       sampleInputSelect.value = "normal";
       resetActiveDefinitionConfig();
       renderPresetDetails();

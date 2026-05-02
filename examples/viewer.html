@@ -283,6 +283,18 @@
         word-break: break-word;
       }
 
+      .order-flow {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-family: "SFMono-Regular", Consolas, monospace;
+      }
+
+      .order-arrow {
+        color: var(--muted);
+        font-size: 11px;
+      }
+
       .mapping-table {
         width: 100%;
         border-collapse: collapse;
@@ -309,26 +321,17 @@
 
       .rules-table th:nth-child(1),
       .rules-table td:nth-child(1) {
-        width: 56px;
+        width: 64px;
       }
 
       .rules-table th:nth-child(2),
       .rules-table td:nth-child(2) {
-        width: 110px;
+        width: 120px;
       }
 
       .rules-table th:nth-child(3),
       .rules-table td:nth-child(3) {
-        width: 96px;
-      }
-
-      .rules-table th:nth-child(4),
-      .rules-table td:nth-child(4),
-      .rules-table th:nth-child(5),
-      .rules-table td:nth-child(5),
-      .rules-table th:nth-child(6),
-      .rules-table td:nth-child(6) {
-        width: calc((100% - 262px) / 3);
+        width: calc(100% - 184px);
       }
 
       .code-card,
@@ -649,17 +652,14 @@
               <p class="section-title">定義（Definition）</p>
               <div class="viewer-scroll stack">
                 <div>
-                  <label>状態ルール（Rules）</label>
+                  <label>状態判定ルール（Rules）</label>
                   <div class="code-card rules-table-wrap">
                     <table class="rules-table">
                       <thead>
                         <tr>
-                          <th>order</th>
-                          <th>name</th>
-                          <th>type</th>
-                          <th>threshold</th>
-                          <th>state</th>
-                          <th>offThreshold</th>
+                          <th>順</th>
+                          <th>状態</th>
+                          <th>条件</th>
                         </tr>
                       </thead>
                       <tbody id="rules-output"></tbody>
@@ -1438,17 +1438,39 @@
         return value === undefined || value === null || value === "" ? "-" : String(value);
       }
 
+      function formatRuleCondition(rule) {
+        if (rule.type === "value_gte") {
+          return `value ≥ ${formatRuleValue(rule.threshold)}`;
+        }
+
+        if (rule.type === "rate_gt") {
+          return `rate > ${formatRuleValue(rule.threshold)}`;
+        }
+
+        if (rule.type === "rate_lt") {
+          return `rate < ${formatRuleValue(rule.threshold)}`;
+        }
+
+        if (rule.type === "hysteresis") {
+          return `${formatRuleValue(rule.state || rule.name)} を ${formatRuleValue(rule.offThreshold)} まで維持`;
+        }
+
+        return formatRuleValue(rule.type);
+      }
+
       function renderRulesTable(rules) {
         rulesOutput.innerHTML = rules
           .map((rule, index) => {
             return `
               <tr>
-                <td>${index + 1}</td>
+                <td>
+                  <span class="order-flow">
+                    <span>${index + 1}</span>
+                    ${index < rules.length - 1 ? '<span class="order-arrow">→</span>' : ""}
+                  </span>
+                </td>
                 <td>${formatRuleValue(rule.name)}</td>
-                <td>${formatRuleValue(rule.type)}</td>
-                <td>${formatRuleValue(rule.threshold)}</td>
-                <td>${formatRuleValue(rule.state)}</td>
-                <td>${formatRuleValue(rule.offThreshold)}</td>
+                <td>${formatRuleCondition(rule)}</td>
               </tr>
             `;
           })

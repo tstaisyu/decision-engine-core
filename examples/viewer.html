@@ -185,6 +185,13 @@
         background: var(--panel-strong);
       }
 
+      .button-small {
+        width: auto;
+        padding: 8px 10px;
+        border-radius: 10px;
+        font-size: 12px;
+      }
+
       .button-row {
         display: grid;
         gap: 10px;
@@ -195,6 +202,15 @@
         display: grid;
         gap: 12px;
         grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: end;
+      }
+
+      .preset-pair > div {
+        min-width: 0;
+      }
+
+      .preset-pair label {
+        line-height: 1.4;
       }
 
       .input-form-grid {
@@ -292,6 +308,58 @@
       .order-arrow {
         color: var(--muted);
         font-size: 11px;
+      }
+
+      .inline-threshold-input {
+        display: inline-block;
+        width: 72px;
+        margin-left: 6px;
+        padding: 6px 8px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.92);
+        color: var(--text);
+        font: inherit;
+        font-size: 12px;
+        vertical-align: middle;
+      }
+
+      .inline-threshold-editor {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+      }
+
+      .rule-changed {
+        background: rgba(183, 79, 45, 0.08);
+      }
+
+      .changed-badge {
+        display: inline-block;
+        margin-left: 8px;
+        padding: 3px 7px;
+        border-radius: 999px;
+        background: rgba(183, 79, 45, 0.14);
+        color: #8f3c20;
+        font-size: 10px;
+        font-weight: 700;
+        vertical-align: middle;
+      }
+
+      .rule-threshold-meta {
+        display: block;
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.4;
+      }
+
+      .definition-header-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
       }
 
       .mapping-table {
@@ -578,7 +646,10 @@
         <section class="viewer-top viewer-column-definition">
           <section class="panel">
             <div class="panel-inner stack">
-              <p class="section-title">定義（Definition）</p>
+              <div class="definition-header-row">
+                <p class="section-title">定義（Definition）</p>
+                <button id="reset-definition-button" class="secondary button-small" type="button">変更をリセット</button>
+              </div>
               <div class="stack">
                 <div>
                   <label for="preset-a-select">使用する定義と比較対象（Active / Comparison）</label>
@@ -1099,6 +1170,12 @@
         }
       };
 
+      function deepClone(value) {
+        return JSON.parse(JSON.stringify(value));
+      }
+
+      let activeDefinitionConfig = deepClone(presets.m5Temperature);
+
       function matchRule(rule, normalized) {
         if (rule.type === "value_gte") {
           return normalized.value >= rule.threshold;
@@ -1464,6 +1541,7 @@
       const status = document.getElementById("status");
       const evaluateButton = document.getElementById("evaluate-button");
       const loadSampleButton = document.getElementById("load-sample-button");
+      const resetDefinitionButton = document.getElementById("reset-definition-button");
 
       const resultView = {
         a: {
@@ -1509,7 +1587,7 @@
       }
 
       function getSelectedPreset(side) {
-        return presets[getPresetName(side)];
+        return side === "b" ? presets[getPresetName(side)] : activeDefinitionConfig;
       }
 
       function formatRuleValue(value) {
@@ -1536,6 +1614,87 @@
         return formatRuleValue(rule.type);
       }
 
+      function isEditableThresholdRule(rule) {
+        return rule.type === "value_gte" || rule.type === "rate_gt" || rule.type === "rate_lt";
+      }
+
+      function isEditableOffThresholdRule(rule) {
+        return rule.type === "hysteresis";
+      }
+
+      function getBasePresetConfig() {
+        return presets[getPresetName("a")];
+      }
+
+      function getInitialRule(index) {
+        const basePreset = getBasePresetConfig();
+        return basePreset && basePreset.states && Array.isArray(basePreset.states.rules) ? basePreset.states.rules[index] : null;
+      }
+
+      function isRuleThresholdChanged(rule, index) {
+        const initialRule = getInitialRule(index);
+
+        if (!initialRule || !isEditableThresholdRule(rule)) {
+          return false;
+        }
+
+        return rule.threshold !== initialRule.threshold;
+      }
+
+      function isRuleOffThresholdChanged(rule, index) {
+        const initialRule = getInitialRule(index);
+
+        if (!initialRule || !isEditableOffThresholdRule(rule)) {
+          return false;
+        }
+
+        return rule.offThreshold !== initialRule.offThreshold;
+      }
+
+      function renderRuleCondition(rule, index) {
+        const initialRule = getInitialRule(index);
+        const initialThreshold = initialRule ? initialRule.threshold : undefined;
+        const initialOffThreshold = initialRule ? initialRule.offThreshold : undefined;
+        const changed = isRuleThresholdChanged(rule, index);
+        const offThresholdChanged = isRuleOffThresholdChanged(rule, index);
+
+        if (rule.type === "value_gte") {
+          return isEditableThresholdRule(rule)
+            ? `<span class="inline-threshold-editor">value ≥ <input class="inline-threshold-input" type="number" step="any" data-rule-threshold="${index}" value="${formatRuleValue(rule.threshold)}" /></span>
+               ${changed ? '<span class="changed-badge">変更済み</span>' : ""}
+               <span class="rule-threshold-meta">現在: ${formatRuleValue(rule.threshold)} / 初期値: ${formatRuleValue(initialThreshold)}</span>
+               ${changed ? `<button class="secondary button-small" type="button" data-reset-rule="${index}">戻す</button>` : ""}`
+            : `value ≥ ${formatRuleValue(rule.threshold)}`;
+        }
+
+        if (rule.type === "rate_gt") {
+          return isEditableThresholdRule(rule)
+            ? `<span class="inline-threshold-editor">rate > <input class="inline-threshold-input" type="number" step="any" data-rule-threshold="${index}" value="${formatRuleValue(rule.threshold)}" /></span>
+               ${changed ? '<span class="changed-badge">変更済み</span>' : ""}
+               <span class="rule-threshold-meta">現在: ${formatRuleValue(rule.threshold)} / 初期値: ${formatRuleValue(initialThreshold)}</span>
+               ${changed ? `<button class="secondary button-small" type="button" data-reset-rule="${index}">戻す</button>` : ""}`
+            : `rate > ${formatRuleValue(rule.threshold)}`;
+        }
+
+        if (rule.type === "rate_lt") {
+          return isEditableThresholdRule(rule)
+            ? `<span class="inline-threshold-editor">rate < <input class="inline-threshold-input" type="number" step="any" data-rule-threshold="${index}" value="${formatRuleValue(rule.threshold)}" /></span>
+               ${changed ? '<span class="changed-badge">変更済み</span>' : ""}
+               <span class="rule-threshold-meta">現在: ${formatRuleValue(rule.threshold)} / 初期値: ${formatRuleValue(initialThreshold)}</span>
+               ${changed ? `<button class="secondary button-small" type="button" data-reset-rule="${index}">戻す</button>` : ""}`
+            : `rate < ${formatRuleValue(rule.threshold)}`;
+        }
+
+        if (rule.type === "hysteresis") {
+          return `<span class="inline-threshold-editor">${formatRuleValue(rule.state || rule.name)} を <input class="inline-threshold-input" type="number" step="any" data-rule-off-threshold="${index}" value="${formatRuleValue(rule.offThreshold)}" /> まで維持</span>
+            ${offThresholdChanged ? '<span class="changed-badge">変更済み</span>' : ""}
+            <span class="rule-threshold-meta">現在: ${formatRuleValue(rule.offThreshold)} / 初期値: ${formatRuleValue(initialOffThreshold)}</span>
+            ${offThresholdChanged ? `<button class="secondary button-small" type="button" data-reset-rule-off-threshold="${index}">戻す</button>` : ""}`;
+        }
+
+        return formatRuleValue(rule.type);
+      }
+
       function describeAppliedRule(rule) {
         if (!rule) {
           return "normal (no rule matched)";
@@ -1544,17 +1703,20 @@
         return `${rule.name} (${formatRuleCondition(rule)})`;
       }
 
-      function findMatchedRule(input, presetName) {
+      function findMatchedRule(input, config) {
         const normalized = normalizeInput(input);
-        const effectiveConfig = resolveConfig(presets[presetName], defaultConfig);
+        const effectiveConfig = resolveConfig(config, defaultConfig);
         return effectiveConfig.states.rules.find((rule) => matchRule(rule, normalized)) || null;
       }
 
       function renderRulesTable(rules) {
         rulesOutput.innerHTML = rules
           .map((rule, index) => {
+            const rowClass =
+              isRuleThresholdChanged(rule, index) || isRuleOffThresholdChanged(rule, index) ? "rule-changed" : "";
+
             return `
-              <tr>
+              <tr class="${rowClass}">
                 <td>
                   <span class="order-flow">
                     <span>${index + 1}</span>
@@ -1562,7 +1724,7 @@
                   </span>
                 </td>
                 <td>${formatRuleValue(rule.name)}</td>
-                <td>${formatRuleCondition(rule)}</td>
+                <td>${renderRuleCondition(rule, index)}</td>
               </tr>
             `;
           })
@@ -1638,7 +1800,7 @@
       }
 
       function renderPresetDetails() {
-        const preset = getSelectedPreset("a");
+        const preset = activeDefinitionConfig;
         const resolved = resolveConfig(preset, defaultConfig);
 
         renderRulesTable(resolved.states.rules);
@@ -1724,6 +1886,62 @@
         }
       }
 
+      function resetActiveDefinitionConfig() {
+        activeDefinitionConfig = deepClone(getBasePresetConfig());
+      }
+
+      function updateActiveRuleThreshold(index, value) {
+        const parsed = Number(value);
+
+        if (!Number.isFinite(parsed) || !activeDefinitionConfig || !activeDefinitionConfig.states) {
+          return;
+        }
+
+        const rule = activeDefinitionConfig.states.rules && activeDefinitionConfig.states.rules[index];
+        if (!rule || !isEditableThresholdRule(rule)) {
+          return;
+        }
+
+        rule.threshold = parsed;
+      }
+
+      function updateActiveRuleOffThreshold(index, value) {
+        const parsed = Number(value);
+
+        if (!Number.isFinite(parsed) || !activeDefinitionConfig || !activeDefinitionConfig.states) {
+          return;
+        }
+
+        const rule = activeDefinitionConfig.states.rules && activeDefinitionConfig.states.rules[index];
+        if (!rule || !isEditableOffThresholdRule(rule)) {
+          return;
+        }
+
+        rule.offThreshold = parsed;
+      }
+
+      function resetActiveRuleThreshold(index) {
+        const rule = activeDefinitionConfig.states && activeDefinitionConfig.states.rules && activeDefinitionConfig.states.rules[index];
+        const initialRule = getInitialRule(index);
+
+        if (!rule || !initialRule || !isEditableThresholdRule(rule)) {
+          return;
+        }
+
+        rule.threshold = initialRule.threshold;
+      }
+
+      function resetActiveRuleOffThreshold(index) {
+        const rule = activeDefinitionConfig.states && activeDefinitionConfig.states.rules && activeDefinitionConfig.states.rules[index];
+        const initialRule = getInitialRule(index);
+
+        if (!rule || !initialRule || !isEditableOffThresholdRule(rule)) {
+          return;
+        }
+
+        rule.offThreshold = initialRule.offThreshold;
+      }
+
       function renderResult(side, presetName, result, appliedRule) {
         const view = resultView[side];
 
@@ -1776,11 +1994,12 @@
 
       function handleEvaluate() {
         try {
+          renderPresetDetails();
           const input = JSON.parse(inputJson.value);
           const presetNameA = getPresetName("a");
           const presetNameB = getPresetName("b");
-          const appliedRuleA = findMatchedRule(input, presetNameA);
-          const appliedRuleB = findMatchedRule(input, presetNameB);
+          const appliedRuleA = findMatchedRule(input, getSelectedPreset("a"));
+          const appliedRuleB = findMatchedRule(input, getSelectedPreset("b"));
           const resultA = evaluate(input, getSelectedPreset("a"));
           const resultB = evaluate(input, getSelectedPreset("b"));
 
@@ -1812,6 +2031,7 @@
       });
 
       presetASelect.addEventListener("change", () => {
+        resetActiveDefinitionConfig();
         renderPresetDetails();
         handleEvaluate();
       });
@@ -1826,12 +2046,66 @@
       inputJson.addEventListener("input", () => {
         syncFormFromJson();
       });
+      rulesOutput.addEventListener("input", (event) => {
+        const target = event.target;
+
+        if (!(target instanceof HTMLInputElement)) {
+          return;
+        }
+
+        if (target.dataset.ruleThreshold) {
+          updateActiveRuleThreshold(Number(target.dataset.ruleThreshold), target.value);
+        }
+
+        if (target.dataset.ruleOffThreshold) {
+          updateActiveRuleOffThreshold(Number(target.dataset.ruleOffThreshold), target.value);
+        }
+      });
+      rulesOutput.addEventListener("change", (event) => {
+        const target = event.target;
+
+        if (!(target instanceof HTMLInputElement)) {
+          return;
+        }
+
+        if (target.dataset.ruleThreshold) {
+          updateActiveRuleThreshold(Number(target.dataset.ruleThreshold), target.value);
+        }
+
+        if (target.dataset.ruleOffThreshold) {
+          updateActiveRuleOffThreshold(Number(target.dataset.ruleOffThreshold), target.value);
+        }
+
+        renderPresetDetails();
+      });
+      rulesOutput.addEventListener("click", (event) => {
+        const target = event.target;
+
+        if (!(target instanceof HTMLButtonElement)) {
+          return;
+        }
+
+        if (target.dataset.resetRule) {
+          resetActiveRuleThreshold(Number(target.dataset.resetRule));
+        }
+
+        if (target.dataset.resetRuleOffThreshold) {
+          resetActiveRuleOffThreshold(Number(target.dataset.resetRuleOffThreshold));
+        }
+
+        renderPresetDetails();
+      });
       evaluateButton.addEventListener("click", handleEvaluate);
       loadSampleButton.addEventListener("click", () => loadSampleInput("normal"));
+      resetDefinitionButton.addEventListener("click", () => {
+        resetActiveDefinitionConfig();
+        renderPresetDetails();
+      });
 
       presetASelect.value = "m5Temperature";
       presetBSelect.value = "simpleTemperature";
       sampleInputSelect.value = "normal";
+      resetActiveDefinitionConfig();
       renderPresetDetails();
       loadSampleInput("normal");
       handleEvaluate();

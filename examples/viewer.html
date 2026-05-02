@@ -69,34 +69,33 @@
       .viewer-layout {
         display: grid;
         gap: 20px;
-        grid-template-columns: minmax(300px, 0.9fr) minmax(380px, 1.1fr) minmax(320px, 1fr);
-        align-items: start;
       }
 
-      .viewer-column {
+      .viewer-top .panel {
+        min-height: min(48vh, 720px);
+      }
+
+      .viewer-bottom {
         display: grid;
+        gap: 20px;
+        grid-template-columns: minmax(320px, 1fr) minmax(360px, 1fr);
+        align-items: stretch;
       }
 
-      .viewer-column .panel {
-        height: min(78vh, 980px);
+      .viewer-bottom .panel {
+        height: min(62vh, 860px);
       }
 
-      .viewer-column .panel-inner {
+      .panel-inner {
         height: 100%;
       }
 
-      .viewer-column-left {
-        display: grid;
-        gap: 20px;
-        grid-template-rows: auto minmax(0, 1fr);
-      }
-
-      .viewer-column-left .panel:first-child {
-        height: auto;
-      }
-
-      .viewer-column-left .panel:last-child {
-        height: min(58vh, 760px);
+      .viewer-column-definition .panel {
+        border-width: 2px;
+        border-color: rgba(183, 79, 45, 0.28);
+        background:
+          linear-gradient(180deg, rgba(255, 251, 245, 0.94), rgba(247, 239, 228, 0.9)),
+          var(--panel);
       }
 
       .viewer-scroll {
@@ -195,7 +194,7 @@
       .preset-pair {
         display: grid;
         gap: 12px;
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .input-form-grid {
@@ -443,6 +442,7 @@
         border: 1px solid var(--line);
         border-radius: 18px;
         background: rgba(255, 255, 255, 0.68);
+        align-self: start;
       }
 
       .result-panel-header {
@@ -482,6 +482,23 @@
         line-height: 1.6;
       }
 
+      .flow-hint {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin: -4px 0 6px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .flow-hint strong {
+        color: var(--text);
+      }
+
       .input-note {
         margin: 6px 0 0;
         color: var(--muted);
@@ -491,17 +508,23 @@
 
       @media (max-width: 960px) {
         .grid,
-        .viewer-layout {
+        .viewer-bottom {
           grid-template-columns: 1fr;
         }
 
-        .viewer-column .panel {
+        .viewer-top .panel,
+        .viewer-bottom .panel {
           height: auto;
         }
 
         .viewer-scroll {
           overflow: visible;
           padding-right: 0;
+        }
+
+        .flow-hint {
+          justify-content: flex-start;
+          flex-wrap: wrap;
         }
       }
 
@@ -519,6 +542,10 @@
         .button-row,
         .result-header,
         .comparison-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .preset-pair {
           grid-template-columns: 1fr;
         }
 
@@ -548,15 +575,17 @@
       </section>
 
       <section class="viewer-layout">
-        <section class="viewer-column viewer-column-left">
+        <section class="viewer-top viewer-column-definition">
           <section class="panel">
             <div class="panel-inner stack">
-              <p class="section-title">使用する定義と比較対象（Active / Comparison）</p>
-              <p class="section-description">
-                現在の定義を評価し、必要に応じて別の定義と結果を比較できます。
-              </p>
-              <div>
-                <label for="preset-a-select">比較するプリセット（Presets）</label>
+              <p class="section-title">定義（Definition）</p>
+              <div class="stack">
+                <div>
+                  <label for="preset-a-select">使用する定義と比較対象（Active / Comparison）</label>
+                  <p class="section-description">
+                    現在の定義を評価し、必要に応じて別の定義と結果を比較できます。
+                  </p>
+                </div>
                 <div class="preset-pair">
                   <div>
                     <label for="preset-a-select">現在の定義（Active Definition）</label>
@@ -568,103 +597,13 @@
                   </div>
                 </div>
               </div>
-            </div>
-          </section>
-
-          <section class="panel">
-            <div class="panel-inner stack">
-              <p class="section-title">入力（Input）</p>
-              <div class="viewer-scroll stack">
-                <div>
-                  <label for="sample-input-select">入力サンプル選択（Sample Input Preset）</label>
-                  <select id="sample-input-select"></select>
-                  <p id="sample-expected-state" class="input-note"></p>
-                </div>
-
-                <div>
-                  <label for="input-json">入力サンプル（Sample Input）JSON</label>
-                  <p class="input-note">フォームを編集すると、内部の入力 JSON も同時に更新されます。</p>
-                  <div class="input-form-grid">
-                    <div class="field-stack">
-                      <label for="field-value">現在値（value）</label>
-                      <input id="field-value" type="number" step="any" />
-                    </div>
-                    <div class="field-stack">
-                      <label for="field-previous-value">前回値（previousValue）</label>
-                      <input id="field-previous-value" type="number" step="any" />
-                    </div>
-                    <div class="field-stack">
-                      <label for="field-temp-delta">変化量（tempDelta）</label>
-                      <input id="field-temp-delta" type="number" step="any" />
-                    </div>
-                    <div class="field-stack">
-                      <label for="field-temp-rate">変化率（tempRate）</label>
-                      <input id="field-temp-rate" type="number" step="any" />
-                    </div>
-                    <div class="field-stack">
-                      <label for="field-temp-rate-avg">平均変化率（tempRateAvg）</label>
-                      <input id="field-temp-rate-avg" type="number" step="any" />
-                    </div>
-                    <div class="field-stack">
-                      <label for="field-state-duration">継続時間 ms（stateDurationMs）</label>
-                      <input id="field-state-duration" type="number" step="1" />
-                    </div>
-                    <div class="field-stack">
-                      <label for="field-previous-state">前回状態（previousState）</label>
-                      <select id="field-previous-state">
-                        <option value="">-</option>
-                        <option value="normal">normal</option>
-                        <option value="warming">warming</option>
-                        <option value="cooling">cooling</option>
-                        <option value="hot">hot</option>
-                        <option value="critical">critical</option>
-                        <option value="warm">warm</option>
-                      </select>
-                    </div>
-                    <div class="field-stack">
-                      <label for="field-previous-action">前回アクション（previousAction）</label>
-                      <select id="field-previous-action">
-                        <option value="">-</option>
-                        <option value="no_action">no_action</option>
-                        <option value="fan_low">fan_low</option>
-                        <option value="fan_high">fan_high</option>
-                        <option value="alert">alert</option>
-                      </select>
-                    </div>
-                    <div class="field-stack">
-                      <label for="field-cooling-effect">冷却効果（coolingEffect）</label>
-                      <select id="field-cooling-effect">
-                        <option value="">-</option>
-                        <option value="true">true</option>
-                        <option value="false">false</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <details class="developer-view">
-                    <summary>JSONを確認する（Developer View）</summary>
-                    <div class="developer-view-body">
-                      <p class="input-note">この JSON が実際にエンジンへ入力されます。</p>
-                      <textarea id="input-json" spellcheck="false"></textarea>
-                    </div>
-                  </details>
-                </div>
+              <div class="flow-hint">
+                <span>Input</span>
+                <span>→</span>
+                <strong>Definition</strong>
+                <span>→</span>
+                <span>Result</span>
               </div>
-
-              <div class="button-row">
-                <button id="evaluate-button" type="button">評価する（Evaluate）</button>
-                <button id="load-sample-button" class="secondary" type="button">標準入力を読み込む</button>
-              </div>
-
-              <p id="status" class="muted"></p>
-            </div>
-          </section>
-        </section>
-
-        <section class="viewer-column">
-          <section class="panel">
-            <div class="panel-inner stack">
-              <p class="section-title">定義（Definition）</p>
               <div class="viewer-scroll stack">
                 <div>
                   <label>状態判定ルール（Rules）</label>
@@ -739,138 +678,231 @@
           </section>
         </section>
 
-        <section class="viewer-column">
-          <section class="panel">
-            <div class="panel-inner stack">
-              <p class="section-title">結果（Result）</p>
-              <div class="viewer-scroll comparison-grid">
-                <div class="result-panel">
-                  <p id="result-a-title" class="result-panel-header">プリセットA（Preset A）</p>
-                  <div class="result-card">
-                    <div class="result-header">
-                      <div id="result-a-state-card" class="badge result-main">
-                        <span>状態（State）</span>
-                        <strong id="result-a-state">-</strong>
+        <section class="viewer-bottom">
+          <section class="viewer-column viewer-column-left">
+            <section class="panel">
+              <div class="panel-inner stack">
+                <p class="section-title">入力（Input）</p>
+                <div class="viewer-scroll stack">
+                  <div>
+                    <label for="sample-input-select">入力サンプル選択（Sample Input Preset）</label>
+                    <select id="sample-input-select"></select>
+                    <p id="sample-expected-state" class="input-note"></p>
+                  </div>
+
+                  <div>
+                    <label for="input-json">入力サンプル（Sample Input）JSON</label>
+                    <p class="input-note">フォームを編集すると、内部の入力 JSON も同時に更新されます。</p>
+                    <div class="input-form-grid">
+                      <div class="field-stack">
+                        <label for="field-value">現在値（value）</label>
+                        <input id="field-value" type="number" step="any" />
                       </div>
-                      <div id="result-a-action-card" class="badge result-main">
-                        <span>アクション（Action）</span>
-                        <strong id="result-a-action">-</strong>
+                      <div class="field-stack">
+                        <label for="field-previous-value">前回値（previousValue）</label>
+                        <input id="field-previous-value" type="number" step="any" />
+                      </div>
+                      <div class="field-stack">
+                        <label for="field-temp-delta">変化量（tempDelta）</label>
+                        <input id="field-temp-delta" type="number" step="any" />
+                      </div>
+                      <div class="field-stack">
+                        <label for="field-temp-rate">変化率（tempRate）</label>
+                        <input id="field-temp-rate" type="number" step="any" />
+                      </div>
+                      <div class="field-stack">
+                        <label for="field-temp-rate-avg">平均変化率（tempRateAvg）</label>
+                        <input id="field-temp-rate-avg" type="number" step="any" />
+                      </div>
+                      <div class="field-stack">
+                        <label for="field-state-duration">継続時間 ms（stateDurationMs）</label>
+                        <input id="field-state-duration" type="number" step="1" />
+                      </div>
+                      <div class="field-stack">
+                        <label for="field-previous-state">前回状態（previousState）</label>
+                        <select id="field-previous-state">
+                          <option value="">-</option>
+                          <option value="normal">normal</option>
+                          <option value="warming">warming</option>
+                          <option value="cooling">cooling</option>
+                          <option value="hot">hot</option>
+                          <option value="critical">critical</option>
+                          <option value="warm">warm</option>
+                        </select>
+                      </div>
+                      <div class="field-stack">
+                        <label for="field-previous-action">前回アクション（previousAction）</label>
+                        <select id="field-previous-action">
+                          <option value="">-</option>
+                          <option value="no_action">no_action</option>
+                          <option value="fan_low">fan_low</option>
+                          <option value="fan_high">fan_high</option>
+                          <option value="alert">alert</option>
+                        </select>
+                      </div>
+                      <div class="field-stack">
+                        <label for="field-cooling-effect">冷却効果（coolingEffect）</label>
+                        <select id="field-cooling-effect">
+                          <option value="">-</option>
+                          <option value="true">true</option>
+                          <option value="false">false</option>
+                        </select>
                       </div>
                     </div>
-                    <div class="result-summary">
-                      <div>
-                        <label>適用ルール（Applied Rule）</label>
-                        <div class="code-card">
-                          <pre id="result-a-rule"></pre>
+
+                    <details class="developer-view">
+                      <summary>JSONを確認する（Developer View）</summary>
+                      <div class="developer-view-body">
+                        <p class="input-note">この JSON が実際にエンジンへ入力されます。</p>
+                        <textarea id="input-json" spellcheck="false"></textarea>
+                      </div>
+                    </details>
+                  </div>
+                </div>
+
+                <div class="button-row">
+                  <button id="evaluate-button" type="button">評価する（Evaluate）</button>
+                  <button id="load-sample-button" class="secondary" type="button">標準入力を読み込む</button>
+                </div>
+
+                <p id="status" class="muted"></p>
+              </div>
+            </section>
+          </section>
+
+          <section class="viewer-column">
+            <section class="panel">
+              <div class="panel-inner stack">
+                <p class="section-title">結果（Result）</p>
+                <div class="viewer-scroll comparison-grid">
+                  <div class="result-panel">
+                    <p id="result-a-title" class="result-panel-header">プリセットA（Preset A）</p>
+                    <div class="result-card">
+                      <div class="result-header">
+                        <div id="result-a-state-card" class="badge result-main">
+                          <span>状態（State）</span>
+                          <strong id="result-a-state">-</strong>
+                        </div>
+                        <div id="result-a-action-card" class="badge result-main">
+                          <span>アクション（Action）</span>
+                          <strong id="result-a-action">-</strong>
                         </div>
                       </div>
-                      <div>
-                        <label>フロー（Flow）</label>
-                        <div class="flow-line" id="result-a-flow">-</div>
-                      </div>
-                      <details class="developer-view">
-                        <summary>判定の詳細（Debug）</summary>
-                        <div class="developer-view-body">
-                          <div class="debug-grid">
-                            <div class="debug-item">
-                              <span>基準状態（baseState）</span>
-                              <strong id="debug-a-base-state">-</strong>
-                            </div>
-                            <div class="debug-item">
-                              <span>元の継続時間（rawStateDurationMs）</span>
-                              <strong id="debug-a-raw-duration">-</strong>
-                            </div>
-                            <div class="debug-item">
-                              <span>有効継続時間（effectiveStateDurationMs）</span>
-                              <strong id="debug-a-effective-duration">-</strong>
-                            </div>
-                            <div class="debug-item">
-                              <span>アクション昇格（actionEscalated）</span>
-                              <strong id="debug-a-action-escalated">-</strong>
-                            </div>
-                          </div>
-                          <div>
-                            <label>判定理由（Reason）</label>
-                            <div class="code-card">
-                              <pre id="result-a-reason"></pre>
-                            </div>
+                      <div class="result-summary">
+                        <div>
+                          <label>適用ルール（Applied Rule）</label>
+                          <div class="code-card">
+                            <pre id="result-a-rule"></pre>
                           </div>
                         </div>
-                      </details>
-                      <div>
-                        <label>エラー（Error）</label>
-                        <div id="result-a-error" class="error-card" hidden>
-                          <pre id="error-a-message"></pre>
+                        <div>
+                          <label>フロー（Flow）</label>
+                          <div class="flow-line" id="result-a-flow">-</div>
+                        </div>
+                        <details class="developer-view">
+                          <summary>判定の詳細（Debug）</summary>
+                          <div class="developer-view-body">
+                            <div class="debug-grid">
+                              <div class="debug-item">
+                                <span>基準状態（baseState）</span>
+                                <strong id="debug-a-base-state">-</strong>
+                              </div>
+                              <div class="debug-item">
+                                <span>元の継続時間（rawStateDurationMs）</span>
+                                <strong id="debug-a-raw-duration">-</strong>
+                              </div>
+                              <div class="debug-item">
+                                <span>有効継続時間（effectiveStateDurationMs）</span>
+                                <strong id="debug-a-effective-duration">-</strong>
+                              </div>
+                              <div class="debug-item">
+                                <span>アクション昇格（actionEscalated）</span>
+                                <strong id="debug-a-action-escalated">-</strong>
+                              </div>
+                            </div>
+                            <div>
+                              <label>判定理由（Reason）</label>
+                              <div class="code-card">
+                                <pre id="result-a-reason"></pre>
+                              </div>
+                            </div>
+                          </div>
+                        </details>
+                        <div>
+                          <label>エラー（Error）</label>
+                          <div id="result-a-error" class="error-card" hidden>
+                            <pre id="error-a-message"></pre>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <div class="result-panel">
-                  <p id="result-b-title" class="result-panel-header">プリセットB（Preset B）</p>
-                  <div class="result-card">
-                    <div class="result-header">
-                      <div id="result-b-state-card" class="badge result-main">
-                        <span>状態（State）</span>
-                        <strong id="result-b-state">-</strong>
-                      </div>
-                      <div id="result-b-action-card" class="badge result-main">
-                        <span>アクション（Action）</span>
-                        <strong id="result-b-action">-</strong>
-                      </div>
-                    </div>
-                    <div class="result-summary">
-                      <div>
-                        <label>適用ルール（Applied Rule）</label>
-                        <div class="code-card">
-                          <pre id="result-b-rule"></pre>
+                  <div class="result-panel">
+                    <p id="result-b-title" class="result-panel-header">プリセットB（Preset B）</p>
+                    <div class="result-card">
+                      <div class="result-header">
+                        <div id="result-b-state-card" class="badge result-main">
+                          <span>状態（State）</span>
+                          <strong id="result-b-state">-</strong>
+                        </div>
+                        <div id="result-b-action-card" class="badge result-main">
+                          <span>アクション（Action）</span>
+                          <strong id="result-b-action">-</strong>
                         </div>
                       </div>
-                      <div>
-                        <label>フロー（Flow）</label>
-                        <div class="flow-line" id="result-b-flow">-</div>
-                      </div>
-                      <details class="developer-view">
-                        <summary>判定の詳細（Debug）</summary>
-                        <div class="developer-view-body">
-                          <div class="debug-grid">
-                            <div class="debug-item">
-                              <span>基準状態（baseState）</span>
-                              <strong id="debug-b-base-state">-</strong>
-                            </div>
-                            <div class="debug-item">
-                              <span>元の継続時間（rawStateDurationMs）</span>
-                              <strong id="debug-b-raw-duration">-</strong>
-                            </div>
-                            <div class="debug-item">
-                              <span>有効継続時間（effectiveStateDurationMs）</span>
-                              <strong id="debug-b-effective-duration">-</strong>
-                            </div>
-                            <div class="debug-item">
-                              <span>アクション昇格（actionEscalated）</span>
-                              <strong id="debug-b-action-escalated">-</strong>
-                            </div>
-                          </div>
-                          <div>
-                            <label>判定理由（Reason）</label>
-                            <div class="code-card">
-                              <pre id="result-b-reason"></pre>
-                            </div>
+                      <div class="result-summary">
+                        <div>
+                          <label>適用ルール（Applied Rule）</label>
+                          <div class="code-card">
+                            <pre id="result-b-rule"></pre>
                           </div>
                         </div>
-                      </details>
-                      <div>
-                        <label>エラー（Error）</label>
-                        <div id="result-b-error" class="error-card" hidden>
-                          <pre id="error-b-message"></pre>
+                        <div>
+                          <label>フロー（Flow）</label>
+                          <div class="flow-line" id="result-b-flow">-</div>
+                        </div>
+                        <details class="developer-view">
+                          <summary>判定の詳細（Debug）</summary>
+                          <div class="developer-view-body">
+                            <div class="debug-grid">
+                              <div class="debug-item">
+                                <span>基準状態（baseState）</span>
+                                <strong id="debug-b-base-state">-</strong>
+                              </div>
+                              <div class="debug-item">
+                                <span>元の継続時間（rawStateDurationMs）</span>
+                                <strong id="debug-b-raw-duration">-</strong>
+                              </div>
+                              <div class="debug-item">
+                                <span>有効継続時間（effectiveStateDurationMs）</span>
+                                <strong id="debug-b-effective-duration">-</strong>
+                              </div>
+                              <div class="debug-item">
+                                <span>アクション昇格（actionEscalated）</span>
+                                <strong id="debug-b-action-escalated">-</strong>
+                              </div>
+                            </div>
+                            <div>
+                              <label>判定理由（Reason）</label>
+                              <div class="code-card">
+                                <pre id="result-b-reason"></pre>
+                              </div>
+                            </div>
+                          </div>
+                        </details>
+                        <div>
+                          <label>エラー（Error）</label>
+                          <div id="result-b-error" class="error-card" hidden>
+                            <pre id="error-b-message"></pre>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </section>
           </section>
         </section>
       </section>

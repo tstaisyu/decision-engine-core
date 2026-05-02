@@ -4,8 +4,8 @@ export function getPresets() {
   return presets;
 }
 
-export function evaluateWithPreset(input, presetName) {
-  const preset = presets[presetName];
+export function evaluateWithPreset(input, presetName, configOverride) {
+  const preset = configOverride || presets[presetName];
 
   if (!preset) {
     throw new Error(`Unknown preset: ${presetName}`);

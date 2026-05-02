@@ -2,6 +2,7 @@ import { useSimulation } from "./hooks/useSimulation";
 import DefinitionPanel from "./components/DefinitionPanel";
 import InputPanel from "./components/InputPanel";
 import ResultPanel from "./components/ResultPanel";
+import TimelineSimulationPanel from "./components/TimelineSimulationPanel";
 
 function App() {
   const {
@@ -15,7 +16,12 @@ function App() {
     setInputText,
     result,
     error,
-    evaluateCurrent
+    evaluateCurrent,
+    sequenceText,
+    setSequenceText,
+    timelineRows,
+    timelineError,
+    runSimulation
   } = useSimulation();
 
   return (
@@ -43,6 +49,13 @@ function App() {
           error={error}
         />
         <ResultPanel result={result} error={error} />
+        <TimelineSimulationPanel
+          sequenceText={sequenceText}
+          onSequenceChange={setSequenceText}
+          onRunSimulation={runSimulation}
+          timelineRows={timelineRows}
+          timelineError={timelineError}
+        />
       </section>
     </main>
   );

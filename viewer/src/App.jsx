@@ -28,6 +28,7 @@ function App() {
     saveWorkspace,
     loadWorkspace,
     clearWorkspace,
+    exportConfig,
     workspaceStatus
   } = useSimulation();
 
@@ -47,6 +48,9 @@ function App() {
           </button>
           <button type="button" className="secondary button-small" onClick={clearWorkspace}>
             Clear
+          </button>
+          <button type="button" className="secondary button-small" onClick={exportConfig}>
+            Export Config
           </button>
           <span className="workspace-status">{workspaceStatus}</span>
         </div>

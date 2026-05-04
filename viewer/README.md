@@ -11,6 +11,14 @@ npm install
 npm run dev
 ```
 
+## Export Config
+
+1. Open the viewer and edit the current preset config, for example a `threshold` value.
+2. Click `Export Config` in the header controls.
+3. The current edited config is downloaded as `decision-engine-config.json`.
+4. Replace `examples/node-temp-sim/exported-config.sample.json` with the exported file content.
+5. Run `npm run example:node-temp-sim:sample` from the repository root to verify the mock deploy flow.
+
 ## Notes
 
 - Uses local engine files from the parent repository (`../src`).

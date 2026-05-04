@@ -250,6 +250,33 @@ export function useSimulation() {
     }
   }
 
+  function exportConfig() {
+    try {
+      if (typeof window === "undefined" || typeof document === "undefined") {
+        throw new Error("ブラウザ環境でのみ export できます。");
+      }
+      if (!selectedConfig || typeof selectedConfig !== "object") {
+        throw new Error("export 対象の config がありません。");
+      }
+
+      const json = JSON.stringify(selectedConfig, null, 2);
+      const blob = new Blob([json], { type: "application/json" });
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+
+      link.href = downloadUrl;
+      link.download = "decision-engine-config.json";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+
+      setWorkspaceStatus("config exported");
+    } catch (err) {
+      setWorkspaceStatus(`export error: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
   return {
     presetNames,
     selectedPreset,
@@ -270,6 +297,7 @@ export function useSimulation() {
     saveWorkspace,
     loadWorkspace,
     clearWorkspace,
+    exportConfig,
     workspaceStatus
   };
 }

@@ -1,3 +1,6 @@
+// Copyright (c) 2026- taisyu shibata
+// SPDX-License-Identifier: Apache-2.0
+
 // TODO: Replace this temporary browser-side copy with an official ESM/browser build from the core package.
 
 const m5TemperatureConfig = {

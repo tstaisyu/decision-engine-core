@@ -1,3 +1,6 @@
+// Copyright (c) 2026- taisyu shibata
+// SPDX-License-Identifier: Apache-2.0
+
 import { useMemo, useState } from "react";
 import { evaluateWithPreset, getPresets } from "../lib/engineAdapter";
 

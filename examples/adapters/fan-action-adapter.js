@@ -1,3 +1,6 @@
+// Copyright (c) 2026- taisyu shibata
+// SPDX-License-Identifier: Apache-2.0
+
 const ACTION_TO_PWM = {
   no_action: 0,
   fan_low: 80,

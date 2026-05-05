@@ -1,4 +1,4 @@
-// Copyright (c) 2025 tstaisyu
+// Copyright (c) 2026- taisyu shibata
 // SPDX-License-Identifier: Apache-2.0
 
 const { evaluate } = require("../src");

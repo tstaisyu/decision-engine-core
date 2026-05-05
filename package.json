@@ -6,9 +6,12 @@
   "type": "commonjs",
   "scripts": {
     "example": "node examples/temperature.js",
+    "example:node-temp-sim": "node examples/node-temp-sim/index.js",
+    "example:node-temp-sim:sample": "node examples/node-temp-sim/index.js --config examples/node-temp-sim/exported-config.sample.json --input examples/node-temp-sim/input-sequence.sample.json",
     "check:evaluate": "node scripts/check-evaluate.js",
     "check:config": "node scripts/check-config.js",
     "evaluate": "node scripts/evaluate-cli.js",
+    "cpp:test-vectors": "mkdir -p build && g++ -std=c++17 runtimes/cpp/DecisionEngine.cpp runtimes/cpp/run_test_vectors.cpp -o build/cpp-test-vectors && ./build/cpp-test-vectors",
     "test": "node --test",
     "lint": "eslint .",
     "format": "prettier --write .",

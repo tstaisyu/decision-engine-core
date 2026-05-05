@@ -1,18 +1,22 @@
-// Copyright (c) 2025 tstaisyu
+// Copyright (c) 2026- taisyu shibata
 // SPDX-License-Identifier: Apache-2.0
 
 const { resolveStateRules } = require("./rules");
 
 function resolveConfig(config, defaultConfig) {
+  const resolvedStates = Array.isArray(config?.states)
+    ? config.states.map((state) => ({ ...state }))
+    : Array.isArray(defaultConfig?.states)
+      ? defaultConfig.states.map((state) => ({ ...state }))
+      : [];
+  const resolvedRules = Array.isArray(resolveStateRules(config, defaultConfig))
+    ? resolveStateRules(config, defaultConfig).map((rule) => ({ ...rule }))
+    : [];
+
   return {
     ...config,
-    actions: {
-      ...(config && config.actions),
-      byState: {
-        ...defaultConfig.actions.byState,
-        ...(config && config.actions && config.actions.byState)
-      }
-    },
+    states: resolvedStates,
+    rules: resolvedRules,
     escalations: {
       ...(config && config.escalations),
       action: {
@@ -52,54 +56,6 @@ function resolveConfig(config, defaultConfig) {
                 ? config.escalations.state.hotToCritical.durationMs
                 : defaultConfig.escalations.state.hotToCritical.durationMs
         }
-      }
-    },
-    states: {
-      ...(config && config.states),
-      critical: {
-        threshold:
-          typeof config.criticalThreshold === "number"
-            ? config.criticalThreshold
-            : config && config.states && config.states.critical && typeof config.states.critical.threshold === "number"
-              ? config.states.critical.threshold
-              : defaultConfig.states.critical.threshold
-      },
-      hot: {
-        onThreshold:
-          typeof config.hotOnThreshold === "number"
-            ? config.hotOnThreshold
-            : config && config.states && config.states.hot && typeof config.states.hot.onThreshold === "number"
-              ? config.states.hot.onThreshold
-              : defaultConfig.states.hot.onThreshold,
-        offThreshold:
-          typeof config.hotOffThreshold === "number"
-            ? config.hotOffThreshold
-            : config && config.states && config.states.hot && typeof config.states.hot.offThreshold === "number"
-              ? config.states.hot.offThreshold
-              : defaultConfig.states.hot.offThreshold
-      },
-      rules: resolveStateRules(config, defaultConfig),
-      warming: {
-        rateThreshold:
-          typeof config.warmingRateThreshold === "number"
-            ? config.warmingRateThreshold
-            : config &&
-                config.states &&
-                config.states.warming &&
-                typeof config.states.warming.rateThreshold === "number"
-              ? config.states.warming.rateThreshold
-              : defaultConfig.states.warming.rateThreshold
-      },
-      cooling: {
-        rateThreshold:
-          typeof config.coolingRateThreshold === "number"
-            ? config.coolingRateThreshold
-            : config &&
-                config.states &&
-                config.states.cooling &&
-                typeof config.states.cooling.rateThreshold === "number"
-              ? config.states.cooling.rateThreshold
-              : defaultConfig.states.cooling.rateThreshold
       }
     }
   };

@@ -63,6 +63,17 @@
         line-height: 1.6;
       }
 
+      .deprecated-note {
+        margin-top: 14px;
+        padding: 12px 14px;
+        border: 1px solid rgba(183, 79, 45, 0.24);
+        border-radius: 14px;
+        background: rgba(183, 79, 45, 0.08);
+        color: var(--text);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
       .grid {
         display: grid;
         gap: 20px;
@@ -687,6 +698,9 @@
         <p>
           プリセットの状態ルール、アクション、継続時間による昇格を確認し、同じ入力に対する判定結果をブラウザ上で比較できます。
         </p>
+        <div class="deprecated-note">
+          Deprecated: この静的 viewer は legacy sample です。新規利用は React viewer (`viewer/`) を推奨します。
+        </div>
       </section>
 
       <section class="viewer-layout">

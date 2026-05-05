@@ -118,7 +118,17 @@ npm run evaluate -- examples/input.simple-warm.json --preset simpleTemperature
 - `examples/input.normal.json`
 - `examples/input.simple-warm.json`
 
-## Local Preset Viewer
+## React Viewer
+
+Use the React viewer for new work:
+
+```bash
+cd viewer
+npm install
+npm run dev
+```
+
+## Legacy Static Viewer
 
 ```bash
 open examples/viewer.html
@@ -126,9 +136,11 @@ open examples/viewer.html
 
 Or open `examples/viewer.html` directly in a browser.
 
-This viewer uses a Japanese-first UI with English terms shown alongside key concepts.
+`examples/viewer.html` is a legacy/deprecated static sample.
+Use the React viewer for new work.
 
-This viewer is for inspection only. It does not support editing or saving presets.
+It uses a Japanese-first UI with English terms shown alongside key concepts.
+It is for inspection only. It does not support editing or saving presets.
 
 You can:
 

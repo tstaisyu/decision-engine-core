@@ -7,7 +7,7 @@ This document defines the language-independent behavior of the Decision Runtime 
 The initial version focuses on minimal decision logic:
 
 - input.value
-- thresholds
+- rules-based config
 - state
 - action
 
@@ -109,12 +109,10 @@ The exact numeric type may vary by language, but `value` is expected to be a num
 
 ## 6. Minimal Config Format
 
-The minimal config format should be small enough to support threshold-based runtime decisions.
+The minimal config format should be small enough to support rules-based runtime decisions.
 
 Minimum fields:
 
-- `warmThreshold`
-- `hotThreshold`
 - `states`
 - `actions`
 
@@ -122,16 +120,15 @@ Minimal conceptual shape:
 
 ```js
 {
-  warmThreshold: 26.0,
-  hotThreshold: 30.0,
   states: {
-    normal: "normal",
-    warming: "warming",
-    hot: "hot"
+    rules: [
+      { name: "hot", type: "value_gte", threshold: 30.0 },
+      { name: "warm", type: "value_gte", threshold: 26.0 }
+    ]
   },
   actions: {
     normal: "no_action",
-    warming: "fan_low",
+    warm: "fan_low",
     hot: "fan_high"
   }
 }
@@ -140,11 +137,17 @@ Minimal conceptual shape:
 Notes:
 
 - this is a minimal runtime-facing contract, not a full representation of the current JS config model
-- `states` and `actions` exist to make runtime intent explicit
+- `states.rules` is the minimum portable representation of state decision logic in the current architecture
+- rules are evaluated in array order
+- the first matching rule determines the base state
+- if no rule matches, the runtime falls back to a default state equivalent to `normal`
+- `actions` maps the resolved state to an output action
 - a future implementation may map these into more structured internal representations
-- the spec only requires enough structure to derive `state` and `action`
 
 This v0 spec does not require the runtime to support the full current preset schema.
+
+This also means the spec does not require fixed fields such as `warmThreshold` or `hotThreshold`.
+Those can appear in specific presets or compatibility layers, but they are not the minimal runtime contract.
 
 ## 7. Minimal Result Format
 
@@ -161,10 +164,10 @@ Minimal conceptual shape:
 
 ```js
 {
-  state: "warming",
+  state: "warm",
   action: "fan_low",
   debug: {
-    matchedRule: "warmThreshold"
+    matchedRule: "warm"
   }
 }
 ```
@@ -177,41 +180,50 @@ Notes:
 
 ## 8. Basic Rule Evaluation
 
-The minimal runtime behavior for v0 is based on ordered threshold evaluation.
+The minimal runtime behavior for v0 is based on ordered rule evaluation.
 
-The intended rules are:
+The intended decision model is:
 
-- if `value >= hotThreshold`, return `hot` / `fan_high`
-- else if `value >= warmThreshold`, return `warming` / `fan_low`
-- else return `normal` / `no_action`
+- read `states.rules` from top to bottom
+- evaluate each rule against the input
+- adopt the state represented by the first matching rule
+- if no rule matches, use the default fallback state
+- resolve the final action from the chosen state
 
-The evaluation order is:
+The default fallback state is expected to be equivalent to `normal`.
+
+In a minimal example, this may look like:
 
 1. `hot`
-2. `warming`
-3. `normal`
+2. `warm`
+3. fallback `normal`
 
 This order is important.
 
-The runtime should evaluate the higher-priority state first.
-That means `hotThreshold` must be checked before `warmThreshold`.
+The runtime should evaluate higher-priority rules first, because the first match wins.
 
 Minimal pseudo logic:
 
 ```txt
-if value >= hotThreshold:
-  state = hot
-  action = fan_high
-else if value >= warmThreshold:
-  state = warming
-  action = fan_low
-else:
-  state = normal
-  action = no_action
+state = normal
+
+for rule in states.rules:
+  if rule matches input:
+    state = rule.name or rule.state
+    break
+
+action = actions[state] or no_action
 ```
 
 This section describes the minimal behavior only.
-It does not attempt to cover the richer rule system already present in the JS implementation.
+It does not attempt to fully standardize all rule types already present in the JS implementation.
+
+For example:
+
+- `simpleTemperatureConfig` is a valid minimal example because it uses ordered `value_gte` rules
+- `m5TemperatureConfig` is also valid in principle, because a preset may use rate-based rules such as `warming`
+
+So the v0 spec should be understood as rules-based, not as temperature-threshold-only.
 
 ## 9. Core Responsibility Boundary
 
@@ -323,9 +335,11 @@ The v0 minimal runtime spec currently assumes:
 
 - a single numeric `value`
 - an optional `timestamp`
-- a minimal threshold-based config
+- a minimal rules-based config using `states.rules`
 - a result containing `state` and `action`
-- ordered evaluation: `hot -> warming -> normal`
+- ordered evaluation where the first matching rule wins
+- a fallback/default state equivalent to `normal`
+- action resolution from the chosen state
 - strict separation between decision logic and device execution
 
 At this stage, the JS core remains the reference implementation.

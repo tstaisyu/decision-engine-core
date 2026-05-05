@@ -10,6 +10,8 @@
 struct DecisionInput {
   float value;
   unsigned long timestamp;
+  float previousValue = 0.0F;
+  std::string previousState{};
 };
 
 struct DecisionResult {
@@ -24,8 +26,10 @@ struct StateConfig {
 
 struct Rule {
   std::string type;
-  float threshold;
+  float threshold = 0.0F;
   std::string state;
+  float onThreshold = 0.0F;
+  float offThreshold = 0.0F;
 };
 
 struct DecisionConfig {

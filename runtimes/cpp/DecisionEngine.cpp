@@ -22,8 +22,25 @@ void DecisionEngine::loadConfig(const DecisionConfig& config) {
 }
 
 DecisionResult DecisionEngine::evaluate(const DecisionInput& input) const {
+  const float stateRate = input.value - input.previousValue;
+
   for (const Rule& rule : config_.rules) {
     if (rule.type == "value_gte" && input.value >= rule.threshold) {
+      const StateConfig state = findStateConfig(config_, rule.state);
+      return {state.name, state.action};
+    }
+
+    if (rule.type == "hysteresis" && input.previousState == rule.state && input.value > rule.offThreshold) {
+      const StateConfig state = findStateConfig(config_, rule.state);
+      return {state.name, state.action};
+    }
+
+    if (rule.type == "rate_gt" && stateRate > rule.threshold) {
+      const StateConfig state = findStateConfig(config_, rule.state);
+      return {state.name, state.action};
+    }
+
+    if (rule.type == "rate_lt" && stateRate < rule.threshold) {
       const StateConfig state = findStateConfig(config_, rule.state);
       return {state.name, state.action};
     }

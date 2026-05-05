@@ -70,13 +70,17 @@ New presets and examples should also use the canonical shape.
 ## Project Structure
 
 - `src/`
-  - JS core
+  - JS core library
+  - package public API の実装元
 - `runtimes/cpp/`
   - C++ runtime
 - `viewer/`
   - config design and visualization UI
 - `examples/`
   - usage examples: minimal JS evaluate, simulation, M5 skeleton
+- `scripts/`
+  - development / local verification utilities
+  - published runtime API ではない補助スクリプト
 - `test/`
   - JS tests
 - `vectors/`
@@ -139,6 +143,18 @@ JS and C++ runtimes are intended to evaluate the same canonical config under the
 ```bash
 npm run check:config
 ```
+
+## Development Scripts
+
+The files under `scripts/` are local development and verification utilities.
+They are not part of the published runtime API.
+
+- `scripts/check-config.js`
+  - validates the default preset config
+- `scripts/check-evaluate.js`
+  - runs representative local evaluation cases
+- `scripts/evaluate-cli.js`
+  - evaluates an input JSON file with a selected preset
 
 ## CI
 

@@ -30,8 +30,8 @@ This spec is intended to become the baseline for future lightweight runtime impl
 - M5Stack runtime
 - Arduino-oriented runtime
 
-This is intentionally a v0 minimal spec.
-It should be stable enough to guide implementation, while still leaving room for future refinement.
+This document started as a v0 minimal spec and is now moving toward a v1 rules-based spec.
+It should stay small enough to guide implementation, while still leaving room for future refinement.
 
 ## 2. Reference Implementation Status
 
@@ -70,7 +70,7 @@ The minimal runtime model is:
 
 `input + config -> result`
 
-At the v0 level, the most important output is:
+At the minimal level, the most important output is:
 
 - `state`
 - `action`
@@ -113,38 +113,37 @@ The minimal config format should be small enough to support rules-based runtime 
 
 Minimum fields:
 
-- `states`
-- `actions`
+- `states[]`
+- `rules[]`
 
 Minimal conceptual shape:
 
 ```js
 {
-  states: {
-    rules: [
-      { name: "hot", type: "value_gte", threshold: 30.0 },
-      { name: "warm", type: "value_gte", threshold: 26.0 }
-    ]
-  },
-  actions: {
-    normal: "no_action",
-    warm: "fan_low",
-    hot: "fan_high"
-  }
+  states: [
+    { name: "normal", action: "no_action" },
+    { name: "warm", action: "fan_low" },
+    { name: "hot", action: "fan_high" }
+  ],
+  rules: [
+    { type: "value_gte", threshold: 30.0, state: "hot" },
+    { type: "value_gte", threshold: 26.0, state: "warm" }
+  ]
 }
 ```
 
 Notes:
 
 - this is a minimal runtime-facing contract, not a full representation of the current JS config model
-- `states.rules` is the minimum portable representation of state decision logic in the current architecture
+- `rules[]` is the minimum portable representation of state decision logic in the current architecture
+- `states[]` is the minimum portable representation of state-to-action mapping
 - rules are evaluated in array order
 - the first matching rule determines the base state
 - if no rule matches, the runtime falls back to a default state equivalent to `normal`
-- `actions` maps the resolved state to an output action
+- the resolved state is matched against `states[]` to obtain the action
 - a future implementation may map these into more structured internal representations
 
-This v0 spec does not require the runtime to support the full current preset schema.
+This minimal spec does not require the runtime to support the full current preset schema.
 
 This also means the spec does not require fixed fields such as `warmThreshold` or `hotThreshold`.
 Those can appear in specific presets or compatibility layers, but they are not the minimal runtime contract.
@@ -178,17 +177,18 @@ Notes:
 - `debug` is optional and may be omitted in constrained runtimes
 - an embedded runtime may choose to exclude `debug` entirely to reduce memory and code size
 
-## 8. Basic Rule Evaluation
+## 8. Rule-Based Evaluation
 
-The minimal runtime behavior for v0 is based on ordered rule evaluation.
+The runtime behavior is based on ordered rule evaluation.
 
 The intended decision model is:
 
-- read `states.rules` from top to bottom
+- read `rules[]` from top to bottom
 - evaluate each rule against the input
 - adopt the state represented by the first matching rule
+- if a rule type is unsupported, ignore it and continue to the next rule
 - if no rule matches, use the default fallback state
-- resolve the final action from the chosen state
+- resolve the final action by finding the matching state entry in `states[]`
 
 The default fallback state is expected to be equivalent to `normal`.
 
@@ -207,13 +207,48 @@ Minimal pseudo logic:
 ```txt
 state = normal
 
-for rule in states.rules:
+for rule in rules:
+  if rule.type is unsupported:
+    continue
   if rule matches input:
-    state = rule.name or rule.state
+    state = rule.state
     break
 
-action = actions[state] or no_action
+action = find action in states by matching state name
+if action is not found:
+  action = no_action
 ```
+
+### 8.1 Minimal Rule Shape
+
+The minimal supported rule shape is:
+
+```js
+{
+  type: "value_gte",
+  threshold: 26.0,
+  state: "warm"
+}
+```
+
+Required fields:
+
+- `type`
+- `threshold`
+- `state`
+
+### 8.2 Supported Rule Type in the Minimal Spec
+
+The minimal supported rule type is:
+
+- `value_gte`
+
+Meaning:
+
+- if `input.value >= rule.threshold`, the rule matches
+
+Unsupported rule types should not stop evaluation.
+They should be ignored and the runtime should continue to the next rule.
 
 This section describes the minimal behavior only.
 It does not attempt to fully standardize all rule types already present in the JS implementation.
@@ -225,7 +260,37 @@ For example:
 
 So the v0 spec should be understood as rules-based, not as temperature-threshold-only.
 
-## 9. Core Responsibility Boundary
+## 9. Version Progression
+
+This specification can be understood as evolving in stages.
+
+### v0: Threshold-Based Minimal Model
+
+The original minimal framing was intentionally simple:
+
+- a single numeric `value`
+- threshold-oriented evaluation
+- `state` / `action` output
+
+That model was useful for bootstrapping a small C++ prototype, but it was too narrow to accurately describe the current implementation direction.
+
+### v1: Rule-Based Evaluation Model
+
+The current direction should be treated as v1 of the minimal portable spec:
+
+- config contains `rules[]`
+- rules are evaluated in order
+- the first matching rule wins
+- unsupported rule types are ignored
+- if no rule matches, fallback state is used
+- action is resolved from `states[]`
+
+This matches the current implementation direction more closely in both:
+
+- the JavaScript reference implementation
+- the evolving C++ runtime prototype
+
+## 10. Core Responsibility Boundary
 
 The core runtime is responsible for converting input and config into a decision result.
 
@@ -252,7 +317,7 @@ In short:
 
 `core decides, but does not execute hardware operations`
 
-## 10. Separation from Viewer / Adapter / Device
+## 11. Separation from Viewer / Adapter / Device
 
 The runtime spec assumes a clear separation between the core and surrounding layers.
 
@@ -291,7 +356,7 @@ Examples:
 
 The device should not re-implement decision rules as ad hoc `if` statements if the core already defines them.
 
-## 11. Items Explicitly Out of Scope for This v0 Spec
+## 12. Items Explicitly Out of Scope for This Minimal Spec
 
 The following topics are important, but are not standardized by this document yet:
 
@@ -314,7 +379,7 @@ Reasons:
 
 They should be documented and standardized later, after the minimal runtime contract is validated.
 
-## 12. Design Intent
+## 13. Design Intent
 
 The design intent of this spec is to preserve the main architectural principle of the project:
 
@@ -329,17 +394,19 @@ This allows the same decision behavior to be reused across:
 - future C++ runtime
 - future M5Stack or Arduino targets
 
-## 13. Summary
+## 14. Summary
 
-The v0 minimal runtime spec currently assumes:
+The current minimal runtime spec assumes:
 
 - a single numeric `value`
 - an optional `timestamp`
-- a minimal rules-based config using `states.rules`
+- a minimal config using `states[]` and `rules[]`
+- a minimal rule shape containing `type`, `threshold`, and `state`
 - a result containing `state` and `action`
 - ordered evaluation where the first matching rule wins
+- unsupported rule types are ignored
 - a fallback/default state equivalent to `normal`
-- action resolution from the chosen state
+- action resolution from the chosen state by matching `states[]`
 - strict separation between decision logic and device execution
 
 At this stage, the JS core remains the reference implementation.

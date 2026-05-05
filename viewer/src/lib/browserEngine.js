@@ -137,21 +137,20 @@ function normalizeRule(rule) {
     return rule;
   }
 
-  const nextRule = { ...rule };
-  if (typeof nextRule.state !== "string" || nextRule.state.length === 0) {
-    nextRule.state = nextRule.name;
-  }
-
-  return nextRule;
+  return { ...rule };
 }
 
 function resolveStateRules(config, fallback) {
   if (Array.isArray(config?.rules)) {
-    return config.rules.map(normalizeRule);
+    return config.rules
+      .map(normalizeRule)
+      .filter((rule) => typeof rule?.state === "string" && rule.state.length > 0);
   }
 
   if (config && config.states && Array.isArray(config.states.rules)) {
-    return config.states.rules.map(normalizeRule);
+    return config.states.rules
+      .map(normalizeRule)
+      .filter((rule) => typeof rule?.state === "string" && rule.state.length > 0);
   }
 
   return [
@@ -212,7 +211,9 @@ function resolveStateRules(config, fallback) {
             ? config.states.cooling.rateThreshold
             : fallback.coolingRateThreshold
     }
-  ].map(normalizeRule);
+  ]
+    .map(normalizeRule)
+    .filter((rule) => typeof rule?.state === "string" && rule.state.length > 0);
 }
 
 function resolveStateEntries(config, fallback) {
@@ -343,7 +344,7 @@ function deriveState(normalized, config) {
 
   const matchedRule = stateRules.find((rule) => matchRule(rule, normalized));
   if (matchedRule) {
-    baseState = matchedRule.state || matchedRule.name;
+    baseState = matchedRule.state;
   }
 
   const effectiveStateDurationMs = baseState === previousStateSafe ? rawStateDurationMs : 0;

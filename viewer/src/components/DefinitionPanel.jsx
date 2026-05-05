@@ -9,25 +9,13 @@ function DefinitionPanel({
   selectedConfig,
   onConfigChange
 }) {
-  const rules = Array.isArray(selectedConfig?.rules)
-    ? selectedConfig.rules
-    : Array.isArray(selectedConfig?.states?.rules)
-      ? selectedConfig.states.rules
-      : [];
-  const states = Array.isArray(selectedConfig?.states)
-    ? selectedConfig.states
-    : Object.entries(selectedConfig?.actions?.byState || {}).map(([name, action]) => ({ name, action }));
+  const rules = Array.isArray(selectedConfig?.rules) ? selectedConfig.rules : [];
+  const states = Array.isArray(selectedConfig?.states) ? selectedConfig.states : [];
   const actions = Object.fromEntries(states.map((state) => [state.name, state.action]));
   const stateEscalations = selectedConfig?.escalations?.state || {};
   const actionEscalations = selectedConfig?.escalations?.action || {};
-  const baseRules = Array.isArray(baseSelectedConfig?.rules)
-    ? baseSelectedConfig.rules
-    : Array.isArray(baseSelectedConfig?.states?.rules)
-      ? baseSelectedConfig.states.rules
-      : [];
-  const baseStates = Array.isArray(baseSelectedConfig?.states)
-    ? baseSelectedConfig.states
-    : Object.entries(baseSelectedConfig?.actions?.byState || {}).map(([name, action]) => ({ name, action }));
+  const baseRules = Array.isArray(baseSelectedConfig?.rules) ? baseSelectedConfig.rules : [];
+  const baseStates = Array.isArray(baseSelectedConfig?.states) ? baseSelectedConfig.states : [];
   const baseActions = Object.fromEntries(baseStates.map((state) => [state.name, state.action]));
   const baseStateEscalations = baseSelectedConfig?.escalations?.state || {};
   const baseActionEscalations = baseSelectedConfig?.escalations?.action || {};
@@ -172,7 +160,7 @@ function DefinitionPanel({
             value &gt;= {thresholdInput("onThreshold")}
           </div>
           <div className="rule-condition-inline">
-            previousState = {rule.state || rule.name} かつ value &gt; {thresholdInput("offThreshold")}
+            previousState = {rule.state} かつ value &gt; {thresholdInput("offThreshold")}
           </div>
         </div>
       );
@@ -196,7 +184,7 @@ function DefinitionPanel({
       if (typeof ruleThreshold === "number" && ruleThreshold !== baseRuleThreshold) {
         changes.push({
           key: `rule-threshold-${index}`,
-          label: `Rules: ${rule.state || rule.name} threshold ${baseRuleThreshold} -> ${ruleThreshold}`,
+          label: `Rules: ${rule.state} threshold ${baseRuleThreshold} -> ${ruleThreshold}`,
           resetType: "rule-threshold",
           target: index
         });
@@ -205,7 +193,7 @@ function DefinitionPanel({
       if (typeof rule.offThreshold === "number" && rule.offThreshold !== baseRule.offThreshold) {
         changes.push({
           key: `rule-off-threshold-${index}`,
-          label: `Rules: ${rule.state || rule.name} offThreshold ${baseRule.offThreshold} -> ${rule.offThreshold}`,
+          label: `Rules: ${rule.state} offThreshold ${baseRule.offThreshold} -> ${rule.offThreshold}`,
           resetType: "rule-off-threshold",
           target: index
         });
@@ -369,15 +357,15 @@ function DefinitionPanel({
           <thead>
             <tr>
               <th>順</th>
-              <th>状態名（Name）</th>
+              <th>状態名（State）</th>
               <th>条件</th>
             </tr>
           </thead>
           <tbody>
             {rules.map((rule, index) => (
-              <tr key={`${rule.state || rule.name}-${index}`}>
+              <tr key={`${rule.state}-${index}`}>
                 <td>{index + 1}</td>
-                <td>{rule.state || rule.name}</td>
+                <td>{rule.state}</td>
                 <td>{renderRuleCondition(rule, index)}</td>
               </tr>
             ))}

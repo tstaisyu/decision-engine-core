@@ -1,13 +1,4 @@
 {
-  "actions": {
-    "byState": {
-      "critical": "alert",
-      "hot": "fan_high",
-      "warming": "fan_low",
-      "cooling": "fan_low",
-      "normal": "no_action"
-    }
-  },
   "escalations": {
     "action": {
       "fanLowToHigh": {
@@ -21,48 +12,54 @@
       }
     }
   },
-  "states": {
-    "critical": {
-      "threshold": 40
+  "states": [
+    {
+      "name": "critical",
+      "action": "alert"
     },
-    "hot": {
+    {
+      "name": "hot",
+      "action": "fan_high"
+    },
+    {
+      "name": "warming",
+      "action": "fan_low"
+    },
+    {
+      "name": "cooling",
+      "action": "fan_low"
+    },
+    {
+      "name": "normal",
+      "action": "no_action"
+    }
+  ],
+  "rules": [
+    {
+      "type": "value_gte",
+      "threshold": 40,
+      "state": "critical"
+    },
+    {
+      "type": "value_gte",
+      "threshold": 26,
+      "state": "hot"
+    },
+    {
+      "type": "hysteresis",
+      "state": "hot",
       "onThreshold": 26,
       "offThreshold": 25.5
     },
-    "rules": [
-      {
-        "name": "critical",
-        "type": "value_gte",
-        "threshold": 40
-      },
-      {
-        "name": "hot",
-        "type": "value_gte",
-        "threshold": 26
-      },
-      {
-        "name": "hot_hysteresis",
-        "type": "hysteresis",
-        "state": "hot",
-        "onThreshold": 26,
-        "offThreshold": 25.5
-      },
-      {
-        "name": "warming",
-        "type": "rate_gt",
-        "threshold": 0.02
-      },
-      {
-        "name": "cooling",
-        "type": "rate_lt",
-        "threshold": -0.02
-      }
-    ],
-    "warming": {
-      "rateThreshold": 0.02
+    {
+      "type": "rate_gt",
+      "threshold": 0.02,
+      "state": "warming"
     },
-    "cooling": {
-      "rateThreshold": -0.02
+    {
+      "type": "rate_lt",
+      "threshold": -0.02,
+      "state": "cooling"
     }
-  }
+  ]
 }

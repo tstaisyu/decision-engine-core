@@ -50,6 +50,7 @@ function normalizeRule(rule) {
   if (typeof nextRule.state !== "string" || nextRule.state.length === 0) {
     nextRule.state = nextRule.name;
   }
+  delete nextRule.name;
 
   return nextRule;
 }

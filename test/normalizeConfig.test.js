@@ -1,0 +1,64 @@
+// Copyright (c) 2026- taisyu shibata
+// SPDX-License-Identifier: Apache-2.0
+
+const test = require("node:test");
+const assert = require("node:assert/strict");
+const { normalizeConfig } = require("../src/normalizeConfig");
+
+test("normalizes legacy shape into canonical states and rules", () => {
+  const normalized = normalizeConfig({
+    states: {
+      rules: [
+        { name: "hot", type: "value_gte", threshold: 30 },
+        { name: "warm", type: "value_gte", threshold: 26 }
+      ]
+    },
+    actions: {
+      byState: {
+        normal: "no_action",
+        warm: "fan_low",
+        hot: "fan_high"
+      }
+    },
+    escalations: {
+      state: {}
+    }
+  });
+
+  assert.deepEqual(normalized.states, [
+    { name: "normal", action: "no_action" },
+    { name: "warm", action: "fan_low" },
+    { name: "hot", action: "fan_high" }
+  ]);
+  assert.deepEqual(normalized.rules, [
+    { name: "hot", type: "value_gte", threshold: 30, state: "hot" },
+    { name: "warm", type: "value_gte", threshold: 26, state: "warm" }
+  ]);
+  assert.deepEqual(normalized.escalations, {
+    state: {}
+  });
+});
+
+test("keeps canonical shape and normalizes rule.state from rule.name", () => {
+  const normalized = normalizeConfig({
+    states: [
+      { name: "normal", action: "no_action" },
+      { name: "warm", action: "fan_low" },
+      { name: "hot", action: "fan_high" }
+    ],
+    rules: [
+      { name: "hot", type: "value_gte", threshold: 30 },
+      { state: "warm", type: "value_gte", threshold: 26 }
+    ]
+  });
+
+  assert.deepEqual(normalized.states, [
+    { name: "normal", action: "no_action" },
+    { name: "warm", action: "fan_low" },
+    { name: "hot", action: "fan_high" }
+  ]);
+  assert.deepEqual(normalized.rules, [
+    { name: "hot", type: "value_gte", threshold: 30, state: "hot" },
+    { state: "warm", type: "value_gte", threshold: 26 }
+  ]);
+});

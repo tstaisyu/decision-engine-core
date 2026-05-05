@@ -4,6 +4,41 @@
 
 Originally extracted from temperature control logic on M5 devices, it can be reused for any control scenario that requires state transitions and action decisions.
 
+## Decision Runtime System (DRS)
+
+This project is part of the **Decision Runtime System (DRS)**.
+
+DRS is a system that externalizes decision logic as configuration and executes it consistently across environments such as viewer, simulator, and embedded devices.
+
+In DRS:
+
+- Decision logic is defined as config (JSON)
+- A runtime interprets the config and produces state/action
+- The same logic can run in multiple environments (Node.js, browser, embedded devices)
+
+## Position of this repository
+
+`decision-engine-core` is the **JavaScript reference implementation** of the Decision Runtime System.
+
+It is used for:
+
+- Config evaluation
+- Viewer simulation
+- Node-based runtime validation
+
+Future runtimes (e.g. C++ for embedded systems) will follow the same runtime specification.
+
+## Config Shape Policy
+
+The canonical config shape of this project is:
+
+- `states[]`
+- `rules[]`
+
+New config definitions and exported config should use the canonical shape.
+The C++ runtime prototype also assumes the canonical shape.
+New presets and examples should also use the canonical shape.
+
 ## Structure
 
 - `src/evaluate.js`: Entry point. Accepts input and returns `state` and `action`.
@@ -26,14 +61,18 @@ Originally extracted from temperature control logic on M5 devices, it can be reu
 
 ```js
 {
-  states: {
-    rules: [
-      { name: "critical", type: "value_gte", threshold: 40.0 },
-      { name: "hot", type: "value_gte", threshold: 26.0 },
-      { name: "warming", type: "rate_gt", threshold: 0.02 },
-      { name: "cooling", type: "rate_lt", threshold: -0.02 }
-    ];
-  }
+  states: [
+    { name: "normal", action: "no_action" },
+    { name: "warming", action: "fan_low" },
+    { name: "hot", action: "fan_high" },
+    { name: "critical", action: "alert" }
+  ],
+  rules: [
+    { type: "value_gte", threshold: 40.0, state: "critical" },
+    { type: "value_gte", threshold: 26.0, state: "hot" },
+    { type: "rate_gt", threshold: 0.02, state: "warming" },
+    { type: "rate_lt", threshold: -0.02, state: "cooling" }
+  ]
 }
 ```
 
@@ -69,6 +108,16 @@ npm run evaluate -- examples/input.simple-warm.json --preset simpleTemperature
 
 - `examples/input.normal.json`
 - `examples/input.simple-warm.json`
+
+## React Viewer
+
+Use the React viewer for new work:
+
+```bash
+cd viewer
+npm install
+npm run dev
+```
 
 ## License
 

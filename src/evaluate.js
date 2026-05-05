@@ -1,9 +1,23 @@
-// Copyright (c) 2025 tstaisyu
+// Copyright (c) 2026- taisyu shibata
 // SPDX-License-Identifier: Apache-2.0
 
 const { config: defaultConfig } = require("./config");
+const { normalizeConfig } = require("./normalizeConfig");
 const { matchRule } = require("./rules");
 const { resolveConfig } = require("./resolveConfig");
+
+function isCanonicalConfigShape(config) {
+  return Boolean(config && (Array.isArray(config.states) || Array.isArray(config.rules)));
+}
+
+function findStateAction(states, stateName) {
+  if (!Array.isArray(states)) {
+    return "no_action";
+  }
+
+  const matchedState = states.find((state) => state && state.name === stateName);
+  return typeof matchedState?.action === "string" ? matchedState.action : "no_action";
+}
 
 function normalizeInput(input) {
   const {
@@ -54,13 +68,13 @@ function normalizeInput(input) {
 function deriveState(normalized, config) {
   const { previousStateSafe, rawStateDurationMs } = normalized;
   const hotToCriticalEscalationConfig = config.escalations.state.hotToCritical;
-  const stateRules = config.states.rules;
+  const stateRules = config.rules;
 
   let baseState = "normal";
 
   const matchedRule = stateRules.find((rule) => matchRule(rule, normalized));
   if (matchedRule) {
-    baseState = matchedRule.state || matchedRule.name;
+    baseState = matchedRule.state;
   }
 
   const effectiveStateDurationMs = baseState === previousStateSafe ? rawStateDurationMs : 0;
@@ -86,11 +100,10 @@ function deriveState(normalized, config) {
 function deriveAction(normalized, stateContext, config) {
   const { coolingEffect, stateRate } = normalized;
   const { state, effectiveStateDurationMs } = stateContext;
-  const actionByState = config.actions.byState;
   const fanLowToHighEscalationConfig = config.escalations.action.fanLowToHigh;
   const { coolingEffectRateThreshold = -0.01 } = config;
 
-  const baseAction = actionByState[state] || "no_action";
+  const baseAction = findStateAction(config.states, state);
   let action = baseAction;
 
   const hasCoolingEffectForDecision =
@@ -143,7 +156,27 @@ function buildResult(stateContext, actionContext) {
 
 function evaluate(input, config) {
   const normalized = normalizeInput(input);
-  const effectiveConfig = resolveConfig(config, defaultConfig);
+  const resolvedLegacyConfig = resolveConfig(isCanonicalConfigShape(config) ? {} : config, defaultConfig);
+  const effectiveConfig = normalizeConfig(
+    isCanonicalConfigShape(config)
+      ? {
+          ...resolvedLegacyConfig,
+          ...config,
+          escalations: {
+            ...resolvedLegacyConfig.escalations,
+            ...(config?.escalations || {}),
+            action: {
+              ...resolvedLegacyConfig.escalations.action,
+              ...(config?.escalations?.action || {})
+            },
+            state: {
+              ...resolvedLegacyConfig.escalations.state,
+              ...(config?.escalations?.state || {})
+            }
+          }
+        }
+      : resolvedLegacyConfig
+  );
   const stateContext = deriveState(normalized, effectiveConfig);
   const actionContext = deriveAction(normalized, stateContext, effectiveConfig);
 

@@ -1,16 +1,7 @@
-// Copyright (c) 2025 tstaisyu
+// Copyright (c) 2026- taisyu shibata
 // SPDX-License-Identifier: Apache-2.0
 
 const m5TemperatureConfig = {
-  actions: {
-    byState: {
-      critical: "alert",
-      hot: "fan_high",
-      warming: "fan_low",
-      cooling: "fan_low",
-      normal: "no_action"
-    }
-  },
   escalations: {
     action: {
       fanLowToHigh: {
@@ -24,50 +15,56 @@ const m5TemperatureConfig = {
       }
     }
   },
-  states: {
-    critical: {
-      threshold: 40.0
+  states: [
+    {
+      name: "critical",
+      action: "alert"
     },
-    hot: {
+    {
+      name: "hot",
+      action: "fan_high"
+    },
+    {
+      name: "warming",
+      action: "fan_low"
+    },
+    {
+      name: "cooling",
+      action: "fan_low"
+    },
+    {
+      name: "normal",
+      action: "no_action"
+    }
+  ],
+  rules: [
+    {
+      type: "value_gte",
+      threshold: 40.0,
+      state: "critical"
+    },
+    {
+      type: "value_gte",
+      threshold: 26.0,
+      state: "hot"
+    },
+    {
+      type: "hysteresis",
+      state: "hot",
       onThreshold: 26.0,
       offThreshold: 25.5
     },
-    rules: [
-      {
-        name: "critical",
-        type: "value_gte",
-        threshold: 40.0
-      },
-      {
-        name: "hot",
-        type: "value_gte",
-        threshold: 26.0
-      },
-      {
-        name: "hot_hysteresis",
-        type: "hysteresis",
-        state: "hot",
-        onThreshold: 26.0,
-        offThreshold: 25.5
-      },
-      {
-        name: "warming",
-        type: "rate_gt",
-        threshold: 0.02
-      },
-      {
-        name: "cooling",
-        type: "rate_lt",
-        threshold: -0.02
-      }
-    ],
-    warming: {
-      rateThreshold: 0.02
+    {
+      type: "rate_gt",
+      threshold: 0.02,
+      state: "warming"
     },
-    cooling: {
-      rateThreshold: -0.02
+    {
+      type: "rate_lt",
+      threshold: -0.02,
+      state: "cooling"
     }
-  }
+  ]
 };
 
 module.exports = {

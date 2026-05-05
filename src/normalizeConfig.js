@@ -1,0 +1,47 @@
+// Copyright (c) 2026- taisyu shibata
+// SPDX-License-Identifier: Apache-2.0
+
+function normalizeRule(rule) {
+  if (!rule || typeof rule !== "object" || Array.isArray(rule)) {
+    return null;
+  }
+
+  const nextRule = { ...rule };
+  if (typeof nextRule.state !== "string" || nextRule.state.length === 0) {
+    return null;
+  }
+
+  return nextRule;
+}
+
+function normalizeCanonicalConfig(config) {
+  const { states = [], rules = [], ...rest } = config;
+
+  return {
+    ...rest,
+    states: Array.isArray(states) ? states.map((state) => ({ ...state })) : [],
+    rules: Array.isArray(rules) ? rules.map(normalizeRule).filter(Boolean) : []
+  };
+}
+
+function normalizeConfig(config) {
+  if (!config || typeof config !== "object" || Array.isArray(config)) {
+    return {
+      states: [],
+      rules: []
+    };
+  }
+
+  if (Array.isArray(config.states) || Array.isArray(config.rules)) {
+    return normalizeCanonicalConfig(config);
+  }
+
+  return {
+    states: [],
+    rules: []
+  };
+}
+
+module.exports = {
+  normalizeConfig
+};

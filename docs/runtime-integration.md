@@ -18,6 +18,34 @@ The goal is to clarify the boundary between:
 
 ## 2. Overall Flow
 
+```mermaid
+flowchart LR
+
+  Viewer["Viewer<br/>config design / simulation"]
+  Config["Config JSON<br/>rules / states / actions"]
+  InputAdapter["Input Adapter<br/>sensor → engine input"]
+  Core["decision-engine-core<br/>evaluate(input, config)"]
+  ActionAdapter["Action Adapter<br/>action → command"]
+  Device["Device / Simulator<br/>fan / actuator / mock"]
+
+  Viewer -->|export| Config
+  Config -->|load| Core
+  InputAdapter --> Core
+  Core -->|result.action| ActionAdapter
+  ActionAdapter --> Device
+```
+
+This diagram represents the separation of responsibilities:
+
+- Viewer creates and exports config
+- Config is passed unchanged into the core
+- Core evaluates input and determines state/action
+- Adapters translate between real-world signals and engine data
+- Device executes the final command
+
+Important principle:
+The core does not depend on device or platform.
+
 ```txt
 viewer
   ↓ export config JSON

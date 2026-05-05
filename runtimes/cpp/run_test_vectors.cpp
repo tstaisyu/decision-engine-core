@@ -29,5 +29,18 @@ int main() {
   const DecisionResult customResult = engine.evaluate(customInput);
   std::cout << customInput.value << " -> " << customResult.state << " / " << customResult.action << '\n';
 
+  DecisionConfig unsupportedRuleConfig;
+  unsupportedRuleConfig.rules = {
+      {"unknown_type", 0.0F, "hot"},
+      {"value_gte", 30.0F, "hot"},
+      {"value_gte", 26.0F, "warm"},
+  };
+  engine.loadConfig(unsupportedRuleConfig);
+
+  const DecisionInput unsupportedRuleInput{26.4F, 5000UL};
+  const DecisionResult unsupportedRuleResult = engine.evaluate(unsupportedRuleInput);
+  std::cout << unsupportedRuleInput.value << " -> " << unsupportedRuleResult.state << " / "
+            << unsupportedRuleResult.action << '\n';
+
   return 0;
 }

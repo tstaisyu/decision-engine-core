@@ -22,14 +22,11 @@ void DecisionEngine::loadConfig(const DecisionConfig& config) {
 }
 
 DecisionResult DecisionEngine::evaluate(const DecisionInput& input) const {
-  if (input.value >= config_.hotThreshold) {
-    const StateConfig state = findStateConfig(config_, "hot");
-    return {state.name, state.action};
-  }
-
-  if (input.value >= config_.warmThreshold) {
-    const StateConfig state = findStateConfig(config_, "warm");
-    return {state.name, state.action};
+  for (const Rule& rule : config_.rules) {
+    if (rule.type == "value_gte" && input.value >= rule.threshold) {
+      const StateConfig state = findStateConfig(config_, rule.state);
+      return {state.name, state.action};
+    }
   }
 
   const StateConfig state = findStateConfig(config_, "normal");

@@ -22,6 +22,12 @@ struct StateConfig {
   std::string action;
 };
 
+struct Rule {
+  std::string type;
+  float threshold;
+  std::string state;
+};
+
 struct DecisionConfig {
   float warmThreshold = 26.0F;
   float hotThreshold = 30.0F;
@@ -30,6 +36,10 @@ struct DecisionConfig {
       {"normal", "no_action"},
       {"warm", "fan_low"},
       {"hot", "fan_high"},
+  };
+  std::vector<Rule> rules{
+      {"value_gte", 30.0F, "hot"},
+      {"value_gte", 26.0F, "warm"},
   };
 };
 

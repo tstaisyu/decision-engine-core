@@ -111,6 +111,11 @@ The exact numeric type may vary by language, but `value` is expected to be a num
 
 The minimal config format should be small enough to support rules-based runtime decisions.
 
+The v1 canonical shape of this specification is:
+
+- `states[]`
+- `rules[]`
+
 Minimum fields:
 
 - `states[]`
@@ -142,6 +147,14 @@ Notes:
 - if no rule matches, the runtime falls back to a default state equivalent to `normal`
 - the resolved state is matched against `states[]` to obtain the action
 - a future implementation may map these into more structured internal representations
+
+Current implementation note:
+
+- the JavaScript core is still the reference implementation, but its current config shape is legacy/current rather than canonical
+- the current JS shape uses `states.rules`
+- the current JS shape uses `actions.byState`
+- the current JS core accepts both `rule.state` and `rule.name` as the source of the resolved state
+- the current C++ runtime prototype is implemented closer to the v1 canonical shape using `states[]` and `rules[]`
 
 This minimal spec does not require the runtime to support the full current preset schema.
 
@@ -289,6 +302,13 @@ This matches the current implementation direction more closely in both:
 
 - the JavaScript reference implementation
 - the evolving C++ runtime prototype
+
+At the same time, there is still a shape gap between the canonical spec and the current JS config representation.
+
+Possible future directions include:
+
+- migrating the JavaScript core toward the canonical `states[]` / `rules[]` shape
+- adding a conversion adapter between the current JS config shape and the canonical runtime shape
 
 ## 10. Core Responsibility Boundary
 

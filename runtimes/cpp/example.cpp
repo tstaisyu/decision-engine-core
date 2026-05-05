@@ -7,7 +7,7 @@
 
 int main() {
   DecisionEngine engine;
-  engine.loadConfig({26.0F, 30.0F});
+  engine.loadConfig(DecisionConfig{});
 
   const DecisionInput inputs[] = {
       {25.0F, 1000UL},

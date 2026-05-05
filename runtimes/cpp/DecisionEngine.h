@@ -29,9 +29,6 @@ struct Rule {
 };
 
 struct DecisionConfig {
-  float warmThreshold = 26.0F;
-  float hotThreshold = 30.0F;
-
   std::vector<StateConfig> states{
       {"normal", "no_action"},
       {"warm", "fan_low"},

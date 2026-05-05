@@ -7,7 +7,7 @@
 
 int main() {
   DecisionEngine engine;
-  engine.loadConfig({26.0F, 30.0F});
+  engine.loadConfig(DecisionConfig{});
 
   // Mirrors test-vectors/minimal-temperature.json without introducing a JSON parser.
   const DecisionInput inputs[] = {

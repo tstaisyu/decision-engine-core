@@ -24,6 +24,10 @@ function matchRule(rule, normalized) {
 }
 
 function resolveStateRules(config, defaultConfig) {
+  if (config && Array.isArray(config.rules)) {
+    return config.rules;
+  }
+
   if (config && config.states && Array.isArray(config.states.rules)) {
     return config.states.rules;
   }
@@ -37,7 +41,7 @@ function resolveStateRules(config, defaultConfig) {
           ? config.criticalThreshold
           : config && config.states && config.states.critical && typeof config.states.critical.threshold === "number"
             ? config.states.critical.threshold
-            : defaultConfig.states.critical.threshold
+            : defaultConfig.criticalThreshold
     },
     {
       name: "hot",
@@ -47,7 +51,7 @@ function resolveStateRules(config, defaultConfig) {
           ? config.hotOnThreshold
           : config && config.states && config.states.hot && typeof config.states.hot.onThreshold === "number"
             ? config.states.hot.onThreshold
-            : defaultConfig.states.hot.onThreshold
+            : defaultConfig.hotOnThreshold
     },
     {
       name: "hot_hysteresis",
@@ -58,13 +62,13 @@ function resolveStateRules(config, defaultConfig) {
           ? config.hotOnThreshold
           : config && config.states && config.states.hot && typeof config.states.hot.onThreshold === "number"
             ? config.states.hot.onThreshold
-            : defaultConfig.states.hot.onThreshold,
+            : defaultConfig.hotOnThreshold,
       offThreshold:
         typeof config.hotOffThreshold === "number"
           ? config.hotOffThreshold
           : config && config.states && config.states.hot && typeof config.states.hot.offThreshold === "number"
             ? config.states.hot.offThreshold
-            : defaultConfig.states.hot.offThreshold
+            : defaultConfig.hotOffThreshold
     },
     {
       name: "warming",
@@ -74,7 +78,7 @@ function resolveStateRules(config, defaultConfig) {
           ? config.warmingRateThreshold
           : config && config.states && config.states.warming && typeof config.states.warming.rateThreshold === "number"
             ? config.states.warming.rateThreshold
-            : defaultConfig.states.warming.rateThreshold
+            : defaultConfig.warmingRateThreshold
     },
     {
       name: "cooling",
@@ -84,7 +88,7 @@ function resolveStateRules(config, defaultConfig) {
           ? config.coolingRateThreshold
           : config && config.states && config.states.cooling && typeof config.states.cooling.rateThreshold === "number"
             ? config.states.cooling.rateThreshold
-            : defaultConfig.states.cooling.rateThreshold
+            : defaultConfig.coolingRateThreshold
     }
   ];
 }

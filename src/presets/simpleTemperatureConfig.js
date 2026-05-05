@@ -2,28 +2,33 @@
 // SPDX-License-Identifier: Apache-2.0
 
 const simpleTemperatureConfig = {
-  actions: {
-    byState: {
-      normal: "no_action",
-      warm: "fan_low",
-      hot: "fan_high"
-    }
-  },
   escalations: {},
-  states: {
-    rules: [
-      {
-        name: "hot",
-        type: "value_gte",
-        threshold: 30
-      },
-      {
-        name: "warm",
-        type: "value_gte",
-        threshold: 26
-      }
-    ]
-  }
+  states: [
+    {
+      name: "normal",
+      action: "no_action"
+    },
+    {
+      name: "warm",
+      action: "fan_low"
+    },
+    {
+      name: "hot",
+      action: "fan_high"
+    }
+  ],
+  rules: [
+    {
+      type: "value_gte",
+      threshold: 30,
+      state: "hot"
+    },
+    {
+      type: "value_gte",
+      threshold: 26,
+      state: "warm"
+    }
+  ]
 };
 
 module.exports = {

@@ -3,15 +3,36 @@
 
 const { resolveStateRules } = require("./rules");
 
+function resolveActionsByState(config, defaultConfig) {
+  const defaultStates = Array.isArray(defaultConfig?.states) ? defaultConfig.states : [];
+  const configStates = Array.isArray(config?.states) ? config.states : [];
+  const defaultActionsByState = defaultStates.reduce((accumulator, state) => {
+    if (state && typeof state.name === "string" && typeof state.action === "string") {
+      accumulator[state.name] = state.action;
+    }
+    return accumulator;
+  }, {});
+  const configActionsByState = configStates.reduce((accumulator, state) => {
+    if (state && typeof state.name === "string" && typeof state.action === "string") {
+      accumulator[state.name] = state.action;
+    }
+    return accumulator;
+  }, {});
+
+  return {
+    ...defaultActionsByState,
+    ...(defaultConfig?.actions?.byState || {}),
+    ...configActionsByState,
+    ...(config?.actions?.byState || {})
+  };
+}
+
 function resolveConfig(config, defaultConfig) {
   return {
     ...config,
     actions: {
       ...(config && config.actions),
-      byState: {
-        ...defaultConfig.actions.byState,
-        ...(config && config.actions && config.actions.byState)
-      }
+      byState: resolveActionsByState(config, defaultConfig)
     },
     escalations: {
       ...(config && config.escalations),
@@ -62,7 +83,7 @@ function resolveConfig(config, defaultConfig) {
             ? config.criticalThreshold
             : config && config.states && config.states.critical && typeof config.states.critical.threshold === "number"
               ? config.states.critical.threshold
-              : defaultConfig.states.critical.threshold
+              : defaultConfig.criticalThreshold
       },
       hot: {
         onThreshold:
@@ -70,13 +91,13 @@ function resolveConfig(config, defaultConfig) {
             ? config.hotOnThreshold
             : config && config.states && config.states.hot && typeof config.states.hot.onThreshold === "number"
               ? config.states.hot.onThreshold
-              : defaultConfig.states.hot.onThreshold,
+              : defaultConfig.hotOnThreshold,
         offThreshold:
           typeof config.hotOffThreshold === "number"
             ? config.hotOffThreshold
             : config && config.states && config.states.hot && typeof config.states.hot.offThreshold === "number"
               ? config.states.hot.offThreshold
-              : defaultConfig.states.hot.offThreshold
+              : defaultConfig.hotOffThreshold
       },
       rules: resolveStateRules(config, defaultConfig),
       warming: {
@@ -88,7 +109,7 @@ function resolveConfig(config, defaultConfig) {
                 config.states.warming &&
                 typeof config.states.warming.rateThreshold === "number"
               ? config.states.warming.rateThreshold
-              : defaultConfig.states.warming.rateThreshold
+              : defaultConfig.warmingRateThreshold
       },
       cooling: {
         rateThreshold:
@@ -99,7 +120,7 @@ function resolveConfig(config, defaultConfig) {
                 config.states.cooling &&
                 typeof config.states.cooling.rateThreshold === "number"
               ? config.states.cooling.rateThreshold
-              : defaultConfig.states.cooling.rateThreshold
+              : defaultConfig.coolingRateThreshold
       }
     }
   };

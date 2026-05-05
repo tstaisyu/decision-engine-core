@@ -161,7 +161,19 @@ function evaluate(input, config) {
     isCanonicalConfigShape(config)
       ? {
           ...resolvedLegacyConfig,
-          ...config
+          ...config,
+          escalations: {
+            ...resolvedLegacyConfig.escalations,
+            ...(config?.escalations || {}),
+            action: {
+              ...resolvedLegacyConfig.escalations.action,
+              ...(config?.escalations?.action || {})
+            },
+            state: {
+              ...resolvedLegacyConfig.escalations.state,
+              ...(config?.escalations?.state || {})
+            }
+          }
         }
       : resolvedLegacyConfig
   );

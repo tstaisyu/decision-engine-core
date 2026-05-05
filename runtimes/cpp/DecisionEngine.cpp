@@ -13,7 +13,7 @@ DecisionResult DecisionEngine::evaluate(const DecisionInput& input) const {
   }
 
   if (input.value >= config_.warmThreshold) {
-    return {"warming", "fan_low"};
+    return {"warm", "fan_low"};
   }
 
   return {"normal", "no_action"};

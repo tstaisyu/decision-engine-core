@@ -5,6 +5,9 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const { normalizeConfig } = require("../src/normalizeConfig");
 
+// Canonical rules require rule.state.
+// Rules without state are dropped during normalize().
+
 test("normalizes legacy shape into canonical states and rules", () => {
   const normalized = normalizeConfig({
     states: {

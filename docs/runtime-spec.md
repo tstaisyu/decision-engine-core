@@ -153,7 +153,6 @@ Current implementation note:
 - the JavaScript core is still the reference implementation, but its current config shape is legacy/current rather than canonical
 - the current JS shape uses `states.rules`
 - the current JS shape uses `actions.byState`
-- the current JS core accepts both `rule.state` and `rule.name` as the source of the resolved state
 - the current C++ runtime prototype is implemented closer to the v1 canonical shape using `states[]` and `rules[]`
 
 This minimal spec does not require the runtime to support the full current preset schema.
@@ -207,13 +206,6 @@ Legacy shape:
 This shape remains a compatibility target, but it is not the canonical v1 shape.
 It should be treated as legacy and deprecated.
 
-The current JS core also accepts both:
-
-- `rule.state`
-- `rule.name`
-
-when resolving the destination state from a rule.
-
 ## 9. Normalization Flow
 
 Before evaluation, config data may be normalized into canonical form.
@@ -228,7 +220,6 @@ In practice:
 
 - legacy `states.rules` becomes canonical `rules[]`
 - legacy `actions.byState` becomes canonical `states[]`
-- `rule.name` may be normalized into `rule.state`
 
 This allows compatibility to remain in place while internal evaluation converges on a single structure.
 
@@ -279,8 +270,9 @@ The intended decision model is:
 
 - read `rules[]` from top to bottom
 - evaluate each rule against the input
-- adopt the state represented by the first matching rule
+- adopt `rule.state` from the first matching rule
 - if a rule type is unsupported, ignore it and continue to the next rule
+- if a rule is invalid, such as missing `state`, ignore it and continue to the next rule
 - if no rule matches, use the default fallback state
 - resolve the final action by finding the matching state entry in `states[]`
 
@@ -330,6 +322,8 @@ Required fields:
 - `type`
 - `threshold`
 - `state`
+
+`rule.state` is required in the canonical shape.
 
 ### 8.2 Supported Rule Type in the Minimal Spec
 

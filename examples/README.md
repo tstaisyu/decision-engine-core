@@ -38,11 +38,13 @@ Rules は「どの条件で、どの状態にするか」を定義します。
 
 ```json
 {
-  "name": "hot",
   "type": "value_gte",
-  "threshold": 26
+  "threshold": 26,
+  "state": "hot"
 }
 ```
+
+`rule.state` は canonical rules で必須です。
 
 意味:
 
@@ -80,7 +82,6 @@ Rules は「どの条件で、どの状態にするか」を定義します。
 
 ```json
 {
-  "name": "hot_hysteresis",
   "type": "hysteresis",
   "state": "hot",
   "offThreshold": 25.5

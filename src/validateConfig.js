@@ -95,11 +95,10 @@ function validateConfig(config) {
         }
       }
 
-      const stateName = typeof rule.state === "string" ? rule.state : rule.name;
-      if (typeof stateName !== "string" || stateName.length === 0) {
+      if (typeof rule.state !== "string" || rule.state.length === 0) {
         errors.push(`rules[${index}].state must be a non-empty string`);
-      } else if (!stateNames.has(stateName)) {
-        errors.push(`states must define an action for state: ${stateName}`);
+      } else if (!stateNames.has(rule.state)) {
+        errors.push(`states must define an action for state: ${rule.state}`);
       }
     }
   }

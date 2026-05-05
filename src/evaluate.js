@@ -74,7 +74,7 @@ function deriveState(normalized, config) {
 
   const matchedRule = stateRules.find((rule) => matchRule(rule, normalized));
   if (matchedRule) {
-    baseState = matchedRule.state || matchedRule.name;
+    baseState = matchedRule.state;
   }
 
   const effectiveStateDurationMs = baseState === previousStateSafe ? rawStateDurationMs : 0;

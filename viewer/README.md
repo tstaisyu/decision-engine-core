@@ -1,7 +1,7 @@
 # Viewer (React + Vite)
 
-This is the first migration step for a richer viewer UI.
-It keeps `src/` as the core package and keeps `examples/viewer.html` as a legacy/deprecated static sample.
+This is the current viewer UI for the project.
+It keeps `src/` as the core package.
 
 ## Run
 

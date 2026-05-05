@@ -1,8 +1,5 @@
 # Examples
 
-`viewer.html` is a legacy/deprecated sample UI for visualizing how `decision-engine-core` works.
-For new use, prefer the React viewer in `viewer/`.
-
 ## Adapter Examples (M5 Temperature + Fan)
 
 実運用連携を想定した実験用サンプルを追加しています。

@@ -128,29 +128,6 @@ npm install
 npm run dev
 ```
 
-## Legacy Static Viewer
-
-```bash
-open examples/viewer.html
-```
-
-Or open `examples/viewer.html` directly in a browser.
-
-`examples/viewer.html` is a legacy/deprecated static sample.
-Use the React viewer for new work.
-
-It uses a Japanese-first UI with English terms shown alongside key concepts.
-It is for inspection only. It does not support editing or saving presets.
-
-You can:
-
-- Select a preset
-- Inspect canonical `rules[]`
-- Inspect canonical `states[]`
-- Inspect `escalations`
-- Edit sample input JSON
-- Check the evaluate result
-
 ## License
 
 Apache-2.0. See `LICENSE`.

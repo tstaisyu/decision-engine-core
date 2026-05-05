@@ -15,9 +15,11 @@ npm run dev
 
 1. Open the viewer and edit the current preset config, for example a `threshold` value.
 2. Click `Export Config` in the header controls.
-3. The current edited config is downloaded as `decision-engine-config.json` in canonical shape (`states[]` + `rules[]`).
-4. Replace `examples/node-temp-sim/exported-config.sample.json` with the exported file content.
-5. Run `npm run example:node-temp-sim:sample` from the repository root to verify the mock deploy flow.
+3. The current edited config is downloaded as `decision-engine-config.json` as a canonical-compatible config including `states[]` and `rules[]`.
+4. At this stage, the exported JSON still includes legacy fields as well, so it should be treated as a mixed config.
+5. Replace `examples/node-temp-sim/exported-config.sample.json` with the exported file content.
+6. Run `npm run example:node-temp-sim:sample` from the repository root to verify the mock deploy flow.
+7. Confirm `state`, `action`, and `pwm` in the output.
 
 ## Notes
 

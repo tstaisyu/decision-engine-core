@@ -1,8 +1,26 @@
-# Runtime Spec v0 (Minimal)
+# Runtime Specification (Draft)
 
-## 1. Purpose
+This document defines the language-independent behavior of the Decision Runtime System.
 
-This document describes the minimal runtime specification that is currently implied by `decision-engine-core`.
+## Scope (Initial)
+
+The initial version focuses on minimal decision logic:
+
+- input.value
+- thresholds
+- state
+- action
+
+More advanced features (duration, escalation, hysteresis, runtime state) will be added later.
+
+## Purpose
+
+- Provide a reference for multiple runtime implementations
+- Ensure consistent behavior across JS, C++, and embedded environments
+
+## 1. Extended Notes
+
+This document also describes the minimal runtime specification that is currently implied by `decision-engine-core`.
 
 The goal is to make the smallest useful runtime contract explicit in a language-independent way.
 

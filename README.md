@@ -4,6 +4,30 @@
 
 Originally extracted from temperature control logic on M5 devices, it can be reused for any control scenario that requires state transitions and action decisions.
 
+## Decision Runtime System (DRS)
+
+This project is part of the **Decision Runtime System (DRS)**.
+
+DRS is a system that externalizes decision logic as configuration and executes it consistently across environments such as viewer, simulator, and embedded devices.
+
+In DRS:
+
+- Decision logic is defined as config (JSON)
+- A runtime interprets the config and produces state/action
+- The same logic can run in multiple environments (Node.js, browser, embedded devices)
+
+## Position of this repository
+
+`decision-engine-core` is the **JavaScript reference implementation** of the Decision Runtime System.
+
+It is used for:
+
+- Config evaluation
+- Viewer simulation
+- Node-based runtime validation
+
+Future runtimes (e.g. C++ for embedded systems) will follow the same runtime specification.
+
 ## Structure
 
 - `src/evaluate.js`: Entry point. Accepts input and returns `state` and `action`.

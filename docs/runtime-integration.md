@@ -1,5 +1,23 @@
 # Runtime Integration Design
 
+## Decision Runtime System Context
+
+This document describes how `decision-engine-core` fits into the Decision Runtime System (DRS).
+
+DRS consists of:
+
+- Runtime Specification (language-independent behavior rules)
+- Runtime Implementations (JS, C++, etc.)
+- Viewer (config design and simulation)
+- Adapters (input/output transformation)
+- Device Runtime (embedded execution environment)
+
+In this structure:
+
+- `decision-engine-core` is the JavaScript runtime implementation
+- The runtime specification will be defined separately
+- Future embedded runtimes (e.g. Arduino/M5) will implement the same behavior
+
 ## 1. Purpose
 
 This document defines how `decision-engine-core` connects to real or simulated devices.

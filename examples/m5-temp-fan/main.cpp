@@ -7,12 +7,12 @@
 
 DecisionEngine engine;
 
-float nextTemperatureValue() {
-  static const float values[] = {25.0F, 26.0F, 30.0F};
-  static size_t index = 0;
-
+float readTemperature() {
+  // TODO: 実機ではここでセンサー値を読む
+  static float values[] = {25.0F, 26.0F, 30.0F};
+  static int index = 0;
   const float value = values[index];
-  index = (index + 1) % (sizeof(values) / sizeof(values[0]));
+  index = (index + 1) % 3;
   return value;
 }
 
@@ -31,6 +31,10 @@ int actionToPwm(const String& action) {
 
 void applyPwm(int pwm) {
   // TODO: 実機ではここで analogWrite や ledcWrite を呼ぶ
+  // ESP32 (M5Stack) PWM example:
+  // ledcSetup(0, 5000, 8);
+  // ledcAttachPin(FAN_PIN, 0);
+  // ledcWrite(0, pwm);
   Serial.print("apply pwm: ");
   Serial.println(pwm);
 }
@@ -43,7 +47,7 @@ void setup() {
 }
 
 void loop() {
-  const float value = nextTemperatureValue();
+  const float value = readTemperature();
 
   DecisionInput input;
   input.value = value;

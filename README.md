@@ -67,6 +67,27 @@ New presets and examples should also use the canonical shape.
 - `src/config.js`: Default config entry point.
 - `src/presets/m5TemperatureConfig.js`: Preset for the M5 temperature control logic.
 
+## Project Structure
+
+- `src/`
+  - JS core
+- `runtimes/cpp/`
+  - C++ runtime
+- `viewer/`
+  - config design and visualization UI
+- `examples/`
+  - usage examples: minimal JS evaluate, simulation, M5 skeleton
+- `test/`
+  - JS tests
+- `test-vectors/`
+  - shared vectors for JS/C++ comparison
+
+```text
+config -> evaluate (JS / C++) -> state / action -> adapter / execution
+```
+
+JS and C++ runtimes are intended to evaluate the same canonical config under the same runtime specification.
+
 ## Flow
 
 `input -> normalize -> rule evaluation -> state resolution -> duration handling -> action resolution -> output`

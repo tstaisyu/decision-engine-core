@@ -41,6 +41,48 @@ function getMatchedRuleLabel(result) {
   );
 }
 
+function normalizeRule(rule) {
+  if (!rule || typeof rule !== "object" || Array.isArray(rule)) {
+    return rule;
+  }
+
+  const nextRule = { ...rule };
+  if (typeof nextRule.state !== "string" || nextRule.state.length === 0) {
+    nextRule.state = nextRule.name;
+  }
+
+  return nextRule;
+}
+
+function normalizeExportConfig(config) {
+  if (!config || typeof config !== "object" || Array.isArray(config)) {
+    return {
+      states: [],
+      rules: []
+    };
+  }
+
+  if (Array.isArray(config.states) || Array.isArray(config.rules)) {
+    return {
+      ...config,
+      states: Array.isArray(config.states) ? config.states.map((state) => ({ ...state })) : [],
+      rules: Array.isArray(config.rules) ? config.rules.map(normalizeRule) : []
+    };
+  }
+
+  const rules = Array.isArray(config.states?.rules) ? config.states.rules.map(normalizeRule) : [];
+  const states =
+    config.actions?.byState && typeof config.actions.byState === "object"
+      ? Object.entries(config.actions.byState).map(([name, action]) => ({ name, action }))
+      : [];
+
+  return {
+    ...config,
+    states,
+    rules
+  };
+}
+
 export function useSimulation() {
   const presets = useMemo(() => getPresets(), []);
   const presetNames = Object.keys(presets);
@@ -259,7 +301,7 @@ export function useSimulation() {
         throw new Error("export 対象の config がありません。");
       }
 
-      const json = JSON.stringify(selectedConfig, null, 2);
+      const json = JSON.stringify(normalizeExportConfig(selectedConfig), null, 2);
       const blob = new Blob([json], { type: "application/json" });
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement("a");

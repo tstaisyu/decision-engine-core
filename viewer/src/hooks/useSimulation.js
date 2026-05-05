@@ -97,25 +97,7 @@ function normalizeExportConfig(config) {
 }
 
 function normalizeViewerConfig(config) {
-  const canonicalConfig = normalizeExportConfig(config);
-  const { states: canonicalStates, rules: canonicalRules, ...restCanonicalConfig } = canonicalConfig;
-  const actionsByState = Object.fromEntries(
-    canonicalStates
-      .filter((state) => state && typeof state.name === "string")
-      .map((state) => [state.name, state.action])
-  );
-
-  return {
-    ...restCanonicalConfig,
-    states: {
-      ...(config && config.states && !Array.isArray(config.states) ? config.states : {}),
-      rules: canonicalRules
-    },
-    actions: {
-      ...(config && config.actions && !Array.isArray(config.actions) ? config.actions : {}),
-      byState: actionsByState
-    }
-  };
+  return normalizeExportConfig(config);
 }
 
 export function useSimulation() {

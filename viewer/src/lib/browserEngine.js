@@ -4,15 +4,11 @@
 // TODO: Replace this temporary browser-side copy with an official ESM/browser build from the core package.
 
 const m5TemperatureConfig = {
-  actions: {
-    byState: {
-      critical: "alert",
-      hot: "fan_high",
-      warming: "fan_low",
-      cooling: "fan_low",
-      normal: "no_action"
-    }
-  },
+  criticalThreshold: 40.0,
+  hotOnThreshold: 26.0,
+  hotOffThreshold: 25.5,
+  warmingRateThreshold: 0.02,
+  coolingRateThreshold: -0.02,
   escalations: {
     action: {
       fanLowToHigh: {
@@ -26,75 +22,87 @@ const m5TemperatureConfig = {
       }
     }
   },
-  states: {
-    critical: {
-      threshold: 40.0
+  states: [
+    {
+      name: "critical",
+      action: "alert"
     },
-    hot: {
+    {
+      name: "hot",
+      action: "fan_high"
+    },
+    {
+      name: "warming",
+      action: "fan_low"
+    },
+    {
+      name: "cooling",
+      action: "fan_low"
+    },
+    {
+      name: "normal",
+      action: "no_action"
+    }
+  ],
+  rules: [
+    {
+      type: "value_gte",
+      threshold: 40.0,
+      state: "critical"
+    },
+    {
+      type: "value_gte",
+      threshold: 26.0,
+      state: "hot"
+    },
+    {
+      name: "hot_hysteresis",
+      type: "hysteresis",
+      state: "hot",
       onThreshold: 26.0,
       offThreshold: 25.5
     },
-    rules: [
-      {
-        name: "critical",
-        type: "value_gte",
-        threshold: 40.0
-      },
-      {
-        name: "hot",
-        type: "value_gte",
-        threshold: 26.0
-      },
-      {
-        name: "hot_hysteresis",
-        type: "hysteresis",
-        state: "hot",
-        onThreshold: 26.0,
-        offThreshold: 25.5
-      },
-      {
-        name: "warming",
-        type: "rate_gt",
-        threshold: 0.02
-      },
-      {
-        name: "cooling",
-        type: "rate_lt",
-        threshold: -0.02
-      }
-    ],
-    warming: {
-      rateThreshold: 0.02
+    {
+      type: "rate_gt",
+      threshold: 0.02,
+      state: "warming"
     },
-    cooling: {
-      rateThreshold: -0.02
+    {
+      type: "rate_lt",
+      threshold: -0.02,
+      state: "cooling"
     }
-  }
+  ]
 };
 
 const simpleTemperatureConfig = {
-  actions: {
-    byState: {
-      normal: "no_action",
-      warm: "fan_low",
-      hot: "fan_high"
-    }
-  },
   escalations: {},
-  states: {
-    rules: [
-      {
-        name: "hot",
-        type: "value_gte",
-        threshold: 30
-      },
-      {
-        name: "warm",
-        type: "value_gte",
-        threshold: 26
-      }
-    ]
-  }
+  states: [
+    {
+      name: "normal",
+      action: "no_action"
+    },
+    {
+      name: "warm",
+      action: "fan_low"
+    },
+    {
+      name: "hot",
+      action: "fan_high"
+    }
+  ],
+  rules: [
+    {
+      type: "value_gte",
+      threshold: 30,
+      state: "hot"
+    },
+    {
+      type: "value_gte",
+      threshold: 26,
+      state: "warm"
+    }
+  ]
 };
 
 const presets = {
@@ -152,20 +160,20 @@ function resolveStateRules(config, fallback) {
       type: "value_gte",
       threshold:
         typeof config.criticalThreshold === "number"
-          ? config.criticalThreshold
+            ? config.criticalThreshold
           : config && config.states && config.states.critical && typeof config.states.critical.threshold === "number"
             ? config.states.critical.threshold
-            : fallback.states.critical.threshold
+            : fallback.criticalThreshold
     },
     {
       name: "hot",
       type: "value_gte",
       threshold:
         typeof config.hotOnThreshold === "number"
-          ? config.hotOnThreshold
+            ? config.hotOnThreshold
           : config && config.states && config.states.hot && typeof config.states.hot.onThreshold === "number"
             ? config.states.hot.onThreshold
-            : fallback.states.hot.onThreshold
+            : fallback.hotOnThreshold
     },
     {
       name: "hot_hysteresis",
@@ -173,36 +181,36 @@ function resolveStateRules(config, fallback) {
       state: "hot",
       onThreshold:
         typeof config.hotOnThreshold === "number"
-          ? config.hotOnThreshold
+            ? config.hotOnThreshold
           : config && config.states && config.states.hot && typeof config.states.hot.onThreshold === "number"
             ? config.states.hot.onThreshold
-            : fallback.states.hot.onThreshold,
+            : fallback.hotOnThreshold,
       offThreshold:
         typeof config.hotOffThreshold === "number"
           ? config.hotOffThreshold
           : config && config.states && config.states.hot && typeof config.states.hot.offThreshold === "number"
             ? config.states.hot.offThreshold
-            : fallback.states.hot.offThreshold
+            : fallback.hotOffThreshold
     },
     {
       name: "warming",
       type: "rate_gt",
       threshold:
         typeof config.warmingRateThreshold === "number"
-          ? config.warmingRateThreshold
+            ? config.warmingRateThreshold
           : config && config.states && config.states.warming && typeof config.states.warming.rateThreshold === "number"
             ? config.states.warming.rateThreshold
-            : fallback.states.warming.rateThreshold
+            : fallback.warmingRateThreshold
     },
     {
       name: "cooling",
       type: "rate_lt",
       threshold:
         typeof config.coolingRateThreshold === "number"
-          ? config.coolingRateThreshold
+            ? config.coolingRateThreshold
           : config && config.states && config.states.cooling && typeof config.states.cooling.rateThreshold === "number"
             ? config.states.cooling.rateThreshold
-            : fallback.states.cooling.rateThreshold
+            : fallback.coolingRateThreshold
     }
   ].map(normalizeRule);
 }
@@ -212,15 +220,14 @@ function resolveStateEntries(config, fallback) {
     return config.states.map((state) => ({ ...state }));
   }
 
-  const actionByState = {
-    ...fallback.actions.byState,
-    ...((config && config.actions && config.actions.byState) || {})
-  };
+  if (config?.actions?.byState && typeof config.actions.byState === "object") {
+    return Object.entries(config.actions.byState).map(([name, action]) => ({ name, action }));
+  }
 
-  return Object.entries(actionByState).map(([name, action]) => ({ name, action }));
+  return Array.isArray(fallback?.states) ? fallback.states.map((state) => ({ ...state })) : [];
 }
 
-function findStateAction(stateEntries, actionByState, stateName) {
+function findStateAction(stateEntries, stateName) {
   if (Array.isArray(stateEntries)) {
     const matchedState = stateEntries.find((state) => state && state.name === stateName);
     if (typeof matchedState?.action === "string") {
@@ -228,23 +235,18 @@ function findStateAction(stateEntries, actionByState, stateName) {
     }
   }
 
-  return actionByState[stateName] || "no_action";
+  return "no_action";
 }
 
 function resolveConfig(config, fallback) {
   const safeConfig = config || {};
+  const stateEntries = resolveStateEntries(safeConfig, fallback);
 
   return {
     ...safeConfig,
     rules: resolveStateRules(safeConfig, fallback),
-    stateEntries: resolveStateEntries(safeConfig, fallback),
-    actions: {
-      ...(safeConfig.actions || {}),
-      byState: {
-        ...fallback.actions.byState,
-        ...((safeConfig.actions && safeConfig.actions.byState) || {})
-      }
-    },
+    stateEntries,
+    states: stateEntries,
     escalations: {
       ...(safeConfig.escalations || {}),
       action: {
@@ -281,51 +283,6 @@ function resolveConfig(config, fallback) {
                 ? safeConfig.escalations.state.hotToCritical.durationMs
                 : fallback.escalations.state.hotToCritical.durationMs
         }
-      }
-    },
-    states: {
-      ...(safeConfig.states || {}),
-      critical: {
-        threshold:
-          typeof safeConfig.criticalThreshold === "number"
-            ? safeConfig.criticalThreshold
-            : safeConfig.states && safeConfig.states.critical && typeof safeConfig.states.critical.threshold === "number"
-              ? safeConfig.states.critical.threshold
-              : fallback.states.critical.threshold
-      },
-      hot: {
-        onThreshold:
-          typeof safeConfig.hotOnThreshold === "number"
-            ? safeConfig.hotOnThreshold
-            : safeConfig.states && safeConfig.states.hot && typeof safeConfig.states.hot.onThreshold === "number"
-              ? safeConfig.states.hot.onThreshold
-              : fallback.states.hot.onThreshold,
-        offThreshold:
-          typeof safeConfig.hotOffThreshold === "number"
-            ? safeConfig.hotOffThreshold
-            : safeConfig.states && safeConfig.states.hot && typeof safeConfig.states.hot.offThreshold === "number"
-              ? safeConfig.states.hot.offThreshold
-              : fallback.states.hot.offThreshold
-      },
-      warming: {
-        rateThreshold:
-          typeof safeConfig.warmingRateThreshold === "number"
-            ? safeConfig.warmingRateThreshold
-            : safeConfig.states &&
-                safeConfig.states.warming &&
-                typeof safeConfig.states.warming.rateThreshold === "number"
-              ? safeConfig.states.warming.rateThreshold
-              : fallback.states.warming.rateThreshold
-      },
-      cooling: {
-        rateThreshold:
-          typeof safeConfig.coolingRateThreshold === "number"
-            ? safeConfig.coolingRateThreshold
-            : safeConfig.states &&
-                safeConfig.states.cooling &&
-                typeof safeConfig.states.cooling.rateThreshold === "number"
-              ? safeConfig.states.cooling.rateThreshold
-              : fallback.states.cooling.rateThreshold
       }
     }
   };
@@ -412,11 +369,10 @@ function deriveState(normalized, config) {
 function deriveAction(normalized, stateContext, config) {
   const { coolingEffect, stateRate } = normalized;
   const { state, effectiveStateDurationMs } = stateContext;
-  const actionByState = config.actions.byState;
   const fanLowToHighEscalationConfig = config.escalations.action.fanLowToHigh;
   const { coolingEffectRateThreshold = -0.01 } = config;
 
-  const baseAction = findStateAction(config.stateEntries, actionByState, state);
+  const baseAction = findStateAction(config.stateEntries, state);
   let action = baseAction;
 
   const hasCoolingEffectForDecision =

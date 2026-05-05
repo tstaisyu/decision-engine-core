@@ -9,19 +9,25 @@ function DefinitionPanel({
   selectedConfig,
   onConfigChange
 }) {
-  const rules = selectedConfig?.rules || selectedConfig?.states?.rules || [];
-  const states =
-    selectedConfig?.states && Array.isArray(selectedConfig.states)
-      ? selectedConfig.states
-      : Object.entries(selectedConfig?.actions?.byState || {}).map(([name, action]) => ({ name, action }));
+  const rules = Array.isArray(selectedConfig?.rules)
+    ? selectedConfig.rules
+    : Array.isArray(selectedConfig?.states?.rules)
+      ? selectedConfig.states.rules
+      : [];
+  const states = Array.isArray(selectedConfig?.states)
+    ? selectedConfig.states
+    : Object.entries(selectedConfig?.actions?.byState || {}).map(([name, action]) => ({ name, action }));
   const actions = Object.fromEntries(states.map((state) => [state.name, state.action]));
   const stateEscalations = selectedConfig?.escalations?.state || {};
   const actionEscalations = selectedConfig?.escalations?.action || {};
-  const baseRules = baseSelectedConfig?.rules || baseSelectedConfig?.states?.rules || [];
-  const baseStates =
-    baseSelectedConfig?.states && Array.isArray(baseSelectedConfig.states)
-      ? baseSelectedConfig.states
-      : Object.entries(baseSelectedConfig?.actions?.byState || {}).map(([name, action]) => ({ name, action }));
+  const baseRules = Array.isArray(baseSelectedConfig?.rules)
+    ? baseSelectedConfig.rules
+    : Array.isArray(baseSelectedConfig?.states?.rules)
+      ? baseSelectedConfig.states.rules
+      : [];
+  const baseStates = Array.isArray(baseSelectedConfig?.states)
+    ? baseSelectedConfig.states
+    : Object.entries(baseSelectedConfig?.actions?.byState || {}).map(([name, action]) => ({ name, action }));
   const baseActions = Object.fromEntries(baseStates.map((state) => [state.name, state.action]));
   const baseStateEscalations = baseSelectedConfig?.escalations?.state || {};
   const baseActionEscalations = baseSelectedConfig?.escalations?.action || {};
@@ -37,18 +43,12 @@ function DefinitionPanel({
       return;
     }
 
-    if (!Array.isArray(nextConfig.rules)) {
-      nextConfig.rules = structuredClone(rules);
-    }
-    if (!nextConfig.rules?.[index]) {
+    nextConfig.rules = Array.isArray(nextConfig.rules) ? nextConfig.rules : structuredClone(rules);
+    if (!nextConfig.rules[index]) {
       return;
     }
 
     nextConfig.rules[index][key] = value;
-
-    if (nextConfig.states && !Array.isArray(nextConfig.states) && Array.isArray(nextConfig.states.rules?.[index] ? nextConfig.states.rules : null)) {
-      nextConfig.states.rules[index][key] = value;
-    }
     onConfigChange(nextConfig);
   }
 
@@ -58,26 +58,14 @@ function DefinitionPanel({
       return;
     }
 
-    if (!Array.isArray(nextConfig.rules)) {
-      nextConfig.rules = structuredClone(rules);
-    }
-    if (!Array.isArray(nextConfig.states)) {
-      nextConfig.states = structuredClone(states);
-    }
+    nextConfig.rules = Array.isArray(nextConfig.rules) ? nextConfig.rules : structuredClone(rules);
+    nextConfig.states = Array.isArray(nextConfig.states) ? nextConfig.states : structuredClone(states);
     const targetState = nextConfig.states.find((item) => item?.name === state);
     if (!targetState) {
       return;
     }
 
     targetState.action = action;
-
-    if (!nextConfig.actions || Array.isArray(nextConfig.actions)) {
-      nextConfig.actions = {};
-    }
-    if (!nextConfig.actions.byState || Array.isArray(nextConfig.actions.byState)) {
-      nextConfig.actions.byState = {};
-    }
-    nextConfig.actions.byState[state] = action;
     onConfigChange(nextConfig);
   }
 
@@ -208,7 +196,7 @@ function DefinitionPanel({
       if (typeof ruleThreshold === "number" && ruleThreshold !== baseRuleThreshold) {
         changes.push({
           key: `rule-threshold-${index}`,
-          label: `Rules: ${rule.name} threshold ${baseRuleThreshold} -> ${ruleThreshold}`,
+          label: `Rules: ${rule.state || rule.name} threshold ${baseRuleThreshold} -> ${ruleThreshold}`,
           resetType: "rule-threshold",
           target: index
         });
@@ -217,7 +205,7 @@ function DefinitionPanel({
       if (typeof rule.offThreshold === "number" && rule.offThreshold !== baseRule.offThreshold) {
         changes.push({
           key: `rule-off-threshold-${index}`,
-          label: `Rules: ${rule.name} offThreshold ${baseRule.offThreshold} -> ${rule.offThreshold}`,
+          label: `Rules: ${rule.state || rule.name} offThreshold ${baseRule.offThreshold} -> ${rule.offThreshold}`,
           resetType: "rule-off-threshold",
           target: index
         });
@@ -285,38 +273,18 @@ function DefinitionPanel({
       } else {
         nextConfig.rules[target].threshold = baseRules[target]?.threshold;
       }
-      if (nextConfig.states && !Array.isArray(nextConfig.states) && nextConfig.states.rules?.[target]) {
-        if (
-          typeof nextConfig.states.rules[target].onThreshold === "number" ||
-          typeof baseRules[target]?.onThreshold === "number"
-        ) {
-          nextConfig.states.rules[target].onThreshold = baseRules[target]?.onThreshold;
-        } else {
-          nextConfig.states.rules[target].threshold = baseRules[target]?.threshold;
-        }
-      }
     }
 
     if (resetType === "rule-off-threshold" && nextConfig.rules?.[target]) {
       nextConfig.rules[target].offThreshold = baseRules[target]?.offThreshold;
-      if (nextConfig.states && !Array.isArray(nextConfig.states) && nextConfig.states.rules?.[target]) {
-        nextConfig.states.rules[target].offThreshold = baseRules[target]?.offThreshold;
-      }
     }
 
     if (resetType === "action") {
-      if (!Array.isArray(nextConfig.rules)) {
-        nextConfig.rules = structuredClone(rules);
-      }
-      if (!Array.isArray(nextConfig.states)) {
-        nextConfig.states = structuredClone(states);
-      }
+      nextConfig.rules = Array.isArray(nextConfig.rules) ? nextConfig.rules : structuredClone(rules);
+      nextConfig.states = Array.isArray(nextConfig.states) ? nextConfig.states : structuredClone(states);
       const targetState = nextConfig.states.find((state) => state?.name === target);
       if (targetState) {
         targetState.action = baseActions[target];
-      }
-      if (nextConfig.actions?.byState?.[target] !== undefined) {
-        nextConfig.actions.byState[target] = baseActions[target];
       }
     }
 
@@ -407,9 +375,9 @@ function DefinitionPanel({
           </thead>
           <tbody>
             {rules.map((rule, index) => (
-              <tr key={`${rule.name}-${index}`}>
+              <tr key={`${rule.state || rule.name}-${index}`}>
                 <td>{index + 1}</td>
-                <td>{rule.name}</td>
+                <td>{rule.state || rule.name}</td>
                 <td>{renderRuleCondition(rule, index)}</td>
               </tr>
             ))}

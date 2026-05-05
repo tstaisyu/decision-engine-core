@@ -23,8 +23,13 @@ function App() {
     sequenceText,
     setSequenceText,
     timelineRows,
+    timelineDomainRows,
     timelineError,
+    isTimelinePlaying,
     runSimulation,
+    playSimulation,
+    stopSimulation,
+    resetSimulation,
     saveWorkspace,
     loadWorkspace,
     clearWorkspace,
@@ -71,8 +76,13 @@ function App() {
           sequenceText={sequenceText}
           onSequenceChange={setSequenceText}
           onRunSimulation={runSimulation}
+          onPlaySimulation={playSimulation}
+          onStopSimulation={stopSimulation}
+          onResetSimulation={resetSimulation}
           timelineRows={timelineRows}
+          timelineDomainRows={timelineDomainRows}
           timelineError={timelineError}
+          isTimelinePlaying={isTimelinePlaying}
         />
       </section>
     </main>

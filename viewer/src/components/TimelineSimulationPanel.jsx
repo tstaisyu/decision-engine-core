@@ -3,7 +3,18 @@
 
 import TimelineChart from "./TimelineChart";
 
-function TimelineSimulationPanel({ sequenceText, onSequenceChange, onRunSimulation, timelineRows, timelineError }) {
+function TimelineSimulationPanel({
+  sequenceText,
+  onSequenceChange,
+  onRunSimulation,
+  onPlaySimulation,
+  onStopSimulation,
+  onResetSimulation,
+  timelineRows,
+  timelineDomainRows,
+  timelineError,
+  isTimelinePlaying
+}) {
   return (
     <section className="panel secondary-panel timeline-panel">
       <h2>タイムライン / シミュレーション（Timeline / Simulation）</h2>
@@ -16,9 +27,20 @@ function TimelineSimulationPanel({ sequenceText, onSequenceChange, onRunSimulati
         onChange={(event) => onSequenceChange(event.target.value)}
         spellCheck={false}
       />
-      <button type="button" onClick={onRunSimulation}>
-        Run Simulation
-      </button>
+      <div className="button-row">
+        <button type="button" onClick={onRunSimulation}>
+          Run Simulation
+        </button>
+        <button type="button" onClick={onPlaySimulation} disabled={isTimelinePlaying}>
+          Play
+        </button>
+        <button type="button" className="secondary" onClick={onStopSimulation} disabled={!isTimelinePlaying}>
+          Stop
+        </button>
+        <button type="button" className="secondary" onClick={onResetSimulation}>
+          Reset
+        </button>
+      </div>
 
       {timelineError ? <p className="error">{timelineError}</p> : null}
 
@@ -58,7 +80,7 @@ function TimelineSimulationPanel({ sequenceText, onSequenceChange, onRunSimulati
 
       <div className="timeline-chart-section">
         <label>タイムラインチャート（Timeline Chart）</label>
-        <TimelineChart rows={timelineRows} />
+        <TimelineChart rows={timelineRows} domainRows={timelineDomainRows} />
       </div>
     </section>
   );

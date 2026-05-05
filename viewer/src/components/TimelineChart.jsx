@@ -5,7 +5,7 @@ import { CartesianGrid, Line, LineChart, ReferenceDot, ResponsiveContainer, Tool
 
 const stateOrder = ["normal", "cooling", "warming", "warm", "hot", "critical"];
 
-function TimelineChart({ rows }) {
+function TimelineChart({ rows, domainRows = [] }) {
   if (!rows || !rows.length) {
     return (
       <div className="timeline-chart-empty">
@@ -18,6 +18,8 @@ function TimelineChart({ rows }) {
     ...row,
     stateIndex: stateOrder.indexOf(row.state)
   }));
+  const xAxisRows = domainRows.length ? domainRows : rows;
+  const maxStep = Math.max(...xAxisRows.map((row) => row.step));
 
   const actionPoints = chartData.filter((row, index) => {
     if (index === 0) {
@@ -31,7 +33,7 @@ function TimelineChart({ rows }) {
       <ResponsiveContainer width="100%" height={260}>
         <LineChart data={chartData} margin={{ top: 10, right: 18, bottom: 6, left: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-          <XAxis dataKey="step" tick={{ fontSize: 12 }} />
+          <XAxis type="number" dataKey="step" domain={[1, maxStep]} allowDecimals={false} tick={{ fontSize: 12 }} />
           <YAxis yAxisId="value" tick={{ fontSize: 12 }} />
           <YAxis
             yAxisId="state"

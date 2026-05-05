@@ -17,8 +17,8 @@ struct DecisionResult {
 };
 
 struct DecisionConfig {
-  float warmThreshold;
-  float hotThreshold;
+  float warmThreshold = 26.0F;
+  float hotThreshold = 30.0F;
 };
 
 class DecisionEngine {
@@ -27,7 +27,7 @@ class DecisionEngine {
   DecisionResult evaluate(const DecisionInput& input) const;
 
  private:
-  DecisionConfig config_{0.0F, 0.0F};
+  DecisionConfig config_{};
 };
 
 #endif

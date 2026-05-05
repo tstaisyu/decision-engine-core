@@ -66,6 +66,26 @@ void loop() {
 - `mapActionToPwm(result.action)`: action adapter
 - `analogWrite(...)`: device output
 
+## main.cpp の位置づけ
+
+`main.cpp` は、実機制御前の Arduino-compatible skeleton です。
+
+現時点では:
+
+- センサー値はダミーで生成している
+- 実際の GPIO / PWM 制御はまだ行わない
+- `Serial` 出力で `value / state / action / pwm` を確認する
+
+関数ごとの責任は次のとおりです。
+
+- `actionToPwm()`: action adapter
+- `applyPwm()`: device output の差し替えポイント
+
+実機化するときは、主に次を置き換える想定です。
+
+- ダミー値生成部分 -> `readTemperature()`
+- `applyPwm()` の中身 -> `analogWrite`, `ledcWrite` などの実機出力
+
 ## 最初は JSON 読み込みしない
 
 初期段階では config を C++ 構造体として埋め込みます。

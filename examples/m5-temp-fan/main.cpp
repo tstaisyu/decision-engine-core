@@ -16,14 +16,23 @@ float nextTemperatureValue() {
   return value;
 }
 
-int mapActionToPwm(const String& action) {
-  if (action == "fan_high") {
-    return 180;
+int actionToPwm(const String& action) {
+  if (action == "no_action") {
+    return 0;
   }
   if (action == "fan_low") {
     return 80;
   }
+  if (action == "fan_high") {
+    return 180;
+  }
   return 0;
+}
+
+void applyPwm(int pwm) {
+  // TODO: 実機ではここで analogWrite や ledcWrite を呼ぶ
+  Serial.print("apply pwm: ");
+  Serial.println(pwm);
 }
 
 void setup() {
@@ -41,7 +50,7 @@ void loop() {
   input.timestamp = millis();
 
   const DecisionResult result = engine.evaluate(input);
-  const int pwm = mapActionToPwm(String(result.action.c_str()));
+  const int pwm = actionToPwm(String(result.action.c_str()));
 
   Serial.print("value=");
   Serial.print(value);
@@ -51,6 +60,7 @@ void loop() {
   Serial.print(result.action.c_str());
   Serial.print(", pwm=");
   Serial.println(pwm);
+  applyPwm(pwm);
 
   delay(1000);
 }

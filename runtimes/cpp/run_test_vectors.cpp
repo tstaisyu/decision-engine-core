@@ -6,6 +6,9 @@
 
 #include "DecisionEngine.h"
 
+// Mirrors the named parity cases used by test/js-cpp-parity.test.js.
+// The C++ runtime stays parser-free, so parity cases are handwritten here.
+
 namespace {
 
 struct TestCase {

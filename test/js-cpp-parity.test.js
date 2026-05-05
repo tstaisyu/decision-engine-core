@@ -6,6 +6,8 @@ const assert = require("node:assert/strict");
 const { evaluate } = require("../src");
 const { m5TemperatureConfig } = require("../src/presets/m5TemperatureConfig");
 
+// Mirrors the named parity cases used by runtimes/cpp/run_test_vectors.cpp.
+
 function buildInput(overrides) {
   return {
     deviceId: "parity-device-001",

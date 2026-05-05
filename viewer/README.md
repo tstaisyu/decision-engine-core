@@ -25,11 +25,12 @@ npm run dev
 
 - The viewer now prefers canonical config shape internally: `states[]` and `rules[]`.
 - `Export Config` outputs canonical config.
-- Legacy shape is still kept for compatibility: `states.rules` and `actions.byState`.
+- Legacy `states.rules` and `actions.byState` are kept only as legacy/deprecated compatibility paths.
 - Edits made in `DefinitionPanel` are reflected into `states[]` / `rules[]`.
 - The simulation engine also prefers canonical shape during evaluation.
 - Canonical shape is the formal config shape for new config and export flows.
-- Legacy shape is still supported for backward compatibility, but may be deprecated in the future.
+- New presets, exports, and examples should use canonical shape.
+- Legacy shape is still supported for backward compatibility through normalization and viewer-side compatibility handling, but may be removed in the future.
 - In practice, compatibility is currently absorbed by viewer-side compatibility handling and shared normalization logic.
 - The C++ runtime also follows the canonical shape direction.
 

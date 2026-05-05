@@ -205,6 +205,7 @@ Legacy shape:
 - `actions.byState`
 
 This shape remains a compatibility target, but it is not the canonical v1 shape.
+It should be treated as legacy and deprecated.
 
 The current JS core also accepts both:
 
@@ -234,10 +235,9 @@ This allows compatibility to remain in place while internal evaluation converges
 Policy note:
 
 - canonical shape is the formal config shape of this specification
-- new config definitions should use canonical shape
-- export config should use canonical shape
-- legacy shape remains supported for backward compatibility
-- legacy shape may be deprecated in a future phase
+- new config definitions, presets, exports, and examples should use canonical shape
+- legacy `actions.byState` and `states.rules` remain supported by `normalizeConfig` for backward compatibility
+- legacy shape is deprecated and may be removed in a future phase
 - in the current implementation, compatibility is absorbed by `normalizeConfig` and viewer-side compatibility handling
 
 ## 10. Minimal Result Format

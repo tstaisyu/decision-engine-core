@@ -37,13 +37,14 @@ The canonical config shape of this project is:
 
 New config definitions and exported config should use the canonical shape.
 The C++ runtime prototype also assumes the canonical shape.
+New presets and examples should also use the canonical shape.
 
-Legacy shape is still supported for backward compatibility:
+Legacy shape is still supported for backward compatibility, but it should be treated as legacy/deprecated:
 
 - `states.rules`
 - `actions.byState`
 
-This legacy shape may be deprecated in the future.
+The current implementation still accepts this shape through `normalizeConfig`, but future versions may remove that support.
 
 At the implementation level, compatibility is currently absorbed by normalization logic such as `normalizeConfig` and viewer-side compatibility handling.
 

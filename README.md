@@ -39,6 +39,27 @@ New config definitions and exported config should use the canonical shape.
 The C++ runtime prototype also assumes the canonical shape.
 New presets and examples should also use the canonical shape.
 
+## What's New
+
+- Config shape is unified to canonical `states[] + rules[]`
+- Legacy config support has been removed
+- JS core, React viewer, and docs now assume canonical-only config
+- C++ runtime now supports rule type parity for:
+  - `value_gte`
+  - `hysteresis`
+  - `rate_gt`
+  - `rate_lt`
+- C++ runtime also supports:
+  - state escalation
+  - action escalation
+
+## Breaking Changes
+
+- `actions.byState` has been removed
+- `states.rules` has been removed
+- `rule.name` has been removed
+- canonical config is now required
+
 ## Structure
 
 - `src/evaluate.js`: Entry point. Accepts input and returns `state` and `action`.
@@ -76,6 +97,22 @@ New presets and examples should also use the canonical shape.
 }
 ```
 
+## Minimal Canonical Config
+
+```js
+{
+  states: [
+    { name: "normal", action: "no_action" },
+    { name: "warm", action: "fan_low" },
+    { name: "hot", action: "fan_high" }
+  ],
+  rules: [
+    { type: "value_gte", threshold: 30.0, state: "hot" },
+    { type: "value_gte", threshold: 26.0, state: "warm" }
+  ]
+}
+```
+
 ## Config Validation
 
 ```bash
@@ -108,6 +145,33 @@ npm run evaluate -- examples/input.simple-warm.json --preset simpleTemperature
 
 - `examples/input.normal.json`
 - `examples/input.simple-warm.json`
+
+## C++ Runtime
+
+The C++ runtime prototype is designed for embedded-oriented use and follows the same canonical config shape.
+
+Supported rule types:
+
+- `value_gte`
+- `hysteresis`
+- `rate_gt`
+- `rate_lt`
+
+Supported escalation:
+
+- state escalation
+- action escalation
+
+`DecisionInput` is intentionally small and caller-provided:
+
+- `value`
+- `previousValue`
+- `previousState`
+- `stateDurationMs`
+- `coolingEffect`
+
+The C++ runtime is stateless.
+Runtime state is managed by the caller and passed into `evaluate()`.
 
 ## React Viewer
 

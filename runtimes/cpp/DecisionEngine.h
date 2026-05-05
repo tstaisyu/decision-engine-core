@@ -10,6 +10,10 @@
 struct DecisionInput {
   float value;
   unsigned long timestamp;
+  float previousValue = 0.0F;
+  unsigned long stateDurationMs = 0UL;
+  bool coolingEffect = false;
+  std::string previousState{};
 };
 
 struct DecisionResult {
@@ -24,11 +28,16 @@ struct StateConfig {
 
 struct Rule {
   std::string type;
-  float threshold;
+  float threshold = 0.0F;
   std::string state;
+  float onThreshold = 0.0F;
+  float offThreshold = 0.0F;
 };
 
 struct DecisionConfig {
+  unsigned long hotToCriticalDurationMs = 5000UL;
+  unsigned long fanLowToHighDurationMs = 1000UL;
+  bool requireNoCoolingEffect = true;
   std::vector<StateConfig> states{
       {"normal", "no_action"},
       {"warm", "fan_low"},

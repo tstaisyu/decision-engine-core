@@ -161,7 +161,77 @@ This minimal spec does not require the runtime to support the full current prese
 This also means the spec does not require fixed fields such as `warmThreshold` or `hotThreshold`.
 Those can appear in specific presets or compatibility layers, but they are not the minimal runtime contract.
 
-## 7. Minimal Result Format
+## 7. Canonical Config Shape
+
+The canonical config shape for v1 is:
+
+- `states[]`
+- `rules[]`
+
+### 7.1 `states[]`
+
+Each state entry should contain:
+
+- `name`
+- `action`
+
+Example:
+
+```js
+{ name: "warm", action: "fan_low" }
+```
+
+### 7.2 `rules[]`
+
+Each rule entry should contain:
+
+- `type`
+- `threshold`
+- `state`
+
+Example:
+
+```js
+{ type: "value_gte", threshold: 26.0, state: "warm" }
+```
+
+## 8. Legacy Config Shape
+
+The current JavaScript reference implementation still supports a legacy/current config shape for compatibility.
+
+Legacy shape:
+
+- `states.rules`
+- `actions.byState`
+
+This shape remains a compatibility target, but it is not the canonical v1 shape.
+
+The current JS core also accepts both:
+
+- `rule.state`
+- `rule.name`
+
+when resolving the destination state from a rule.
+
+## 9. Normalization Flow
+
+Before evaluation, config data may be normalized into canonical form.
+
+The intended flow is:
+
+1. accept either canonical shape or legacy shape
+2. convert the config through `normalizeConfig`
+3. evaluate only against canonical shape internally
+
+In practice:
+
+- legacy `states.rules` becomes canonical `rules[]`
+- legacy `actions.byState` becomes canonical `states[]`
+- `rule.name` may be normalized into `rule.state`
+
+This allows compatibility to remain in place while internal evaluation converges on a single structure.
+
+## 10. Minimal Result Format
 
 The minimal result format is:
 
@@ -190,9 +260,11 @@ Notes:
 - `debug` is optional and may be omitted in constrained runtimes
 - an embedded runtime may choose to exclude `debug` entirely to reduce memory and code size
 
-## 8. Rule-Based Evaluation
+## 11. Rule-Based Evaluation
 
 The runtime behavior is based on ordered rule evaluation.
+
+`evaluate()` should be understood as operating on canonical config shape only.
 
 The intended decision model is:
 
@@ -273,7 +345,7 @@ For example:
 
 So the v0 spec should be understood as rules-based, not as temperature-threshold-only.
 
-## 9. Version Progression
+## 12. Version Progression
 
 This specification can be understood as evolving in stages.
 
@@ -310,7 +382,7 @@ Possible future directions include:
 - migrating the JavaScript core toward the canonical `states[]` / `rules[]` shape
 - adding a conversion adapter between the current JS config shape and the canonical runtime shape
 
-## 10. Core Responsibility Boundary
+## 13. Core Responsibility Boundary
 
 The core runtime is responsible for converting input and config into a decision result.
 
@@ -337,7 +409,7 @@ In short:
 
 `core decides, but does not execute hardware operations`
 
-## 11. Separation from Viewer / Adapter / Device
+## 14. Separation from Viewer / Adapter / Device
 
 The runtime spec assumes a clear separation between the core and surrounding layers.
 
@@ -376,7 +448,7 @@ Examples:
 
 The device should not re-implement decision rules as ad hoc `if` statements if the core already defines them.
 
-## 12. Items Explicitly Out of Scope for This Minimal Spec
+## 15. Items Explicitly Out of Scope for This Minimal Spec
 
 The following topics are important, but are not standardized by this document yet:
 
@@ -399,7 +471,7 @@ Reasons:
 
 They should be documented and standardized later, after the minimal runtime contract is validated.
 
-## 13. Design Intent
+## 16. Design Intent
 
 The design intent of this spec is to preserve the main architectural principle of the project:
 
@@ -414,7 +486,7 @@ This allows the same decision behavior to be reused across:
 - future C++ runtime
 - future M5Stack or Arduino targets
 
-## 14. Summary
+## 17. Summary
 
 The current minimal runtime spec assumes:
 

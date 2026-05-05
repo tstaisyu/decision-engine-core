@@ -21,5 +21,13 @@ int main() {
     std::cout << input.value << " -> " << result.state << " / " << result.action << '\n';
   }
 
+  DecisionConfig customConfig;
+  customConfig.warm.action = "fan_mid";
+  engine.loadConfig(customConfig);
+
+  const DecisionInput customInput{26.4F, 4000UL};
+  const DecisionResult customResult = engine.evaluate(customInput);
+  std::cout << customInput.value << " -> " << customResult.state << " / " << customResult.action << '\n';
+
   return 0;
 }

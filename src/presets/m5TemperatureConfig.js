@@ -54,7 +54,6 @@ const m5TemperatureConfig = {
       state: "hot"
     },
     {
-      name: "hot_hysteresis",
       type: "hysteresis",
       state: "hot",
       onThreshold: 26.0,

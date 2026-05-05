@@ -56,7 +56,6 @@ const m5TemperatureConfig = {
       state: "hot"
     },
     {
-      name: "hot_hysteresis",
       type: "hysteresis",
       state: "hot",
       onThreshold: 26.0,
@@ -154,7 +153,6 @@ function resolveStateRules(config, fallback) {
 
   return [
     {
-      name: "critical",
       type: "value_gte",
       threshold:
         typeof config.criticalThreshold === "number"
@@ -164,7 +162,6 @@ function resolveStateRules(config, fallback) {
             : fallback.criticalThreshold
     },
     {
-      name: "hot",
       type: "value_gte",
       threshold:
         typeof config.hotOnThreshold === "number"
@@ -174,7 +171,6 @@ function resolveStateRules(config, fallback) {
             : fallback.hotOnThreshold
     },
     {
-      name: "hot_hysteresis",
       type: "hysteresis",
       state: "hot",
       onThreshold:
@@ -191,7 +187,6 @@ function resolveStateRules(config, fallback) {
             : fallback.hotOffThreshold
     },
     {
-      name: "warming",
       type: "rate_gt",
       threshold:
         typeof config.warmingRateThreshold === "number"
@@ -201,7 +196,6 @@ function resolveStateRules(config, fallback) {
             : fallback.warmingRateThreshold
     },
     {
-      name: "cooling",
       type: "rate_lt",
       threshold:
         typeof config.coolingRateThreshold === "number"

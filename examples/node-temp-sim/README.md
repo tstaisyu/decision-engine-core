@@ -26,16 +26,15 @@ node examples/node-temp-sim/index.js --config examples/node-temp-sim/exported-co
 
 1. viewer で definition を編集して config JSON を export する
 2. export された config は canonical config shape の `states[]` / `rules[]` を使う
-3. legacy `actions.byState` / `states.rules` は backward compatibility 用に内部サポートされる
-4. export した JSON を `examples/node-temp-sim/exported-config.sample.json` に置き換える
-5. `node-temp-sim` はこの viewer export config をそのまま読み込める
-6. 次を実行する
+3. export した JSON を `examples/node-temp-sim/exported-config.sample.json` に置き換える
+4. `node-temp-sim` はこの viewer export config をそのまま読み込める
+5. 次を実行する
 
 ```bash
 npm run example:node-temp-sim:sample
 ```
 
-7. 出力の `state` / `action` / `pwm` を確認する
+6. 出力の `state` / `action` / `pwm` を確認する
 
 ## 注意
 

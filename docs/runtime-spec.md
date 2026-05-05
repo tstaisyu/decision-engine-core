@@ -150,10 +150,8 @@ Notes:
 
 Current implementation note:
 
-- the JavaScript core is still the reference implementation, but its current config shape is legacy/current rather than canonical
-- the current JS shape uses `states.rules`
-- the current JS shape uses `actions.byState`
-- the current C++ runtime prototype is implemented closer to the v1 canonical shape using `states[]` and `rules[]`
+- the JavaScript core is the current reference implementation
+- the current C++ runtime prototype is implemented around the same canonical `states[]` and `rules[]` shape
 
 This minimal spec does not require the runtime to support the full current preset schema.
 
@@ -194,44 +192,22 @@ Example:
 { type: "value_gte", threshold: 26.0, state: "warm" }
 ```
 
-## 8. Legacy Config Shape
-
-The current JavaScript reference implementation still supports a legacy/current config shape for compatibility.
-
-Legacy shape:
-
-- `states.rules`
-- `actions.byState`
-
-This shape remains a compatibility target, but it is not the canonical v1 shape.
-It should be treated as legacy and deprecated.
-
-## 9. Normalization Flow
+## 8. Normalization Flow
 
 Before evaluation, config data may be normalized into canonical form.
 
 The intended flow is:
 
-1. accept either canonical shape or legacy shape
-2. convert the config through `normalizeConfig`
+1. accept canonical shape
+2. normalize the config
 3. evaluate only against canonical shape internally
-
-In practice:
-
-- legacy `states.rules` becomes canonical `rules[]`
-- legacy `actions.byState` becomes canonical `states[]`
-
-This allows compatibility to remain in place while internal evaluation converges on a single structure.
 
 Policy note:
 
 - canonical shape is the formal config shape of this specification
 - new config definitions, presets, exports, and examples should use canonical shape
-- legacy `actions.byState` and `states.rules` remain supported by `normalizeConfig` for backward compatibility
-- legacy shape is deprecated and may be removed in a future phase
-- in the current implementation, compatibility is absorbed by `normalizeConfig` and viewer-side compatibility handling
 
-## 10. Minimal Result Format
+## 9. Minimal Result Format
 
 The minimal result format is:
 
@@ -260,7 +236,7 @@ Notes:
 - `debug` is optional and may be omitted in constrained runtimes
 - an embedded runtime may choose to exclude `debug` entirely to reduce memory and code size
 
-## 11. Rule-Based Evaluation
+## 10. Rule-Based Evaluation
 
 The runtime behavior is based on ordered rule evaluation.
 
@@ -305,7 +281,7 @@ if action is not found:
   action = no_action
 ```
 
-### 8.1 Minimal Rule Shape
+### 10.1 Minimal Rule Shape
 
 The minimal supported rule shape is:
 
@@ -325,7 +301,7 @@ Required fields:
 
 `rule.state` is required in the canonical shape.
 
-### 8.2 Supported Rule Type in the Minimal Spec
+### 10.2 Supported Rule Type in the Minimal Spec
 
 The minimal supported rule type is:
 
@@ -348,7 +324,7 @@ For example:
 
 So the v0 spec should be understood as rules-based, not as temperature-threshold-only.
 
-## 12. Version Progression
+## 11. Version Progression
 
 This specification can be understood as evolving in stages.
 
@@ -378,14 +354,7 @@ This matches the current implementation direction more closely in both:
 - the JavaScript reference implementation
 - the evolving C++ runtime prototype
 
-At the same time, there is still a shape gap between the canonical spec and the current JS config representation.
-
-Possible future directions include:
-
-- migrating the JavaScript core toward the canonical `states[]` / `rules[]` shape
-- adding a conversion adapter between the current JS config shape and the canonical runtime shape
-
-## 13. Core Responsibility Boundary
+## 12. Core Responsibility Boundary
 
 The core runtime is responsible for converting input and config into a decision result.
 

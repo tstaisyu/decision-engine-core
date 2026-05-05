@@ -39,15 +39,6 @@ New config definitions and exported config should use the canonical shape.
 The C++ runtime prototype also assumes the canonical shape.
 New presets and examples should also use the canonical shape.
 
-Legacy shape is still supported for backward compatibility, but it should be treated as legacy/deprecated:
-
-- `states.rules`
-- `actions.byState`
-
-The current implementation still accepts this shape through `normalizeConfig`, but future versions may remove that support.
-
-At the implementation level, compatibility is currently absorbed by normalization logic such as `normalizeConfig` and viewer-side compatibility handling.
-
 ## Structure
 
 - `src/evaluate.js`: Entry point. Accepts input and returns `state` and `action`.

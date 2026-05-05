@@ -28,10 +28,7 @@ function buildInput(overrides) {
 function runCase(name, config, input, expectedState, expectedAction) {
   test(name, () => {
     const result = evaluate(buildInput(input), config);
-    assert.deepEqual(
-      { state: result.state, action: result.action },
-      { state: expectedState, action: expectedAction }
-    );
+    assert.deepEqual({ state: result.state, action: result.action }, { state: expectedState, action: expectedAction });
   });
 }
 
@@ -105,13 +102,7 @@ const rateLtConfig = {
 runCase("value_gte.normal", minimalTemperatureConfig, { value: 25.0, previousValue: 25.0 }, "normal", "no_action");
 runCase("value_gte.warm", minimalTemperatureConfig, { value: 26.4, previousValue: 26.4 }, "warm", "fan_low");
 runCase("value_gte.hot", minimalTemperatureConfig, { value: 30.1, previousValue: 30.1 }, "hot", "fan_high");
-runCase(
-  "value_gte.custom_action",
-  customActionConfig,
-  { value: 26.4, previousValue: 26.4 },
-  "warm",
-  "fan_mid"
-);
+runCase("value_gte.custom_action", customActionConfig, { value: 26.4, previousValue: 26.4 }, "warm", "fan_mid");
 
 runCase(
   "unsupported_rule.skip_to_next",

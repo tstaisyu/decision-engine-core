@@ -188,7 +188,7 @@ Shape:
 ```js
 state: {
   hotToCritical: {
-    durationMs: 5000
+    durationMs: 5000;
   }
 }
 ```

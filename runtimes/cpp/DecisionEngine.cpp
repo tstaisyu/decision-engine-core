@@ -53,5 +53,12 @@ DecisionResult DecisionEngine::evaluate(const DecisionInput& input) const {
   }
 
   const StateConfig state = findStateConfig(config_, stateName);
-  return {state.name, state.action};
+  std::string action = state.action;
+  if (state.action == "fan_low" && input.stateDurationMs >= config_.fanLowToHighDurationMs) {
+    if (!config_.requireNoCoolingEffect || !input.coolingEffect) {
+      action = "fan_high";
+    }
+  }
+
+  return {state.name, action};
 }

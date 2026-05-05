@@ -1,79 +1,222 @@
 # Config Specification
 
-## Top-level structure
+This document defines the canonical config structure used by `decision-engine-core`.
 
-`config` has the following top-level structure:
+Scope:
 
-- `states`
-- `actions`
+- config shape and fields
+- canonical rule and state structure
+
+Out of scope:
+
+- runtime evaluation behavior
+- rule execution order details
+- escalation execution logic
+
+Those runtime behavior details are defined in [docs/runtime-spec.md](docs/runtime-spec.md).
+
+## Top-Level Structure
+
+The canonical config shape is:
+
+- `states[]`
+- `rules[]`
 - `escalations`
 
-## `states.rules`
+Example:
 
-An array of state evaluation rules.
+```js
+{
+  states: [
+    { name: "normal", action: "no_action" },
+    { name: "warming", action: "fan_low" },
+    { name: "hot", action: "fan_high" },
+    { name: "critical", action: "alert" }
+  ],
+  rules: [
+    { type: "value_gte", threshold: 40.0, state: "critical" },
+    { type: "value_gte", threshold: 26.0, state: "hot" },
+    { type: "hysteresis", state: "hot", onThreshold: 26.0, offThreshold: 25.5 },
+    { type: "rate_gt", threshold: 0.02, state: "warming" },
+    { type: "rate_lt", threshold: -0.02, state: "cooling" }
+  ],
+  escalations: {
+    state: {
+      hotToCritical: {
+        durationMs: 5000
+      }
+    },
+    action: {
+      fanLowToHigh: {
+        durationMs: 1000,
+        requireNoCoolingEffect: false
+      }
+    }
+  }
+}
+```
 
-Common fields for each rule:
+## `states[]`
 
-- `name`: state name
-- `type`: rule type
+`states[]` defines the available states and the base action for each state.
 
-Currently supported `type` values:
+Each state entry contains:
+
+- `name`
+- `action`
+
+Example:
+
+```js
+{ name: "hot", action: "fan_high" }
+```
+
+### Fields
+
+- `name`
+  - string
+  - required
+  - unique state identifier
+- `action`
+  - string
+  - required
+  - base action resolved when this state is selected
+
+## `rules[]`
+
+`rules[]` defines ordered state decision rules.
+
+Each rule entry contains:
+
+- `type`
+- `state`
+
+Additional fields depend on `type`.
+
+### Common Fields
+
+- `type`
+  - string
+  - required
+- `state`
+  - string
+  - required
+  - target state name
+
+### Supported Rule Types
 
 - `value_gte`
 - `hysteresis`
 - `rate_gt`
 - `rate_lt`
 
-Required fields by rule type:
-
 ### `value_gte`
+
+Required fields:
 
 - `threshold`
 
+Shape:
+
+```js
+{ type: "value_gte", threshold: 26.0, state: "hot" }
+```
+
 ### `hysteresis`
+
+Required fields:
 
 - `state`
 - `offThreshold`
 
+Optional fields:
+
+- `onThreshold`
+
+Shape:
+
+```js
+{ type: "hysteresis", state: "hot", onThreshold: 26.0, offThreshold: 25.5 }
+```
+
+Notes:
+
+- `offThreshold` is used by the current runtime behavior
+- `onThreshold` may be kept for compatibility and future use
+
 ### `rate_gt`
 
+Required fields:
+
 - `threshold`
+
+Shape:
+
+```js
+{ type: "rate_gt", threshold: 0.02, state: "warming" }
+```
 
 ### `rate_lt`
 
+Required fields:
+
 - `threshold`
 
-## `actions.byState`
+Shape:
 
-Defines the base action for each state.
+```js
+{ type: "rate_lt", threshold: -0.02, state: "cooling" }
+```
 
-Examples:
+## `escalations`
 
-- `normal -> no_action`
-- `warming -> fan_low`
-- `hot -> fan_high`
-- `critical -> alert`
+`escalations` defines state and action escalation settings.
 
-## `escalations.state`
+Top-level entries:
 
-Defines time-based state escalation.
+- `state`
+- `action`
 
-Current field:
+### `escalations.state`
+
+Current canonical entry:
 
 - `hotToCritical.durationMs`
 
-## `escalations.action`
+Shape:
 
-Defines time- and condition-based action escalation.
+```js
+state: {
+  hotToCritical: {
+    durationMs: 5000;
+  }
+}
+```
 
-Current fields:
+### `escalations.action`
+
+Current canonical entry:
 
 - `fanLowToHigh.durationMs`
 - `fanLowToHigh.requireNoCoolingEffect`
 
-## Notes
+Shape:
 
-- `rules` are evaluated from top to bottom, and the first matching rule becomes `baseState`
-- duration-based state escalation is applied after rule evaluation
-- action is determined from the final state
-- action escalation is applied after `baseAction` is determined
+```js
+action: {
+  fanLowToHigh: {
+    durationMs: 1000,
+    requireNoCoolingEffect: false
+  }
+}
+```
+
+## Role Separation
+
+- `CONFIG_SPEC.md`
+  - defines canonical config structure
+  - defines fields and supported config entries
+- `docs/runtime-spec.md`
+  - defines runtime evaluation behavior
+  - defines rule matching semantics
+  - defines state/action escalation behavior

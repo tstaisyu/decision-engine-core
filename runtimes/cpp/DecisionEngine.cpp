@@ -22,13 +22,43 @@ void DecisionEngine::loadConfig(const DecisionConfig& config) {
 }
 
 DecisionResult DecisionEngine::evaluate(const DecisionInput& input) const {
+  const float stateRate = input.value - input.previousValue;
+  std::string baseState = "normal";
+
   for (const Rule& rule : config_.rules) {
     if (rule.type == "value_gte" && input.value >= rule.threshold) {
-      const StateConfig state = findStateConfig(config_, rule.state);
-      return {state.name, state.action};
+      baseState = rule.state;
+      break;
+    }
+
+    if (rule.type == "hysteresis" && input.previousState == rule.state && input.value > rule.offThreshold) {
+      baseState = rule.state;
+      break;
+    }
+
+    if (rule.type == "rate_gt" && stateRate > rule.threshold) {
+      baseState = rule.state;
+      break;
+    }
+
+    if (rule.type == "rate_lt" && stateRate < rule.threshold) {
+      baseState = rule.state;
+      break;
     }
   }
 
-  const StateConfig state = findStateConfig(config_, "normal");
-  return {state.name, state.action};
+  std::string stateName = baseState;
+  if (baseState == "hot" && input.previousState == "hot" && input.stateDurationMs >= config_.hotToCriticalDurationMs) {
+    stateName = "critical";
+  }
+
+  const StateConfig state = findStateConfig(config_, stateName);
+  std::string action = state.action;
+  if (state.action == "fan_low" && input.stateDurationMs >= config_.fanLowToHighDurationMs) {
+    if (!config_.requireNoCoolingEffect || !input.coolingEffect) {
+      action = "fan_high";
+    }
+  }
+
+  return {state.name, action};
 }

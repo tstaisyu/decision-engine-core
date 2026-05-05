@@ -9,12 +9,20 @@ function DefinitionPanel({
   selectedConfig,
   onConfigChange
 }) {
-  const rules = selectedConfig?.states?.rules || [];
-  const actions = selectedConfig?.actions?.byState || {};
+  const rules = selectedConfig?.rules || selectedConfig?.states?.rules || [];
+  const states =
+    selectedConfig?.states && Array.isArray(selectedConfig.states)
+      ? selectedConfig.states
+      : Object.entries(selectedConfig?.actions?.byState || {}).map(([name, action]) => ({ name, action }));
+  const actions = Object.fromEntries(states.map((state) => [state.name, state.action]));
   const stateEscalations = selectedConfig?.escalations?.state || {};
   const actionEscalations = selectedConfig?.escalations?.action || {};
-  const baseRules = baseSelectedConfig?.states?.rules || [];
-  const baseActions = baseSelectedConfig?.actions?.byState || {};
+  const baseRules = baseSelectedConfig?.rules || baseSelectedConfig?.states?.rules || [];
+  const baseStates =
+    baseSelectedConfig?.states && Array.isArray(baseSelectedConfig.states)
+      ? baseSelectedConfig.states
+      : Object.entries(baseSelectedConfig?.actions?.byState || {}).map(([name, action]) => ({ name, action }));
+  const baseActions = Object.fromEntries(baseStates.map((state) => [state.name, state.action]));
   const baseStateEscalations = baseSelectedConfig?.escalations?.state || {};
   const baseActionEscalations = baseSelectedConfig?.escalations?.action || {};
 
@@ -25,20 +33,50 @@ function DefinitionPanel({
     }
 
     const nextConfig = structuredClone(selectedConfig);
-    if (!nextConfig?.states?.rules?.[index]) {
+    if (!nextConfig) {
       return;
     }
 
-    nextConfig.states.rules[index][key] = value;
+    if (!Array.isArray(nextConfig.rules)) {
+      nextConfig.rules = structuredClone(rules);
+    }
+    if (!nextConfig.rules?.[index]) {
+      return;
+    }
+
+    nextConfig.rules[index][key] = value;
+
+    if (nextConfig.states && !Array.isArray(nextConfig.states) && Array.isArray(nextConfig.states.rules?.[index] ? nextConfig.states.rules : null)) {
+      nextConfig.states.rules[index][key] = value;
+    }
     onConfigChange(nextConfig);
   }
 
   function updateAction(state, action) {
     const nextConfig = structuredClone(selectedConfig);
-    if (!nextConfig?.actions?.byState || !(state in nextConfig.actions.byState)) {
+    if (!nextConfig) {
       return;
     }
 
+    if (!Array.isArray(nextConfig.rules)) {
+      nextConfig.rules = structuredClone(rules);
+    }
+    if (!Array.isArray(nextConfig.states)) {
+      nextConfig.states = structuredClone(states);
+    }
+    const targetState = nextConfig.states.find((item) => item?.name === state);
+    if (!targetState) {
+      return;
+    }
+
+    targetState.action = action;
+
+    if (!nextConfig.actions || Array.isArray(nextConfig.actions)) {
+      nextConfig.actions = {};
+    }
+    if (!nextConfig.actions.byState || Array.isArray(nextConfig.actions.byState)) {
+      nextConfig.actions.byState = {};
+    }
     nextConfig.actions.byState[state] = action;
     onConfigChange(nextConfig);
   }
@@ -78,7 +116,7 @@ function DefinitionPanel({
   }
 
   function renderActionRow([state, action]) {
-    const availableActions = Array.from(new Set(Object.values(actions)));
+    const availableActions = Array.from(new Set([...Object.values(actions), ...Object.values(baseActions)]));
 
     return (
       <tr key={state}>
@@ -137,13 +175,13 @@ function DefinitionPanel({
 
     if (
       rule.type === "hysteresis" &&
-      typeof rule.threshold === "number" &&
+      typeof rule.onThreshold === "number" &&
       typeof rule.offThreshold === "number"
     ) {
       return (
         <div className="rule-condition-cell">
           <div className="rule-condition-inline">
-            value &gt;= {thresholdInput("threshold")}
+            value &gt;= {thresholdInput("onThreshold")}
           </div>
           <div className="rule-condition-inline">
             previousState = {rule.state || rule.name} かつ value &gt; {thresholdInput("offThreshold")}
@@ -164,10 +202,13 @@ function DefinitionPanel({
         return;
       }
 
-      if (typeof rule.threshold === "number" && rule.threshold !== baseRule.threshold) {
+      const ruleThreshold = typeof rule.onThreshold === "number" ? rule.onThreshold : rule.threshold;
+      const baseRuleThreshold =
+        typeof baseRule.onThreshold === "number" ? baseRule.onThreshold : baseRule.threshold;
+      if (typeof ruleThreshold === "number" && ruleThreshold !== baseRuleThreshold) {
         changes.push({
           key: `rule-threshold-${index}`,
-          label: `Rules: ${rule.name} threshold ${baseRule.threshold} -> ${rule.threshold}`,
+          label: `Rules: ${rule.name} threshold ${baseRuleThreshold} -> ${ruleThreshold}`,
           resetType: "rule-threshold",
           target: index
         });
@@ -238,16 +279,45 @@ function DefinitionPanel({
       return;
     }
 
-    if (resetType === "rule-threshold" && nextConfig.states?.rules?.[target]) {
-      nextConfig.states.rules[target].threshold = baseRules[target]?.threshold;
+    if (resetType === "rule-threshold" && nextConfig.rules?.[target]) {
+      if (typeof nextConfig.rules[target].onThreshold === "number" || typeof baseRules[target]?.onThreshold === "number") {
+        nextConfig.rules[target].onThreshold = baseRules[target]?.onThreshold;
+      } else {
+        nextConfig.rules[target].threshold = baseRules[target]?.threshold;
+      }
+      if (nextConfig.states && !Array.isArray(nextConfig.states) && nextConfig.states.rules?.[target]) {
+        if (
+          typeof nextConfig.states.rules[target].onThreshold === "number" ||
+          typeof baseRules[target]?.onThreshold === "number"
+        ) {
+          nextConfig.states.rules[target].onThreshold = baseRules[target]?.onThreshold;
+        } else {
+          nextConfig.states.rules[target].threshold = baseRules[target]?.threshold;
+        }
+      }
     }
 
-    if (resetType === "rule-off-threshold" && nextConfig.states?.rules?.[target]) {
-      nextConfig.states.rules[target].offThreshold = baseRules[target]?.offThreshold;
+    if (resetType === "rule-off-threshold" && nextConfig.rules?.[target]) {
+      nextConfig.rules[target].offThreshold = baseRules[target]?.offThreshold;
+      if (nextConfig.states && !Array.isArray(nextConfig.states) && nextConfig.states.rules?.[target]) {
+        nextConfig.states.rules[target].offThreshold = baseRules[target]?.offThreshold;
+      }
     }
 
-    if (resetType === "action" && nextConfig.actions?.byState?.[target] !== undefined) {
-      nextConfig.actions.byState[target] = baseActions[target];
+    if (resetType === "action") {
+      if (!Array.isArray(nextConfig.rules)) {
+        nextConfig.rules = structuredClone(rules);
+      }
+      if (!Array.isArray(nextConfig.states)) {
+        nextConfig.states = structuredClone(states);
+      }
+      const targetState = nextConfig.states.find((state) => state?.name === target);
+      if (targetState) {
+        targetState.action = baseActions[target];
+      }
+      if (nextConfig.actions?.byState?.[target] !== undefined) {
+        nextConfig.actions.byState[target] = baseActions[target];
+      }
     }
 
     if (resetType === "state-escalation" && nextConfig.escalations?.state?.[target]) {
@@ -361,69 +431,48 @@ function DefinitionPanel({
       </div>
 
       <div className="definition-block">
-        <details>
-          <summary>詳細設定：継続時間による昇格（Escalations）</summary>
-          <table className="definition-table">
-            <thead>
-              <tr>
-                <th>分類（Group）</th>
-                <th>名前（Name）</th>
-                <th>継続時間（durationMs）</th>
-                <th>冷却効果なし必須（requireNoCoolingEffect）</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.entries(stateEscalations).map(([name, escalation]) => (
-                <tr key={`state-${name}`}>
-                  <td>状態（state）</td>
-                  <td>{name}</td>
-                  <td>
-                    <input
-                      className="editable-field"
-                      type="number"
-                      step="1"
-                      value={escalation.durationMs ?? ""}
-                      onChange={(event) => updateEscalationDuration("state", name, event.target.value)}
-                    />
-                  </td>
-                  <td>-</td>
-                </tr>
-              ))}
-              {Object.entries(actionEscalations).map(([name, escalation]) => (
-                <tr key={`action-${name}`}>
-                  <td>アクション（action）</td>
-                  <td>{name}</td>
-                  <td>
-                    <input
-                      className="editable-field"
-                      type="number"
-                      step="1"
-                      value={escalation.durationMs ?? ""}
-                      onChange={(event) => updateEscalationDuration("action", name, event.target.value)}
-                    />
-                  </td>
-                  <td>
-                    <select
-                      className="editable-field"
-                      value={
-                        escalation.requireNoCoolingEffect === true
-                          ? "true"
-                          : escalation.requireNoCoolingEffect === false
-                            ? "false"
-                            : ""
-                      }
-                      onChange={(event) => updateActionEscalationBoolean(name, event.target.value)}
-                    >
-                      <option value="">未指定</option>
-                      <option value="true">true</option>
-                      <option value="false">false</option>
-                    </select>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </details>
+        <h3>昇格条件（Escalations）</h3>
+        <div className="definition-subgrid">
+          <div className="definition-item">
+            <label htmlFor="state-hot-to-critical">hot → critical durationMs</label>
+            <input
+              id="state-hot-to-critical"
+              className="editable-field"
+              type="number"
+              step="1"
+              value={stateEscalations.hotToCritical?.durationMs ?? ""}
+              onChange={(event) => updateEscalationDuration("state", "hotToCritical", event.target.value)}
+            />
+          </div>
+          <div className="definition-item">
+            <label htmlFor="action-fan-low-to-high">fan_low → fan_high durationMs</label>
+            <input
+              id="action-fan-low-to-high"
+              className="editable-field"
+              type="number"
+              step="1"
+              value={actionEscalations.fanLowToHigh?.durationMs ?? ""}
+              onChange={(event) => updateEscalationDuration("action", "fanLowToHigh", event.target.value)}
+            />
+          </div>
+          <div className="definition-item">
+            <label htmlFor="action-fan-low-to-high-cooling-effect">fanLowToHigh requireNoCoolingEffect</label>
+            <select
+              id="action-fan-low-to-high-cooling-effect"
+              className="editable-field"
+              value={
+                actionEscalations.fanLowToHigh?.requireNoCoolingEffect === undefined
+                  ? ""
+                  : String(actionEscalations.fanLowToHigh.requireNoCoolingEffect)
+              }
+              onChange={(event) => updateActionEscalationBoolean("fanLowToHigh", event.target.value)}
+            >
+              <option value="">default</option>
+              <option value="true">true</option>
+              <option value="false">false</option>
+            </select>
+          </div>
+        </div>
       </div>
     </section>
   );

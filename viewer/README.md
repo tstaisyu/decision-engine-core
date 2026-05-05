@@ -21,6 +21,14 @@ npm run dev
 6. Run `npm run example:node-temp-sim:sample` from the repository root to verify the mock deploy flow.
 7. Confirm `state`, `action`, and `pwm` in the output.
 
+## Config Shape
+
+- The viewer now prefers canonical config shape internally: `states[]` and `rules[]`.
+- Legacy shape is still kept for compatibility: `states.rules` and `actions.byState`.
+- `Export Config` outputs a canonical-compatible config.
+- Edits made in `DefinitionPanel` are reflected into `states[]` / `rules[]`.
+- The simulation engine also prefers canonical shape during evaluation.
+
 ## Notes
 
 - Uses local engine files from the parent repository (`../src`).

@@ -63,10 +63,21 @@ function normalizeExportConfig(config) {
   }
 
   if (Array.isArray(config.states) || Array.isArray(config.rules)) {
+    const canonicalStates = Array.isArray(config.states)
+      ? config.states.map((state) => ({ ...state }))
+      : config.actions?.byState && typeof config.actions.byState === "object"
+        ? Object.entries(config.actions.byState).map(([name, action]) => ({ name, action }))
+        : [];
+    const canonicalRules = Array.isArray(config.rules)
+      ? config.rules.map(normalizeRule)
+      : Array.isArray(config.states?.rules)
+        ? config.states.rules.map(normalizeRule)
+        : [];
+
     return {
       ...config,
-      states: Array.isArray(config.states) ? config.states.map((state) => ({ ...state })) : [],
-      rules: Array.isArray(config.rules) ? config.rules.map(normalizeRule) : []
+      states: canonicalStates,
+      rules: canonicalRules
     };
   }
 
@@ -83,13 +94,35 @@ function normalizeExportConfig(config) {
   };
 }
 
+function normalizeViewerConfig(config) {
+  const canonicalConfig = normalizeExportConfig(config);
+  const { states: canonicalStates, rules: canonicalRules, ...restCanonicalConfig } = canonicalConfig;
+  const actionsByState = Object.fromEntries(
+    canonicalStates
+      .filter((state) => state && typeof state.name === "string")
+      .map((state) => [state.name, state.action])
+  );
+
+  return {
+    ...restCanonicalConfig,
+    states: {
+      ...(config && config.states && !Array.isArray(config.states) ? config.states : {}),
+      rules: canonicalRules
+    },
+    actions: {
+      ...(config && config.actions && !Array.isArray(config.actions) ? config.actions : {}),
+      byState: actionsByState
+    }
+  };
+}
+
 export function useSimulation() {
   const presets = useMemo(() => getPresets(), []);
   const presetNames = Object.keys(presets);
   const [selectedPreset, setSelectedPreset] = useState(presetNames[0] || "");
   const [selectedConfig, setSelectedConfig] = useState(() => {
     const firstPresetName = presetNames[0];
-    return firstPresetName ? structuredClone(presets[firstPresetName]) : null;
+    return firstPresetName ? normalizeViewerConfig(structuredClone(presets[firstPresetName])) : null;
   });
   const [inputText, setInputText] = useState(JSON.stringify(defaultInput, null, 2));
   const [result, setResult] = useState(null);
@@ -98,15 +131,15 @@ export function useSimulation() {
   const [timelineRows, setTimelineRows] = useState([]);
   const [timelineError, setTimelineError] = useState("");
   const [workspaceStatus, setWorkspaceStatus] = useState("");
-  const baseSelectedConfig = selectedPreset ? presets[selectedPreset] : null;
+  const baseSelectedConfig = selectedPreset ? normalizeViewerConfig(structuredClone(presets[selectedPreset])) : null;
 
   function changePreset(presetName) {
     setSelectedPreset(presetName);
-    setSelectedConfig(structuredClone(presets[presetName]));
+    setSelectedConfig(normalizeViewerConfig(structuredClone(presets[presetName])));
   }
 
   function updateSelectedConfig(nextConfig) {
-    setSelectedConfig(nextConfig);
+    setSelectedConfig(normalizeViewerConfig(nextConfig));
   }
 
   function evaluateCurrent() {
@@ -222,7 +255,7 @@ export function useSimulation() {
       const payload = {
         version: 1,
         selectedPreset,
-        selectedConfig,
+        selectedConfig: normalizeExportConfig(selectedConfig),
         inputText,
         sequenceText
       };
@@ -267,7 +300,7 @@ export function useSimulation() {
       }
 
       setSelectedPreset(parsed.selectedPreset);
-      setSelectedConfig(parsed.selectedConfig);
+      setSelectedConfig(normalizeViewerConfig(parsed.selectedConfig));
       setInputText(parsed.inputText);
       setSequenceText(parsed.sequenceText);
       setResult(null);

@@ -124,9 +124,26 @@ function matchRule(rule, normalized) {
   return false;
 }
 
+function normalizeRule(rule) {
+  if (!rule || typeof rule !== "object" || Array.isArray(rule)) {
+    return rule;
+  }
+
+  const nextRule = { ...rule };
+  if (typeof nextRule.state !== "string" || nextRule.state.length === 0) {
+    nextRule.state = nextRule.name;
+  }
+
+  return nextRule;
+}
+
 function resolveStateRules(config, fallback) {
+  if (Array.isArray(config?.rules)) {
+    return config.rules.map(normalizeRule);
+  }
+
   if (config && config.states && Array.isArray(config.states.rules)) {
-    return config.states.rules;
+    return config.states.rules.map(normalizeRule);
   }
 
   return [
@@ -187,7 +204,31 @@ function resolveStateRules(config, fallback) {
             ? config.states.cooling.rateThreshold
             : fallback.states.cooling.rateThreshold
     }
-  ];
+  ].map(normalizeRule);
+}
+
+function resolveStateEntries(config, fallback) {
+  if (Array.isArray(config?.states)) {
+    return config.states.map((state) => ({ ...state }));
+  }
+
+  const actionByState = {
+    ...fallback.actions.byState,
+    ...((config && config.actions && config.actions.byState) || {})
+  };
+
+  return Object.entries(actionByState).map(([name, action]) => ({ name, action }));
+}
+
+function findStateAction(stateEntries, actionByState, stateName) {
+  if (Array.isArray(stateEntries)) {
+    const matchedState = stateEntries.find((state) => state && state.name === stateName);
+    if (typeof matchedState?.action === "string") {
+      return matchedState.action;
+    }
+  }
+
+  return actionByState[stateName] || "no_action";
 }
 
 function resolveConfig(config, fallback) {
@@ -195,6 +236,8 @@ function resolveConfig(config, fallback) {
 
   return {
     ...safeConfig,
+    rules: resolveStateRules(safeConfig, fallback),
+    stateEntries: resolveStateEntries(safeConfig, fallback),
     actions: {
       ...(safeConfig.actions || {}),
       byState: {
@@ -264,7 +307,6 @@ function resolveConfig(config, fallback) {
               ? safeConfig.states.hot.offThreshold
               : fallback.states.hot.offThreshold
       },
-      rules: resolveStateRules(safeConfig, fallback),
       warming: {
         rateThreshold:
           typeof safeConfig.warmingRateThreshold === "number"
@@ -338,7 +380,7 @@ function normalizeInput(input) {
 function deriveState(normalized, config) {
   const { previousStateSafe, rawStateDurationMs } = normalized;
   const hotToCriticalEscalationConfig = config.escalations.state.hotToCritical;
-  const stateRules = config.states.rules;
+  const stateRules = config.rules;
 
   let baseState = "normal";
 
@@ -374,7 +416,7 @@ function deriveAction(normalized, stateContext, config) {
   const fanLowToHighEscalationConfig = config.escalations.action.fanLowToHigh;
   const { coolingEffectRateThreshold = -0.01 } = config;
 
-  const baseAction = actionByState[state] || "no_action";
+  const baseAction = findStateAction(config.stateEntries, actionByState, state);
   let action = baseAction;
 
   const hasCoolingEffectForDecision =

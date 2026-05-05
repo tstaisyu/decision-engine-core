@@ -24,18 +24,6 @@ function normalizeCanonicalConfig(config) {
   };
 }
 
-function normalizeLegacyConfig(config) {
-  const { states, actions, ...rest } = config;
-  const legacyRules = Array.isArray(states?.rules) ? states.rules : [];
-  const byState = actions?.byState && typeof actions.byState === "object" ? actions.byState : {};
-
-  return {
-    ...rest,
-    states: Object.entries(byState).map(([name, action]) => ({ name, action })),
-    rules: legacyRules.map(normalizeRule).filter(Boolean)
-  };
-}
-
 function normalizeConfig(config) {
   if (!config || typeof config !== "object" || Array.isArray(config)) {
     return {
@@ -48,7 +36,10 @@ function normalizeConfig(config) {
     return normalizeCanonicalConfig(config);
   }
 
-  return normalizeLegacyConfig(config);
+  return {
+    states: [],
+    rules: []
+  };
 }
 
 module.exports = {

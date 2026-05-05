@@ -8,7 +8,7 @@ const { normalizeConfig } = require("../src/normalizeConfig");
 // Canonical rules require rule.state.
 // Rules without state are dropped during normalize().
 
-test("normalizes legacy shape into canonical states and rules", () => {
+test("ignores legacy shape and returns an empty canonical config", () => {
   const normalized = normalizeConfig({
     states: {
       rules: [
@@ -28,17 +28,9 @@ test("normalizes legacy shape into canonical states and rules", () => {
     }
   });
 
-  assert.deepEqual(normalized.states, [
-    { name: "normal", action: "no_action" },
-    { name: "warm", action: "fan_low" },
-    { name: "hot", action: "fan_high" }
-  ]);
-  assert.deepEqual(normalized.rules, [
-    { state: "hot", type: "value_gte", threshold: 30 },
-    { state: "warm", type: "value_gte", threshold: 26 }
-  ]);
-  assert.deepEqual(normalized.escalations, {
-    state: {}
+  assert.deepEqual(normalized, {
+    states: [],
+    rules: []
   });
 });
 

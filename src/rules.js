@@ -28,69 +28,7 @@ function resolveStateRules(config, defaultConfig) {
     return config.rules;
   }
 
-  if (config && config.states && Array.isArray(config.states.rules)) {
-    return config.states.rules;
-  }
-
-  return [
-    {
-      name: "critical",
-      type: "value_gte",
-      threshold:
-        typeof config.criticalThreshold === "number"
-          ? config.criticalThreshold
-          : config && config.states && config.states.critical && typeof config.states.critical.threshold === "number"
-            ? config.states.critical.threshold
-            : defaultConfig.criticalThreshold
-    },
-    {
-      name: "hot",
-      type: "value_gte",
-      threshold:
-        typeof config.hotOnThreshold === "number"
-          ? config.hotOnThreshold
-          : config && config.states && config.states.hot && typeof config.states.hot.onThreshold === "number"
-            ? config.states.hot.onThreshold
-            : defaultConfig.hotOnThreshold
-    },
-    {
-      name: "hot_hysteresis",
-      type: "hysteresis",
-      state: "hot",
-      onThreshold:
-        typeof config.hotOnThreshold === "number"
-          ? config.hotOnThreshold
-          : config && config.states && config.states.hot && typeof config.states.hot.onThreshold === "number"
-            ? config.states.hot.onThreshold
-            : defaultConfig.hotOnThreshold,
-      offThreshold:
-        typeof config.hotOffThreshold === "number"
-          ? config.hotOffThreshold
-          : config && config.states && config.states.hot && typeof config.states.hot.offThreshold === "number"
-            ? config.states.hot.offThreshold
-            : defaultConfig.hotOffThreshold
-    },
-    {
-      name: "warming",
-      type: "rate_gt",
-      threshold:
-        typeof config.warmingRateThreshold === "number"
-          ? config.warmingRateThreshold
-          : config && config.states && config.states.warming && typeof config.states.warming.rateThreshold === "number"
-            ? config.states.warming.rateThreshold
-            : defaultConfig.warmingRateThreshold
-    },
-    {
-      name: "cooling",
-      type: "rate_lt",
-      threshold:
-        typeof config.coolingRateThreshold === "number"
-          ? config.coolingRateThreshold
-          : config && config.states && config.states.cooling && typeof config.states.cooling.rateThreshold === "number"
-            ? config.states.cooling.rateThreshold
-            : defaultConfig.coolingRateThreshold
-    }
-  ];
+  return Array.isArray(defaultConfig?.rules) ? defaultConfig.rules : [];
 }
 
 module.exports = {

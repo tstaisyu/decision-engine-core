@@ -231,6 +231,15 @@ In practice:
 
 This allows compatibility to remain in place while internal evaluation converges on a single structure.
 
+Policy note:
+
+- canonical shape is the formal config shape of this specification
+- new config definitions should use canonical shape
+- export config should use canonical shape
+- legacy shape remains supported for backward compatibility
+- legacy shape may be deprecated in a future phase
+- in the current implementation, compatibility is absorbed by `normalizeConfig` and viewer-side compatibility handling
+
 ## 10. Minimal Result Format
 
 The minimal result format is:

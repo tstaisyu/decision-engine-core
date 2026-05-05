@@ -28,6 +28,24 @@ It is used for:
 
 Future runtimes (e.g. C++ for embedded systems) will follow the same runtime specification.
 
+## Config Shape Policy
+
+The canonical config shape of this project is:
+
+- `states[]`
+- `rules[]`
+
+New config definitions and exported config should use the canonical shape.
+
+Legacy shape is still supported for backward compatibility:
+
+- `states.rules`
+- `actions.byState`
+
+This legacy shape may be deprecated in the future.
+
+At the implementation level, compatibility is currently absorbed by normalization logic such as `normalizeConfig` and viewer-side compatibility handling.
+
 ## Structure
 
 - `src/evaluate.js`: Entry point. Accepts input and returns `state` and `action`.

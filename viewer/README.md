@@ -28,6 +28,9 @@ npm run dev
 - `Export Config` outputs a canonical-compatible config.
 - Edits made in `DefinitionPanel` are reflected into `states[]` / `rules[]`.
 - The simulation engine also prefers canonical shape during evaluation.
+- Canonical shape is the formal config shape for new config and export flows.
+- Legacy shape is still supported for backward compatibility, but may be deprecated in the future.
+- In practice, compatibility is currently absorbed by viewer-side compatibility handling and shared normalization logic.
 
 ## Notes
 

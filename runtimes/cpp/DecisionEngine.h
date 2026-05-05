@@ -16,9 +16,18 @@ struct DecisionResult {
   std::string action;
 };
 
+struct StateConfig {
+  std::string name;
+  std::string action;
+};
+
 struct DecisionConfig {
   float warmThreshold = 26.0F;
   float hotThreshold = 30.0F;
+
+  StateConfig normal{"normal", "no_action"};
+  StateConfig warm{"warm", "fan_low"};
+  StateConfig hot{"hot", "fan_high"};
 };
 
 class DecisionEngine {

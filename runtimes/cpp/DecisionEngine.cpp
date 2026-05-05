@@ -9,12 +9,12 @@ void DecisionEngine::loadConfig(const DecisionConfig& config) {
 
 DecisionResult DecisionEngine::evaluate(const DecisionInput& input) const {
   if (input.value >= config_.hotThreshold) {
-    return {"hot", "fan_high"};
+    return {config_.hot.name, config_.hot.action};
   }
 
   if (input.value >= config_.warmThreshold) {
-    return {"warm", "fan_low"};
+    return {config_.warm.name, config_.warm.action};
   }
 
-  return {"normal", "no_action"};
+  return {config_.normal.name, config_.normal.action};
 }

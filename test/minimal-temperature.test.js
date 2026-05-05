@@ -10,7 +10,7 @@ const { simpleTemperatureConfig } = require("../src/presets/simpleTemperatureCon
 const { toEngineInput } = require("../examples/adapters/temperature-input-adapter");
 
 test("minimal temperature vectors match expected state/action", () => {
-  const vectorPath = path.resolve(__dirname, "../test-vectors/minimal-temperature.json");
+  const vectorPath = path.resolve(__dirname, "../vectors/minimal-temperature.json");
   const raw = fs.readFileSync(vectorPath, "utf8");
   const parsed = JSON.parse(raw);
   const inputs = Array.isArray(parsed.inputs) ? parsed.inputs : [];

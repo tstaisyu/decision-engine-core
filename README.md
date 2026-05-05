@@ -79,8 +79,8 @@ New presets and examples should also use the canonical shape.
   - usage examples: minimal JS evaluate, simulation, M5 skeleton
 - `test/`
   - JS tests
-- `test-vectors/`
-  - shared vectors for JS/C++ comparison
+- `vectors/`
+  - shared input / expected-output data for JS/C++ comparison
 
 ```text
 config -> evaluate (JS / C++) -> state / action -> adapter / execution
@@ -166,6 +166,13 @@ npm run evaluate -- examples/input.simple-warm.json --preset simpleTemperature
 
 - `examples/input.normal.json`
 - `examples/input.simple-warm.json`
+
+## Additional Docs
+
+- [Config Spec](CONFIG_SPEC.md)
+- [Runtime Spec](docs/runtime-spec.md)
+- [Roadmap](docs/roadmap.md)
+- [Release Checklist](docs/release-checklist.md)
 
 ## C++ Runtime
 

@@ -1,5 +1,17 @@
 # Examples
 
+## 役割の違い
+
+- `examples/temperature.js`
+  - 最小の JS `evaluate()` 使用例です
+  - config と input をその場で作り、戻り値の `state` / `action` を見るための小さな例です
+- `examples/node-temp-sim/`
+  - 時系列入力、adapter、exported config を含むシミュレーション例です
+  - viewer export config を流し込み、`state` / `action` / `pwm` の流れを確認する用途です
+- `scripts/evaluate-cli.js`
+  - 入力 JSON と preset を指定して評価する CLI です
+  - examples ではなく、コマンドラインから core を使うための補助ツールです
+
 ## Adapter Examples (M5 Temperature + Fan)
 
 実運用連携を想定した実験用サンプルを追加しています。

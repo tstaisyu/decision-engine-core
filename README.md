@@ -1,5 +1,19 @@
 # decision-engine-core
 
+`decision-engine-core` is a state-based decision engine for turning sensor
+input into `state` and `action`.
+
+It is designed to externalize decision logic as config, making behavior
+easier to change, test, and share across systems.
+
+It is intended for embedded, automation, and edge systems.
+
+Typical flow:
+`sensor input -> state -> action`
+
+Example:
+`temperature -> hot -> fan_high`
+
 `decision-engine-core` is a lightweight decision engine that converts sensor inputs into state and action using configurable rules.
 
 Originally extracted from temperature control logic on M5 devices, it can be reused for any control scenario that requires state transitions and action decisions.
@@ -137,6 +151,27 @@ JS and C++ runtimes are intended to evaluate the same canonical config under the
   ]
 }
 ```
+
+## Quick Start
+
+Use `node-temp-sim` for the shortest end-to-end path:
+
+```bash
+npm install
+npm run example:node-temp-sim:sample
+```
+
+This runs the engine against a sample input sequence and prints the evaluated timeline.
+
+Output includes rows such as:
+
+```text
+value -> state -> action
+25.0 -> normal -> no_action
+26.2 -> hot -> fan_high
+```
+
+For a smaller inline example, see [examples/temperature.js](examples/temperature.js).
 
 ## Config Validation
 

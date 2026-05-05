@@ -11,6 +11,7 @@ struct DecisionInput {
   float value;
   unsigned long timestamp;
   float previousValue = 0.0F;
+  unsigned long stateDurationMs = 0UL;
   std::string previousState{};
 };
 
@@ -33,6 +34,7 @@ struct Rule {
 };
 
 struct DecisionConfig {
+  unsigned long hotToCriticalDurationMs = 5000UL;
   std::vector<StateConfig> states{
       {"normal", "no_action"},
       {"warm", "fan_low"},

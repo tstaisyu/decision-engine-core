@@ -2,11 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 const m5TemperatureConfig = {
-  criticalThreshold: 40.0,
-  hotOnThreshold: 26.0,
-  hotOffThreshold: 25.5,
-  warmingRateThreshold: 0.02,
-  coolingRateThreshold: -0.02,
   escalations: {
     action: {
       fanLowToHigh: {

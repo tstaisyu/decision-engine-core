@@ -152,6 +152,7 @@ Current implementation note:
 
 - the JavaScript core is the current reference implementation
 - the current C++ runtime prototype is implemented around the same canonical `states[]` and `rules[]` shape
+- the current C++ runtime prototype only implements the minimal `value_gte` rule subset today
 
 This minimal spec does not require the runtime to support the full current preset schema.
 

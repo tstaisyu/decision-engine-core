@@ -4,11 +4,6 @@
 // TODO: Replace this temporary browser-side copy with an official ESM/browser build from the core package.
 
 const m5TemperatureConfig = {
-  criticalThreshold: 40.0,
-  hotOnThreshold: 26.0,
-  hotOffThreshold: 25.5,
-  warmingRateThreshold: 0.02,
-  coolingRateThreshold: -0.02,
   escalations: {
     action: {
       fanLowToHigh: {
@@ -141,82 +136,17 @@ function normalizeRule(rule) {
 
 function resolveStateRules(config, fallback) {
   if (Array.isArray(config?.rules)) {
-    return config.rules
-      .map(normalizeRule)
-      .filter((rule) => typeof rule?.state === "string" && rule.state.length > 0);
+    return config.rules.map(normalizeRule).filter((rule) => typeof rule?.state === "string" && rule.state.length > 0);
   }
 
-  if (config && (config.actions?.byState || config.states?.rules)) {
-    console.warn("browserEngine expects canonical config shape with states[] and rules[]. Legacy config was ignored.");
-    return [];
-  }
-
-  return [
-    {
-      type: "value_gte",
-      threshold:
-        typeof config.criticalThreshold === "number"
-            ? config.criticalThreshold
-          : config && config.states && config.states.critical && typeof config.states.critical.threshold === "number"
-            ? config.states.critical.threshold
-            : fallback.criticalThreshold
-    },
-    {
-      type: "value_gte",
-      threshold:
-        typeof config.hotOnThreshold === "number"
-            ? config.hotOnThreshold
-          : config && config.states && config.states.hot && typeof config.states.hot.onThreshold === "number"
-            ? config.states.hot.onThreshold
-            : fallback.hotOnThreshold
-    },
-    {
-      type: "hysteresis",
-      state: "hot",
-      onThreshold:
-        typeof config.hotOnThreshold === "number"
-            ? config.hotOnThreshold
-          : config && config.states && config.states.hot && typeof config.states.hot.onThreshold === "number"
-            ? config.states.hot.onThreshold
-            : fallback.hotOnThreshold,
-      offThreshold:
-        typeof config.hotOffThreshold === "number"
-          ? config.hotOffThreshold
-          : config && config.states && config.states.hot && typeof config.states.hot.offThreshold === "number"
-            ? config.states.hot.offThreshold
-            : fallback.hotOffThreshold
-    },
-    {
-      type: "rate_gt",
-      threshold:
-        typeof config.warmingRateThreshold === "number"
-            ? config.warmingRateThreshold
-          : config && config.states && config.states.warming && typeof config.states.warming.rateThreshold === "number"
-            ? config.states.warming.rateThreshold
-            : fallback.warmingRateThreshold
-    },
-    {
-      type: "rate_lt",
-      threshold:
-        typeof config.coolingRateThreshold === "number"
-            ? config.coolingRateThreshold
-          : config && config.states && config.states.cooling && typeof config.states.cooling.rateThreshold === "number"
-            ? config.states.cooling.rateThreshold
-            : fallback.coolingRateThreshold
-    }
-  ]
-    .map(normalizeRule)
-    .filter((rule) => typeof rule?.state === "string" && rule.state.length > 0);
+  return Array.isArray(fallback?.rules)
+    ? fallback.rules.map(normalizeRule).filter((rule) => typeof rule?.state === "string" && rule.state.length > 0)
+    : [];
 }
 
 function resolveStateEntries(config, fallback) {
   if (Array.isArray(config?.states)) {
     return config.states.map((state) => ({ ...state }));
-  }
-
-  if (config?.actions?.byState || config?.states?.rules) {
-    console.warn("browserEngine expects canonical config shape with states[] and rules[]. Legacy config was ignored.");
-    return [];
   }
 
   return Array.isArray(fallback?.states) ? fallback.states.map((state) => ({ ...state })) : [];

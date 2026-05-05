@@ -18,14 +18,11 @@ function validateConfig(config) {
     errors.push("escalations must be an object");
   }
 
-  if (
-    !Array.isArray(config.states) &&
-    (!config.states || typeof config.states !== "object" || Array.isArray(config.states))
-  ) {
-    errors.push("states must be an object or array");
+  if (!Array.isArray(config.states)) {
+    errors.push("states must be an array");
   }
 
-  if (!Array.isArray(config.rules) && !Array.isArray(config.states?.rules)) {
+  if (!Array.isArray(config.rules)) {
     errors.push("rules must be an array");
   }
 

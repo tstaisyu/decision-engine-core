@@ -4,14 +4,16 @@ This document defines the language-independent behavior of the Decision Runtime 
 
 ## Scope (Initial)
 
-The initial version focuses on minimal decision logic:
+The current scope focuses on rules-based decision logic and escalation:
 
 - input.value
+- input.previousValue
+- input.previousState
+- input.stateDurationMs
+- input.coolingEffect
 - rules-based config
 - state
 - action
-
-More advanced features (duration, escalation, hysteresis, runtime state) will be added later.
 
 ## Purpose
 
@@ -152,12 +154,8 @@ Current implementation note:
 
 - the JavaScript core is the current reference implementation
 - the current C++ runtime prototype is implemented around the same canonical `states[]` and `rules[]` shape
-- the current C++ runtime prototype only implements the minimal `value_gte` rule subset today
 
-This minimal spec does not require the runtime to support the full current preset schema.
-
-This also means the spec does not require fixed fields such as `warmThreshold` or `hotThreshold`.
-Those can appear in specific presets or compatibility layers, but they are not the minimal runtime contract.
+This spec does not require the runtime to support the full current preset schema.
 
 ## 7. Canonical Config Shape
 
@@ -237,9 +235,9 @@ Notes:
 - `debug` is optional and may be omitted in constrained runtimes
 - an embedded runtime may choose to exclude `debug` entirely to reduce memory and code size
 
-## 10. Rule-Based Evaluation
+## 10. Evaluation Flow
 
-The runtime behavior is based on ordered rule evaluation.
+The runtime behavior is based on ordered rule evaluation and ordered escalation.
 
 `evaluate()` should be understood as operating on canonical config shape only.
 
@@ -247,44 +245,45 @@ The intended decision model is:
 
 - read `rules[]` from top to bottom
 - evaluate each rule against the input
-- adopt `rule.state` from the first matching rule
+- adopt `rule.state` from the first matching rule as `baseState`
 - if a rule type is unsupported, ignore it and continue to the next rule
 - if a rule is invalid, such as missing `state`, ignore it and continue to the next rule
-- if no rule matches, use the default fallback state
-- resolve the final action by finding the matching state entry in `states[]`
+- if no rule matches, use the default fallback state as `baseState`
+- apply state escalation to determine `finalState`
+- resolve `baseAction` by finding the matching state entry in `states[]`
+- apply action escalation to determine `finalAction`
 
 The default fallback state is expected to be equivalent to `normal`.
 
-In a minimal example, this may look like:
-
-1. `hot`
-2. `warm`
-3. fallback `normal`
-
-This order is important.
-
-The runtime should evaluate higher-priority rules first, because the first match wins.
-
-Minimal pseudo logic:
+Pseudo flow:
 
 ```txt
-state = normal
+baseState = normal
 
 for rule in rules:
   if rule.type is unsupported:
     continue
   if rule matches input:
-    state = rule.state
+    baseState = rule.state
     break
 
-action = find action in states by matching state name
-if action is not found:
-  action = no_action
+finalState = apply state escalation(baseState, input, config)
+baseAction = find action in states by matching finalState name
+finalAction = apply action escalation(baseAction, input, config)
 ```
 
-### 10.1 Minimal Rule Shape
+### 10.1 Supported Rule Types
 
-The minimal supported rule shape is:
+The current common rule types are:
+
+- `value_gte`
+- `hysteresis`
+- `rate_gt`
+- `rate_lt`
+
+### 10.2 Rule Shape
+
+Each rule entry uses the same canonical shape:
 
 ```js
 {
@@ -302,30 +301,104 @@ Required fields:
 
 `rule.state` is required in the canonical shape.
 
-### 10.2 Supported Rule Type in the Minimal Spec
-
-The minimal supported rule type is:
+### 10.3 Rule Matching Semantics
 
 - `value_gte`
-
-Meaning:
-
-- if `input.value >= rule.threshold`, the rule matches
+  - match when `input.value >= rule.threshold`
+- `hysteresis`
+  - match when `input.previousState == rule.state && input.value > rule.offThreshold`
+- `rate_gt`
+  - compute `stateRate = input.value - input.previousValue`
+  - match when `stateRate > rule.threshold`
+- `rate_lt`
+  - compute `stateRate = input.value - input.previousValue`
+  - match when `stateRate < rule.threshold`
 
 Unsupported rule types should not stop evaluation.
 They should be ignored and the runtime should continue to the next rule.
 
-This section describes the minimal behavior only.
-It does not attempt to fully standardize all rule types already present in the JS implementation.
+## 11. State Escalation
 
-For example:
+State escalation is applied after base state selection.
 
-- `simpleTemperatureConfig` is a valid minimal example because it uses ordered `value_gte` rules
-- `m5TemperatureConfig` is also valid in principle, because a preset may use rate-based rules such as `warming`
+Condition:
 
-So the v0 spec should be understood as rules-based, not as temperature-threshold-only.
+- `baseState == targetState`
+- `input.previousState == targetState`
+- `input.stateDurationMs >= duration`
 
-## 11. Version Progression
+Example:
+
+- `hot -> critical`
+
+The current JS/C++ aligned example is:
+
+- if `baseState == "hot"`
+- and `previousState == "hot"`
+- and `stateDurationMs >= hotToCriticalDurationMs`
+- then `finalState = "critical"`
+
+## 12. Action Escalation
+
+Action escalation is applied after state resolution and base action lookup.
+
+Condition:
+
+- `baseAction == targetAction`
+- `input.stateDurationMs >= duration`
+- if `requireNoCoolingEffect == true`, then `input.coolingEffect == false`
+
+Example:
+
+- `fan_low -> fan_high`
+
+The current JS/C++ aligned example is:
+
+- if `baseAction == "fan_low"`
+- and `stateDurationMs >= fanLowToHighDurationMs`
+- and `requireNoCoolingEffect == false` or `coolingEffect == false`
+- then `finalAction = "fan_high"`
+
+## 13. Input Model
+
+The current portable input model is:
+
+- `value`
+- `previousValue`
+- `previousState`
+- `stateDurationMs`
+- `coolingEffect`
+
+Optional:
+
+- `timestamp`
+
+Example:
+
+```js
+{
+  value: 25.3,
+  previousValue: 25.1,
+  previousState: "warming",
+  stateDurationMs: 1000,
+  coolingEffect: false,
+  timestamp: 1710000000000
+}
+```
+
+## 14. C++ Runtime Constraints
+
+The embedded-oriented C++ runtime is intentionally small.
+
+Current constraints:
+
+- stateless engine design
+- runtime state is managed by the caller
+- no built-in JSON parser
+- config is loaded through C++ structures
+- the caller is responsible for preparing `previousValue`, `previousState`, `stateDurationMs`, and `coolingEffect`
+
+## 15. Version Progression
 
 This specification can be understood as evolving in stages.
 

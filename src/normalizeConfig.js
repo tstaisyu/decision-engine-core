@@ -3,12 +3,12 @@
 
 function normalizeRule(rule) {
   if (!rule || typeof rule !== "object" || Array.isArray(rule)) {
-    return rule;
+    return null;
   }
 
   const nextRule = { ...rule };
   if (typeof nextRule.state !== "string" || nextRule.state.length === 0) {
-    nextRule.state = nextRule.name;
+    return null;
   }
 
   return nextRule;
@@ -20,7 +20,7 @@ function normalizeCanonicalConfig(config) {
   return {
     ...rest,
     states: Array.isArray(states) ? states.map((state) => ({ ...state })) : [],
-    rules: Array.isArray(rules) ? rules.map(normalizeRule) : []
+    rules: Array.isArray(rules) ? rules.map(normalizeRule).filter(Boolean) : []
   };
 }
 
@@ -32,7 +32,7 @@ function normalizeLegacyConfig(config) {
   return {
     ...rest,
     states: Object.entries(byState).map(([name, action]) => ({ name, action })),
-    rules: legacyRules.map(normalizeRule)
+    rules: legacyRules.map(normalizeRule).filter(Boolean)
   };
 }
 

@@ -22,7 +22,7 @@ test("simpleTemperatureConfig is valid", () => {
 test("unsupported rule type is invalid", () => {
   const result = validateConfig({
     states: {
-      rules: [{ name: "hot", type: "unknown_type", threshold: 30 }]
+      rules: [{ state: "hot", type: "unknown_type", threshold: 30 }]
     },
     actions: {
       byState: {
@@ -39,7 +39,7 @@ test("unsupported rule type is invalid", () => {
 test("missing action mapping for a rule state is invalid", () => {
   const result = validateConfig({
     states: {
-      rules: [{ name: "warm", type: "value_gte", threshold: 26 }]
+      rules: [{ state: "warm", type: "value_gte", threshold: 26 }]
     },
     actions: {
       byState: {

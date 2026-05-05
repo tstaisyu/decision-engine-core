@@ -9,8 +9,8 @@ test("normalizes legacy shape into canonical states and rules", () => {
   const normalized = normalizeConfig({
     states: {
       rules: [
-        { name: "hot", type: "value_gte", threshold: 30 },
-        { name: "warm", type: "value_gte", threshold: 26 }
+        { state: "hot", type: "value_gte", threshold: 30 },
+        { state: "warm", type: "value_gte", threshold: 26 }
       ]
     },
     actions: {
@@ -31,15 +31,15 @@ test("normalizes legacy shape into canonical states and rules", () => {
     { name: "hot", action: "fan_high" }
   ]);
   assert.deepEqual(normalized.rules, [
-    { name: "hot", type: "value_gte", threshold: 30, state: "hot" },
-    { name: "warm", type: "value_gte", threshold: 26, state: "warm" }
+    { state: "hot", type: "value_gte", threshold: 30 },
+    { state: "warm", type: "value_gte", threshold: 26 }
   ]);
   assert.deepEqual(normalized.escalations, {
     state: {}
   });
 });
 
-test("keeps canonical shape and normalizes rule.state from rule.name", () => {
+test("drops canonical rules that do not define rule.state", () => {
   const normalized = normalizeConfig({
     states: [
       { name: "normal", action: "no_action" },
@@ -58,7 +58,6 @@ test("keeps canonical shape and normalizes rule.state from rule.name", () => {
     { name: "hot", action: "fan_high" }
   ]);
   assert.deepEqual(normalized.rules, [
-    { name: "hot", type: "value_gte", threshold: 30, state: "hot" },
     { state: "warm", type: "value_gte", threshold: 26 }
   ]);
 });

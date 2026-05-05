@@ -3,13 +3,7 @@
 
 import TimelineChart from "./TimelineChart";
 
-function TimelineSimulationPanel({
-  sequenceText,
-  onSequenceChange,
-  onRunSimulation,
-  timelineRows,
-  timelineError
-}) {
+function TimelineSimulationPanel({ sequenceText, onSequenceChange, onRunSimulation, timelineRows, timelineError }) {
   return (
     <section className="panel secondary-panel timeline-panel">
       <h2>タイムライン / シミュレーション（Timeline / Simulation）</h2>

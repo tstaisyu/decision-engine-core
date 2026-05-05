@@ -66,12 +66,12 @@ Rules は「どの条件で、どの状態にするか」を定義します。
 
 `type` は「どの値をどう比較するか」を表します。
 
-| type | 意味 |
-| --- | --- |
-| `value_gte` | `value >= threshold` |
-| `rate_gt` | `rate > threshold` |
-| `rate_lt` | `rate < threshold` |
-| `hysteresis` | 状態維持 |
+| type         | 意味                 |
+| ------------ | -------------------- |
+| `value_gte`  | `value >= threshold` |
+| `rate_gt`    | `rate > threshold`   |
+| `rate_lt`    | `rate < threshold`   |
+| `hysteresis` | 状態維持             |
 
 ### hysteresis（ヒステリシス）
 
@@ -122,11 +122,11 @@ Actions は「状態 -> 実行内容」の対応関係です。
 
 ### 例
 
-| state | action |
-| --- | --- |
-| `hot` | `fan_high` |
-| `warming` | `fan_low` |
-| `normal` | `no_action` |
+| state     | action      |
+| --------- | ----------- |
+| `hot`     | `fan_high`  |
+| `warming` | `fan_low`   |
+| `normal`  | `no_action` |
 
 意味:
 

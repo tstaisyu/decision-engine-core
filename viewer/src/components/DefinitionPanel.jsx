@@ -64,11 +64,7 @@ function DefinitionPanel({
     }
 
     const nextConfig = structuredClone(selectedConfig);
-    if (
-      !nextConfig?.escalations ||
-      !nextConfig.escalations[group] ||
-      !nextConfig.escalations[group][name]
-    ) {
+    if (!nextConfig?.escalations || !nextConfig.escalations[group] || !nextConfig.escalations[group][name]) {
       return;
     }
 
@@ -126,39 +122,21 @@ function DefinitionPanel({
     );
 
     if (rule.type === "value_gte" && typeof rule.threshold === "number") {
-      return (
-        <div className="rule-condition-inline">
-          value &gt;= {thresholdInput("threshold")}
-        </div>
-      );
+      return <div className="rule-condition-inline">value &gt;= {thresholdInput("threshold")}</div>;
     }
 
     if (rule.type === "rate_gt" && typeof rule.threshold === "number") {
-      return (
-        <div className="rule-condition-inline">
-          tempRateAvg &gt; {thresholdInput("threshold")}
-        </div>
-      );
+      return <div className="rule-condition-inline">tempRateAvg &gt; {thresholdInput("threshold")}</div>;
     }
 
     if (rule.type === "rate_lt" && typeof rule.threshold === "number") {
-      return (
-        <div className="rule-condition-inline">
-          tempRateAvg &lt; {thresholdInput("threshold")}
-        </div>
-      );
+      return <div className="rule-condition-inline">tempRateAvg &lt; {thresholdInput("threshold")}</div>;
     }
 
-    if (
-      rule.type === "hysteresis" &&
-      typeof rule.onThreshold === "number" &&
-      typeof rule.offThreshold === "number"
-    ) {
+    if (rule.type === "hysteresis" && typeof rule.onThreshold === "number" && typeof rule.offThreshold === "number") {
       return (
         <div className="rule-condition-cell">
-          <div className="rule-condition-inline">
-            value &gt;= {thresholdInput("onThreshold")}
-          </div>
+          <div className="rule-condition-inline">value &gt;= {thresholdInput("onThreshold")}</div>
           <div className="rule-condition-inline">
             previousState = {rule.state} かつ value &gt; {thresholdInput("offThreshold")}
           </div>
@@ -179,8 +157,7 @@ function DefinitionPanel({
       }
 
       const ruleThreshold = typeof rule.onThreshold === "number" ? rule.onThreshold : rule.threshold;
-      const baseRuleThreshold =
-        typeof baseRule.onThreshold === "number" ? baseRule.onThreshold : baseRule.threshold;
+      const baseRuleThreshold = typeof baseRule.onThreshold === "number" ? baseRule.onThreshold : baseRule.threshold;
       if (typeof ruleThreshold === "number" && ruleThreshold !== baseRuleThreshold) {
         changes.push({
           key: `rule-threshold-${index}`,
@@ -256,7 +233,10 @@ function DefinitionPanel({
     }
 
     if (resetType === "rule-threshold" && nextConfig.rules?.[target]) {
-      if (typeof nextConfig.rules[target].onThreshold === "number" || typeof baseRules[target]?.onThreshold === "number") {
+      if (
+        typeof nextConfig.rules[target].onThreshold === "number" ||
+        typeof baseRules[target]?.onThreshold === "number"
+      ) {
         nextConfig.rules[target].onThreshold = baseRules[target]?.onThreshold;
       } else {
         nextConfig.rules[target].threshold = baseRules[target]?.threshold;
@@ -314,11 +294,7 @@ function DefinitionPanel({
       <div className="definition-block">
         <h3>プリセット（Preset）</h3>
         <label htmlFor="preset-select">使用する定義（Active Definition）</label>
-        <select
-          id="preset-select"
-          value={selectedPreset}
-          onChange={(event) => onPresetChange(event.target.value)}
-        >
+        <select id="preset-select" value={selectedPreset} onChange={(event) => onPresetChange(event.target.value)}>
           {presetNames.map((name) => (
             <option key={name} value={name}>
               {name}

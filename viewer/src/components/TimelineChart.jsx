@@ -1,16 +1,7 @@
 // Copyright (c) 2026- taisyu shibata
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-  CartesianGrid,
-  Line,
-  LineChart,
-  ReferenceDot,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis
-} from "recharts";
+import { CartesianGrid, Line, LineChart, ReferenceDot, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 const stateOrder = ["normal", "cooling", "warming", "warm", "hot", "critical"];
 
@@ -52,14 +43,7 @@ function TimelineChart({ rows }) {
           />
           <Tooltip />
           <Line yAxisId="value" type="monotone" dataKey="value" stroke="#2563eb" strokeWidth={2} dot />
-          <Line
-            yAxisId="state"
-            type="stepAfter"
-            dataKey="stateIndex"
-            stroke="#f59e0b"
-            strokeWidth={1.5}
-            dot={false}
-          />
+          <Line yAxisId="state" type="stepAfter" dataKey="stateIndex" stroke="#f59e0b" strokeWidth={1.5} dot={false} />
           {actionPoints.map((point) => (
             <ReferenceDot
               key={`action-point-${point.step}`}

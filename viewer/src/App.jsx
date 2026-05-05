@@ -65,12 +65,7 @@ function App() {
           selectedConfig={selectedConfig}
           onConfigChange={setSelectedConfig}
         />
-        <InputPanel
-          inputText={inputText}
-          onInputChange={setInputText}
-          onEvaluate={evaluateCurrent}
-          error={error}
-        />
+        <InputPanel inputText={inputText} onInputChange={setInputText} onEvaluate={evaluateCurrent} error={error} />
         <ResultPanel result={result} error={error} />
         <TimelineSimulationPanel
           sequenceText={sequenceText}

@@ -82,8 +82,7 @@ function runSimulation(sequence, config) {
       previousState,
       previousAction,
       stateDurationMs,
-      timestamp:
-        typeof step.timestamp === "number" && Number.isFinite(step.timestamp) ? step.timestamp : elapsedMs
+      timestamp: typeof step.timestamp === "number" && Number.isFinite(step.timestamp) ? step.timestamp : elapsedMs
     });
 
     const result = evaluate(input, config);

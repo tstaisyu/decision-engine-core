@@ -202,7 +202,7 @@ toEngineInput({
   value,
   previousValue,
   timestamp
-})
+});
 ```
 
 Action adapter example

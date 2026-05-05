@@ -52,7 +52,5 @@ test("drops canonical rules that do not define rule.state", () => {
     { name: "warm", action: "fan_low" },
     { name: "hot", action: "fan_high" }
   ]);
-  assert.deepEqual(normalized.rules, [
-    { state: "warm", type: "value_gte", threshold: 26 }
-  ]);
+  assert.deepEqual(normalized.rules, [{ state: "warm", type: "value_gte", threshold: 26 }]);
 });

@@ -5,6 +5,7 @@
 #define DECISION_ENGINE_H
 
 #include <string>
+#include <vector>
 
 struct DecisionInput {
   float value;
@@ -25,9 +26,11 @@ struct DecisionConfig {
   float warmThreshold = 26.0F;
   float hotThreshold = 30.0F;
 
-  StateConfig normal{"normal", "no_action"};
-  StateConfig warm{"warm", "fan_low"};
-  StateConfig hot{"hot", "fan_high"};
+  std::vector<StateConfig> states{
+      {"normal", "no_action"},
+      {"warm", "fan_low"},
+      {"hot", "fan_high"},
+  };
 };
 
 class DecisionEngine {

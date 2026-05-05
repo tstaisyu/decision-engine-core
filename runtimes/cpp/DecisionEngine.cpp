@@ -3,18 +3,35 @@
 
 #include "DecisionEngine.h"
 
+namespace {
+
+StateConfig findStateConfig(const DecisionConfig& config, const std::string& stateName) {
+  for (const StateConfig& state : config.states) {
+    if (state.name == stateName) {
+      return state;
+    }
+  }
+
+  return {stateName, "no_action"};
+}
+
+}  // namespace
+
 void DecisionEngine::loadConfig(const DecisionConfig& config) {
   config_ = config;
 }
 
 DecisionResult DecisionEngine::evaluate(const DecisionInput& input) const {
   if (input.value >= config_.hotThreshold) {
-    return {config_.hot.name, config_.hot.action};
+    const StateConfig state = findStateConfig(config_, "hot");
+    return {state.name, state.action};
   }
 
   if (input.value >= config_.warmThreshold) {
-    return {config_.warm.name, config_.warm.action};
+    const StateConfig state = findStateConfig(config_, "warm");
+    return {state.name, state.action};
   }
 
-  return {config_.normal.name, config_.normal.action};
+  const StateConfig state = findStateConfig(config_, "normal");
+  return {state.name, state.action};
 }

@@ -22,7 +22,7 @@ int main() {
   }
 
   DecisionConfig customConfig;
-  customConfig.warm.action = "fan_mid";
+  customConfig.states[1].action = "fan_mid";
   engine.loadConfig(customConfig);
 
   const DecisionInput customInput{26.4F, 4000UL};

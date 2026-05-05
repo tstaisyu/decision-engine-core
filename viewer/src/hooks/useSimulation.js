@@ -43,16 +43,20 @@ function getMatchedRuleLabel(result) {
 
 function normalizeRule(rule) {
   if (!rule || typeof rule !== "object" || Array.isArray(rule)) {
-    return rule;
+    return null;
   }
 
   const nextRule = { ...rule };
   if (typeof nextRule.state !== "string" || nextRule.state.length === 0) {
-    nextRule.state = nextRule.name;
+    return null;
   }
   delete nextRule.name;
 
   return nextRule;
+}
+
+function isCanonicalConfigShape(config) {
+  return Boolean(config && Array.isArray(config.states) && Array.isArray(config.rules));
 }
 
 function normalizeExportConfig(config) {
@@ -63,18 +67,10 @@ function normalizeExportConfig(config) {
     };
   }
 
-  if (Array.isArray(config.states) || Array.isArray(config.rules)) {
+  if (isCanonicalConfigShape(config)) {
     const { states: _states, rules: _rules, actions: _actions, ...rest } = config;
-    const canonicalStates = Array.isArray(config.states)
-      ? config.states.map((state) => ({ ...state }))
-      : config.actions?.byState && typeof config.actions.byState === "object"
-        ? Object.entries(config.actions.byState).map(([name, action]) => ({ name, action }))
-        : [];
-    const canonicalRules = Array.isArray(config.rules)
-      ? config.rules.map(normalizeRule)
-      : Array.isArray(config.states?.rules)
-        ? config.states.rules.map(normalizeRule)
-        : [];
+    const canonicalStates = config.states.map((state) => ({ ...state }));
+    const canonicalRules = config.rules.map(normalizeRule).filter(Boolean);
 
     return {
       ...rest,
@@ -83,17 +79,11 @@ function normalizeExportConfig(config) {
     };
   }
 
-  const { states: _states, actions: _actions, rules: _rules, ...rest } = config;
-  const rules = Array.isArray(config.states?.rules) ? config.states.rules.map(normalizeRule) : [];
-  const states =
-    config.actions?.byState && typeof config.actions.byState === "object"
-      ? Object.entries(config.actions.byState).map(([name, action]) => ({ name, action }))
-      : [];
+  console.warn("Viewer expects canonical config shape with states[] and rules[]. Legacy config was ignored.");
 
   return {
-    ...rest,
-    states,
-    rules
+    states: [],
+    rules: []
   };
 }
 

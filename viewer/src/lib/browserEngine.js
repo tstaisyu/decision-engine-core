@@ -147,10 +147,9 @@ function resolveStateRules(config, fallback) {
       .filter((rule) => typeof rule?.state === "string" && rule.state.length > 0);
   }
 
-  if (config && config.states && Array.isArray(config.states.rules)) {
-    return config.states.rules
-      .map(normalizeRule)
-      .filter((rule) => typeof rule?.state === "string" && rule.state.length > 0);
+  if (config && (config.actions?.byState || config.states?.rules)) {
+    console.warn("browserEngine expects canonical config shape with states[] and rules[]. Legacy config was ignored.");
+    return [];
   }
 
   return [
@@ -221,8 +220,9 @@ function resolveStateEntries(config, fallback) {
     return config.states.map((state) => ({ ...state }));
   }
 
-  if (config?.actions?.byState && typeof config.actions.byState === "object") {
-    return Object.entries(config.actions.byState).map(([name, action]) => ({ name, action }));
+  if (config?.actions?.byState || config?.states?.rules) {
+    console.warn("browserEngine expects canonical config shape with states[] and rules[]. Legacy config was ignored.");
+    return [];
   }
 
   return Array.isArray(fallback?.states) ? fallback.states.map((state) => ({ ...state })) : [];

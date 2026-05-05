@@ -3,8 +3,71 @@
 
 module.exports = [
   {
+    ignores: ["**/node_modules/**", "**/dist/**", "**/coverage/**"]
+  },
+  {
+    files: ["viewer/src/**/*.{js,jsx}"],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: "module",
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true
+        }
+      },
+      globals: {
+        console: "readonly",
+        window: "readonly",
+        document: "readonly",
+        Blob: "readonly",
+        structuredClone: "readonly",
+        URL: "readonly",
+        localStorage: "readonly"
+      }
+    },
+    rules: {
+      "no-undef": "error",
+      "no-redeclare": "error",
+      "no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_"
+        }
+      ]
+    }
+  },
+  {
+    files: ["viewer/src/**/*.jsx"],
+    rules: {
+      "no-unused-vars": "off"
+    }
+  },
+  {
+    files: ["viewer/vite.config.js"],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: "module",
+      globals: {
+        console: "readonly",
+        process: "readonly"
+      }
+    },
+    rules: {
+      "no-undef": "error",
+      "no-redeclare": "error",
+      "no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_"
+        }
+      ]
+    }
+  },
+  {
     files: ["**/*.js"],
-    ignores: ["node_modules/**", "dist/**", "coverage/**"],
+    ignores: ["viewer/src/**", "viewer/vite.config.js"],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "commonjs",

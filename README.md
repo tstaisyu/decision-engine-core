@@ -36,6 +36,7 @@ The canonical config shape of this project is:
 - `rules[]`
 
 New config definitions and exported config should use the canonical shape.
+The C++ runtime prototype also assumes the canonical shape.
 
 Legacy shape is still supported for backward compatibility:
 
@@ -68,14 +69,18 @@ At the implementation level, compatibility is currently absorbed by normalizatio
 
 ```js
 {
-  states: {
-    rules: [
-      { name: "critical", type: "value_gte", threshold: 40.0 },
-      { name: "hot", type: "value_gte", threshold: 26.0 },
-      { name: "warming", type: "rate_gt", threshold: 0.02 },
-      { name: "cooling", type: "rate_lt", threshold: -0.02 }
-    ];
-  }
+  states: [
+    { name: "normal", action: "no_action" },
+    { name: "warming", action: "fan_low" },
+    { name: "hot", action: "fan_high" },
+    { name: "critical", action: "alert" }
+  ],
+  rules: [
+    { type: "value_gte", threshold: 40.0, state: "critical" },
+    { type: "value_gte", threshold: 26.0, state: "hot" },
+    { type: "rate_gt", threshold: 0.02, state: "warming" },
+    { type: "rate_lt", threshold: -0.02, state: "cooling" }
+  ]
 }
 ```
 
@@ -127,8 +132,8 @@ This viewer is for inspection only. It does not support editing or saving preset
 You can:
 
 - Select a preset
-- Inspect `states.rules`
-- Inspect `actions.byState`
+- Inspect canonical `rules[]`
+- Inspect canonical `states[]`
 - Inspect `escalations`
 - Edit sample input JSON
 - Check the evaluate result

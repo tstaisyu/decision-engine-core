@@ -63,6 +63,7 @@ function normalizeExportConfig(config) {
   }
 
   if (Array.isArray(config.states) || Array.isArray(config.rules)) {
+    const { states: _states, rules: _rules, actions: _actions, ...rest } = config;
     const canonicalStates = Array.isArray(config.states)
       ? config.states.map((state) => ({ ...state }))
       : config.actions?.byState && typeof config.actions.byState === "object"
@@ -75,12 +76,13 @@ function normalizeExportConfig(config) {
         : [];
 
     return {
-      ...config,
+      ...rest,
       states: canonicalStates,
       rules: canonicalRules
     };
   }
 
+  const { states: _states, actions: _actions, rules: _rules, ...rest } = config;
   const rules = Array.isArray(config.states?.rules) ? config.states.rules.map(normalizeRule) : [];
   const states =
     config.actions?.byState && typeof config.actions.byState === "object"
@@ -88,7 +90,7 @@ function normalizeExportConfig(config) {
       : [];
 
   return {
-    ...config,
+    ...rest,
     states,
     rules
   };

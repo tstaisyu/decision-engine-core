@@ -41,6 +41,7 @@ void setup() {
   M5.begin();
   Wire.begin();
   Serial.begin(115200);
+  setupFanPwm();
 
   engine.loadConfig(buildFanConfig());
 

@@ -6,6 +6,11 @@
 
 #include <Arduino.h>
 
+constexpr int FAN_PWM_PIN = 26;
+constexpr int PWM_CHANNEL = 0;
+constexpr int PWM_FREQUENCY = 5000;
+constexpr int PWM_RESOLUTION = 8;
+
 inline int actionToPwm(const String& action) {
   if (action == "no_action") {
     return 0;
@@ -19,12 +24,13 @@ inline int actionToPwm(const String& action) {
   return 0;
 }
 
+inline void setupFanPwm() {
+  ledcSetup(PWM_CHANNEL, PWM_FREQUENCY, PWM_RESOLUTION);
+  ledcAttachPin(FAN_PWM_PIN, PWM_CHANNEL);
+}
+
 inline void applyPwm(int pwm) {
-  // TODO: 実機ではここで analogWrite や ledcWrite を呼ぶ
-  // ESP32 (M5Stack) PWM example:
-  // ledcSetup(0, 5000, 8);
-  // ledcAttachPin(FAN_PIN, 0);
-  // ledcWrite(0, pwm);
+  ledcWrite(PWM_CHANNEL, pwm);
   Serial.print("apply pwm: ");
   Serial.println(pwm);
 }

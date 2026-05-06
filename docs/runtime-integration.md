@@ -22,6 +22,8 @@ In this structure:
 
 This document defines how `decision-engine-core` connects to real or simulated devices.
 
+For adapter boundary details, see [Adapter Pattern](adapter-pattern.md).
+
 The current goal is not to control hardware directly from the core package.
 
 The goal is to clarify the boundary between:

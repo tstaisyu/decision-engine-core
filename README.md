@@ -225,6 +225,9 @@ npm run evaluate -- examples/input.simple-warm.json --preset simpleTemperature
 
 - [Config Spec](CONFIG_SPEC.md)
 - [Runtime Spec](docs/runtime-spec.md)
+- [Adapter Pattern](docs/adapter-pattern.md)
+- [Adapter Authoring Guide](docs/adapter-authoring-guide.md)
+- [Runtime Integration](docs/runtime-integration.md)
 - [Roadmap](docs/roadmap.md)
 - [Release Checklist](docs/release-checklist.md)
 

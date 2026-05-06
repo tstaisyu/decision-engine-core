@@ -6,19 +6,14 @@
 #include <Wire.h>
 
 #include "../../runtimes/cpp/DecisionEngine.h"
+#include "config/fan_config.h"
+#include "fan_adapter.h"
+#include "input_adapter.h"
 
 DecisionEngine engine;
+RuntimeState runtimeState;
 constexpr uint8_t kSi7021Address = 0x40;
 constexpr uint8_t kSi7021MeasureTempHoldMaster = 0xE3;
-
-struct RuntimeState {
-  float previousValue = 0.0F;
-  String previousState = "normal";
-  unsigned long stateStartedAtMs = 0UL;
-  bool initialized = false;
-};
-
-RuntimeState runtimeState;
 
 bool isSi7021Available() {
   Wire.beginTransmission(kSi7021Address);
@@ -42,64 +37,12 @@ float readTemperature() {
   return ((175.72F * static_cast<float>(rawValue)) / 65536.0F) - 46.85F;
 }
 
-int actionToPwm(const String& action) {
-  if (action == "no_action") {
-    return 0;
-  }
-  if (action == "fan_low") {
-    return 80;
-  }
-  if (action == "fan_high") {
-    return 180;
-  }
-  return 0;
-}
-
-void applyPwm(int pwm) {
-  // TODO: 実機ではここで analogWrite や ledcWrite を呼ぶ
-  // ESP32 (M5Stack) PWM example:
-  // ledcSetup(0, 5000, 8);
-  // ledcAttachPin(FAN_PIN, 0);
-  // ledcWrite(0, pwm);
-  Serial.print("apply pwm: ");
-  Serial.println(pwm);
-}
-
-DecisionInput buildDecisionInput(float currentTemp, const RuntimeState& state, unsigned long nowMs) {
-  DecisionInput input;
-  input.value = currentTemp;
-  input.previousValue = state.initialized ? state.previousValue : currentTemp;
-  input.previousState = state.initialized ? std::string(state.previousState.c_str()) : std::string();
-  input.stateDurationMs = state.initialized ? nowMs - state.stateStartedAtMs : 0UL;
-  input.coolingEffect = false;
-  input.timestamp = nowMs;
-  return input;
-}
-
-void updateRuntimeState(RuntimeState& state, float currentTemp, const String& currentState, unsigned long nowMs) {
-  if (!state.initialized) {
-    state.previousValue = currentTemp;
-    state.previousState = currentState;
-    state.stateStartedAtMs = nowMs;
-    state.initialized = true;
-    return;
-  }
-
-  if (state.previousState != currentState) {
-    state.stateStartedAtMs = nowMs;
-  }
-
-  state.previousValue = currentTemp;
-  state.previousState = currentState;
-}
-
 void setup() {
   M5.begin();
   Wire.begin();
   Serial.begin(115200);
 
-  DecisionConfig config;
-  engine.loadConfig(config);
+  engine.loadConfig(buildFanConfig());
 
   if (!isSi7021Available()) {
     Serial.println("warning: Si7021 not detected on I2C");

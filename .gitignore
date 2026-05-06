@@ -6,3 +6,5 @@ build/*
 !build/.gitkeep
 releases/
 .pio/
+examples/m5-temp-fan/.vscode/
+examples/m5-temp-fan/.gitignore

@@ -1,4 +1,0 @@
-{
-  "C_Cpp.default.configurationProvider": "platformio.platformio-ide",
-  "C_Cpp.default.compileCommands": "${workspaceFolder}/examples/m5-temp-fan/.pio/build/m5stack-gray-si7021/compile_commands.json"
-}

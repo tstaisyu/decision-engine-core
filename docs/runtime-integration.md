@@ -254,7 +254,34 @@ Out of scope
 - embedding business logic as if-statements
 - editing config
 
-## 4. Current Minimum Architecture
+## 4. Runtime / Adapter / Hardware Boundary Policy
+
+The runtime is platform-independent.
+
+`decision-engine-core` and compatible runtimes are responsible for evaluating config and returning `state / action`.
+They are not responsible for sensor SDKs, GPIO, PWM, I2C, Wi-Fi, or board-specific device control.
+
+The adapter layer connects the runtime to hardware.
+
+- input adapter: sensor/device value -> `DecisionInput`
+- output adapter: `action` -> PWM/GPIO/device command
+
+This project provides the adapter pattern and representative examples, not official support for every hardware target.
+Users can implement custom adapters for their own environment while keeping the same runtime behavior.
+
+`examples/m5-temp-fan/` is a representative example of this boundary:
+
+- M5Stack / Si7021 reading stays in the example
+- DecisionEngine stays device-agnostic
+- fan PWM mapping stays in an output adapter stub
+
+What the runtime does not do:
+
+- read sensors directly
+- own hardware SDK integrations
+- provide official board support for all devices
+
+## 5. Current Minimum Architecture
 
 Current repository structure:
 
@@ -290,7 +317,7 @@ examples/node-temp-sim/index.js
 mock PWM output
 ```
 
-## 5. Mock Deploy Flow
+## 6. Mock Deploy Flow
 
 The current runtime verification flow is:
 
@@ -312,7 +339,7 @@ Expected output concept:
 
 This validates behavior before using real hardware.
 
-## 6. Minimal M5 Runtime Flow
+## 7. Minimal M5 Runtime Flow
 
 The first real-device target is:
 
@@ -350,7 +377,7 @@ const command = mapActionToFanCommand(result.action);
 writePWM(command.pwm);
 ```
 
-## 7. Design Decisions So Far
+## 8. Design Decisions So Far
 
 Decided
 
@@ -369,7 +396,7 @@ Not decided yet
 - whether config needs versioning
 - whether embedded targets need lightweight config format
 
-## 8. Roadmap
+## 9. Roadmap
 
 Phase 1: Current
 
@@ -438,7 +465,7 @@ examples/m5-temp-fan
 
 Do not move adapters into official packages until the pattern is stable.
 
-## 9. Core Principle
+## 10. Core Principle
 
 The core principle of this project is:
 

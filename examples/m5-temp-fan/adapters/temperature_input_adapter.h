@@ -1,12 +1,12 @@
 // Copyright (c) 2026- taisyu shibata
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef M5_TEMP_FAN_INPUT_ADAPTER_H
-#define M5_TEMP_FAN_INPUT_ADAPTER_H
+#ifndef M5_TEMP_FAN_ADAPTERS_TEMPERATURE_INPUT_ADAPTER_H
+#define M5_TEMP_FAN_ADAPTERS_TEMPERATURE_INPUT_ADAPTER_H
 
 #include <Arduino.h>
 
-#include "../../runtimes/cpp/DecisionEngine.h"
+#include "../../../runtimes/cpp/DecisionEngine.h"
 
 struct RuntimeState {
   float previousValue = 0.0F;

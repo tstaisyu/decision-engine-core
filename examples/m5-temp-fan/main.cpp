@@ -6,9 +6,9 @@
 #include <Wire.h>
 
 #include "../../runtimes/cpp/DecisionEngine.h"
+#include "adapters/fan_output_adapter.h"
+#include "adapters/temperature_input_adapter.h"
 #include "config/fan_config.h"
-#include "fan_adapter.h"
-#include "input_adapter.h"
 
 DecisionEngine engine;
 RuntimeState runtimeState;

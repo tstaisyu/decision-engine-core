@@ -1,8 +1,8 @@
 // Copyright (c) 2026- taisyu shibata
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef M5_TEMP_FAN_FAN_ADAPTER_H
-#define M5_TEMP_FAN_FAN_ADAPTER_H
+#ifndef M5_TEMP_FAN_ADAPTERS_FAN_OUTPUT_ADAPTER_H
+#define M5_TEMP_FAN_ADAPTERS_FAN_OUTPUT_ADAPTER_H
 
 #include <Arduino.h>
 

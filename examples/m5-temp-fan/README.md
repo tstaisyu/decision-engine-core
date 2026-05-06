@@ -76,9 +76,10 @@ void loop() {
 - 実際の GPIO / PWM 制御はまだ行わない
 - `Serial` 出力で `value / state / action / pwm` を確認する
 
-関数ごとの責任は次のとおりです。
+関数/ヘッダごとの責任は次のとおりです。
 
-- `actionToPwm()`: action adapter
+- `adapters/temperature_input_adapter.h`: input adapter と runtime state
+- `adapters/fan_output_adapter.h`: action adapter と output stub
 - `applyPwm()`: device output の差し替えポイント
 
 実機化するときは、主に次を置き換える想定です。

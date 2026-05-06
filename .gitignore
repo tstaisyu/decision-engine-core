@@ -5,3 +5,4 @@ coverage
 build/*
 !build/.gitkeep
 releases/
+.pio/

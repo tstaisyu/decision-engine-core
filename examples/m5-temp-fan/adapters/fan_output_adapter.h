@@ -16,7 +16,7 @@ inline int actionToPwm(const String& action) {
     return 0;
   }
   if (action == "fan_low") {
-    return 80;
+    return 30;
   }
   if (action == "fan_high") {
     return 180;

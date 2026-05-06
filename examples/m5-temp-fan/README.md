@@ -13,6 +13,22 @@
 
 この段階では、まだ実機コードそのものではなく、どの責務をどこに置くかを明確にすることを目的とします。
 
+## 現在の到達点
+
+現在の example では、次の end-to-end flow を M5Stack Gray 上で確認できる状態です。
+
+```text
+Si7021 temperature input
+  -> DecisionInput adapter
+  -> DecisionEngine evaluation
+  -> action resolution
+  -> PWM output adapter
+  -> LED / fan output
+```
+
+ここで確認済みなのは PWM LED verification です。
+real fan verification はまだ実施していません。
+
 ## 責任分離
 
 ### sensor read
@@ -68,24 +84,24 @@ void loop() {
 
 ## main.cpp の位置づけ
 
-`main.cpp` は、実機制御前の Arduino-compatible skeleton です。
+`main.cpp` は、実機接続に向けた Arduino-compatible example です。
 
 現時点では:
 
-- センサー値はダミーで生成している
-- 実際の GPIO / PWM 制御はまだ行わない
+- Si7021 から温度を読む
+- ESP32 PWM を GPIO へ出力する
 - `Serial` 出力で `value / state / action / pwm` を確認する
 
 関数/ヘッダごとの責任は次のとおりです。
 
 - `adapters/temperature_input_adapter.h`: input adapter と runtime state
-- `adapters/fan_output_adapter.h`: action adapter と output stub
+- `adapters/fan_output_adapter.h`: action adapter と PWM output adapter
 - `applyPwm()`: device output の差し替えポイント
 
 実機化するときは、主に次を置き換える想定です。
 
-- ダミー値生成部分 -> `readTemperature()`
-- `applyPwm()` の中身 -> `analogWrite`, `ledcWrite` などの実機出力
+- PWM 出力先 GPIO と駆動回路
+- LED verification から real fan verification への切り替え
 
 ## 最初は JSON 読み込みしない
 
@@ -104,10 +120,10 @@ void loop() {
 - SD カード読み込み
 - JSON parser
 - OTA 連携
-- 実機完全制御
+- real fan verification
 
 ## 位置づけ
 
-- この example は `examples/` 配下の設計用ドキュメントです
-- まだ Arduino / M5 向けの完全実装は含みません
-- まずは viewer export config -> runtime spec -> C++ runtime -> M5 出力の接続方針を固定するための入口です
+- この example は `examples/` 配下の representative embedded example です
+- M5Stack Gray + Si7021 + PWM LED verification までを対象にしています
+- real fan verification はまだ含みません

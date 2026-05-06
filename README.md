@@ -217,6 +217,9 @@ npm run evaluate -- examples/input.simple-warm.json --preset simpleTemperature
 
 - `examples/input.normal.json`
 - `examples/input.simple-warm.json`
+- `examples/m5-temp-fan/`
+  - embedded end-to-end example
+  - M5Stack Gray + Si7021 input -> DecisionEngine -> PWM LED verification
 
 ## Additional Docs
 

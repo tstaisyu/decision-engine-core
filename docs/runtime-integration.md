@@ -273,7 +273,9 @@ Users can implement custom adapters for their own environment while keeping the 
 
 - M5Stack / Si7021 reading stays in the example
 - DecisionEngine stays device-agnostic
-- fan PWM mapping stays in an output adapter stub
+- PWM mapping stays in an output adapter
+- current verification target is M5Stack Gray + Si7021 + PWM LED verification
+- real fan verification is not yet covered
 
 What the runtime does not do:
 

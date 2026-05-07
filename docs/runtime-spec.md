@@ -157,14 +157,32 @@ Current implementation note:
 
 This spec does not require the runtime to support the full current preset schema.
 
-## 7. Canonical Config Shape
+## 7. Why `rules[]` and `states[]` Are Separate
+
+The runtime model separates state decision from state-to-action mapping.
+
+- `rules[]` defines how the runtime decides state
+- `states[]` defines how a chosen state maps to a base action
+
+This separation is intentional because it allows:
+
+- reuse of the same state interpretation with different action mappings
+- action replacement without changing rule logic
+- clearer simulation and logging of `baseState` and resolved action
+- separate handling of state escalation and action escalation
+- reuse of the same runtime behavior across different hardware or output integrations
+
+In other words, the runtime first decides what state the system is in, then
+resolves what action should be associated with that state.
+
+## 8. Canonical Config Shape
 
 The canonical config shape for v1 is:
 
 - `states[]`
 - `rules[]`
 
-### 7.1 `states[]`
+### 8.1 `states[]`
 
 Each state entry should contain:
 
@@ -177,7 +195,7 @@ Example:
 { name: "warm", action: "fan_low" }
 ```
 
-### 7.2 `rules[]`
+### 8.2 `rules[]`
 
 Each rule entry should contain:
 

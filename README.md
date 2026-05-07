@@ -1,26 +1,20 @@
 # decision-engine-core
 
-`decision-engine-core` is a state-based decision engine for turning sensor
-input into `state` and `action`.
+`decision-engine-core` is a config-driven decision runtime for turning sensor
+input into deterministic `state` and `action`.
 
-It is designed to externalize decision logic as config, making behavior
-easier to change, test, and share across systems.
+It is built around a canonical config model that can be edited in the viewer,
+evaluated in the JS runtime for simulation and tooling, converted into generated
+C++ config, and executed in an embedded-oriented C++ runtime.
 
-It is intended for embedded, automation, and edge systems.
+It is intended for embedded, automation, and edge systems where decision logic
+should stay separate from hardware-specific integration code.
 
 Typical flow:
 `sensor input -> state -> action`
 
 Example:
 `temperature -> hot -> fan_high`
-
-`decision-engine-core` is a lightweight decision engine that converts sensor inputs into state and action using configurable rules.
-
-Originally extracted from temperature control logic on M5 devices, it can be reused for any control scenario that requires state transitions and action decisions.
-
-It also acts as the center of a canonical-config toolchain: viewer editing,
-JS simulation, generated C++ config, embedded runtime evaluation, and adapter-
-based hardware integration all connect through the same runtime config model.
 
 ## Decision Runtime System (DRS)
 
@@ -36,13 +30,15 @@ In DRS:
 
 ## Position of this repository
 
-`decision-engine-core` is the **JavaScript reference implementation** of the Decision Runtime System.
+`decision-engine-core` is the **canonical-config-centered runtime and tooling repository** of the Decision Runtime System.
 
 It is used for:
 
 - Config evaluation
-- Viewer simulation
+- Viewer simulation and authoring
 - Node-based runtime validation
+- C++ config generation
+- Embedded-oriented runtime parity
 
 Future runtimes (e.g. C++ for embedded systems) will follow the same runtime specification.
 

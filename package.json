@@ -11,7 +11,7 @@
     "check:evaluate": "node scripts/check-evaluate.js",
     "check:config": "node scripts/check-config.js",
     "evaluate": "node scripts/evaluate-cli.js",
-    "cpp:test-vectors": "mkdir -p build && g++ -std=c++17 runtimes/cpp/DecisionEngine.cpp runtimes/cpp/run_test_vectors.cpp -o build/cpp-test-vectors && ./build/cpp-test-vectors",
+    "cpp:test-vectors": "mkdir -p build && g++ -std=c++17 runtimes/cpp/DecisionEngine.cpp runtimes/cpp/run_test_vectors.cpp -o build/cpp-test-vectors && ./build/cpp-test-vectors && g++ -std=c++17 runtimes/cpp/DecisionEngine.cpp runtimes/cpp/run_generated_config_test.cpp -o build/cpp-generated-config-test && ./build/cpp-generated-config-test",
     "test": "node --test",
     "lint": "eslint .",
     "format": "prettier --write .",

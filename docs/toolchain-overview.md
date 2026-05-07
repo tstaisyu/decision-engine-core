@@ -8,6 +8,25 @@ integration.
 `adapter-pattern.md` and `adapter-authoring-guide.md` explain adapter design.
 This document focuses on the config and build toolchain.
 
+```mermaid
+flowchart LR
+
+    Viewer["React Viewer / Simulation"]
+    Canonical["Canonical JSON Config"]
+    Generator["generate-cpp-config.js"]
+    Generated["Generated C++ DecisionConfig"]
+    CppRuntime["C++ Runtime"]
+    Adapters["Input / Output Adapters"]
+    Hardware["Hardware / Sensors / Actuators"]
+
+    Viewer -->|export| Canonical
+    Canonical -->|generate| Generator
+    Generator --> Generated
+    Generated -->|include| CppRuntime
+    CppRuntime --> Adapters
+    Adapters --> Hardware
+```
+
 ## 1. Purpose
 
 The project uses canonical config so that the same decision behavior can be

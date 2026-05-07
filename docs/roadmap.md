@@ -71,3 +71,27 @@ PlatformIO / Arduino IDE / M5Stack側との接続を強化する。
 
 まずは UI ではなく config仕様・validator・CLI を優先する。
 UI は config仕様が固まってから作る。
+
+## v0.x Structure Cleanup Candidate
+
+現在の `src/` は npm package の primary JS runtime implementation として自然な配置であり、
+現時点では移動しない。
+
+ただし、この repository は canonical-config-centered multi-runtime toolchain に近づいており、
+将来的には:
+
+- `runtimes/js/`
+- `runtimes/cpp/`
+
+を同列に置く構成の方が自然になる可能性がある。
+
+これは v0.x 系の structure cleanup candidate としてのみ扱う。
+実施する場合は、少なくとも次への影響確認が必要:
+
+- package entrypoint
+- internal imports
+- tests
+- viewer
+- examples
+
+そのため、現段階では current layout を維持し、移動は roadmap 上の検討事項に留める。

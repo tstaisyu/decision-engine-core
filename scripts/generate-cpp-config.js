@@ -14,7 +14,11 @@ function escapeCppString(value) {
 }
 
 function numberLiteral(value) {
-  return `${Number(value)}F`;
+  const numericValue = Number(value);
+  if (Number.isInteger(numericValue)) {
+    return `${numericValue}.0F`;
+  }
+  return `${numericValue}F`;
 }
 
 function toHeaderGuard(outputPath) {

@@ -40,7 +40,7 @@ It is used for:
 - C++ config generation
 - Embedded-oriented runtime parity
 
-Future runtimes (e.g. C++ for embedded systems) will follow the same runtime specification.
+The JS runtime and the current embedded-oriented C++ runtime follow the same runtime specification, and additional runtimes are expected to do the same.
 
 ## Config Shape Policy
 
@@ -56,8 +56,6 @@ New presets and examples should also use the canonical shape.
 ## What's New
 
 - Config shape is unified to canonical `states[] + rules[]`
-- Legacy config support has been removed
-- JS core, React viewer, and docs now assume canonical-only config
 - C++ runtime now supports rule type parity for:
   - `value_gte`
   - `hysteresis`
@@ -66,13 +64,6 @@ New presets and examples should also use the canonical shape.
 - C++ runtime also supports:
   - state escalation
   - action escalation
-
-## Breaking Changes
-
-- `actions.byState` has been removed
-- `states.rules` has been removed
-- `rule.name` has been removed
-- canonical config is now required
 
 ## Structure
 
@@ -84,8 +75,8 @@ New presets and examples should also use the canonical shape.
 ## Project Structure
 
 - `src/`
-  - JS core library
-  - implementation source of the package public API
+  - JS decision runtime core
+  - reference implementation for canonical config evaluation
 - `runtimes/cpp/`
   - C++ runtime
 - `viewer/`
@@ -196,11 +187,6 @@ They are not part of the published runtime API.
   - used because the C++ runtime does not parse JSON at runtime
   - see `scripts/README.md` and `docs/toolchain-overview.md`
 
-## CI
-
-GitHub Actions runs `npm test`, `npm run lint`, and `npm run format:check`
-on `push` and `pull_request` with Node.js 20 and 22.
-
 ## Evaluate With Default Preset
 
 ```bash
@@ -239,30 +225,15 @@ npm run evaluate -- examples/input.simple-warm.json --preset simpleTemperature
 
 ## C++ Runtime
 
-The C++ runtime prototype is designed for embedded-oriented use and follows the same canonical config shape.
+The C++ runtime is designed for embedded-oriented use and follows the same
+canonical config shape and runtime specification as the JS runtime.
 
-Supported rule types:
+It evaluates caller-provided input snapshots and remains stateless, so runtime
+context stays in the application or adapter layer.
 
-- `value_gte`
-- `hysteresis`
-- `rate_gt`
-- `rate_lt`
-
-Supported escalation:
-
-- state escalation
-- action escalation
-
-`DecisionInput` is intentionally small and caller-provided:
-
-- `value`
-- `previousValue`
-- `previousState`
-- `stateDurationMs`
-- `coolingEffect`
-
-The C++ runtime is stateless.
-Runtime state is managed by the caller and passed into `evaluate()`.
+See [Runtime Spec](docs/runtime-spec.md) for behavior details and
+[Toolchain Overview](docs/toolchain-overview.md) for generated-config and
+embedded integration flow.
 
 ## React Viewer
 

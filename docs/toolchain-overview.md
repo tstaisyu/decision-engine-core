@@ -83,6 +83,29 @@ into a generated C++ build artifact first.
 - hardware config
   - board-specific pins, PWM values, I2C addresses, and wiring assumptions
 
+```mermaid
+flowchart TB
+
+    subgraph Runtime
+        Engine["DecisionEngine<br/>(state/action decision only)"]
+    end
+
+    subgraph Adapters
+        Input["Input Adapter<br/>(sensor -> DecisionInput)"]
+        Output["Output Adapter<br/>DecisionResult -> hardware command"]
+    end
+
+    subgraph Hardware
+        Sensors["Sensors"]
+        Actuators["Actuators"]
+    end
+
+    Sensors --> Input
+    Input --> Engine
+    Engine --> Output
+    Output --> Actuators
+```
+
 ## 4. Why the C++ Runtime Does Not Parse JSON
 
 The C++ runtime intentionally avoids runtime JSON parsing because the embedded

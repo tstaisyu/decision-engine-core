@@ -18,6 +18,10 @@ Example:
 
 Originally extracted from temperature control logic on M5 devices, it can be reused for any control scenario that requires state transitions and action decisions.
 
+It also acts as the center of a canonical-config toolchain: viewer editing,
+JS simulation, generated C++ config, embedded runtime evaluation, and adapter-
+based hardware integration all connect through the same runtime config model.
+
 ## Decision Runtime System (DRS)
 
 This project is part of the **Decision Runtime System (DRS)**.

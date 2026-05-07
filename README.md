@@ -190,6 +190,11 @@ They are not part of the published runtime API.
   - runs representative local evaluation cases
 - `scripts/evaluate-cli.js`
   - evaluates an input JSON file with a selected preset
+- `scripts/generate-cpp-config.js`
+  - generates a C++ `DecisionConfig` header from canonical JSON config
+  - runtime config only; hardware config is not included
+  - used because the C++ runtime does not parse JSON at runtime
+  - see `scripts/README.md` and `docs/toolchain-overview.md`
 
 ## CI
 

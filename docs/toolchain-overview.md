@@ -169,3 +169,85 @@ canonical config
   -> runtime evaluation
   -> adapter-based integration
 ```
+
+## 8. Current Repository Layers
+
+### Authoring Layer
+
+- repository areas
+  - `viewer/`
+- primary responsibility
+  - config editing
+  - local simulation
+  - canonical JSON export
+- relation to other layers
+  - produces canonical config used by the specification, generation, and
+    runtime layers
+
+### Specification Layer
+
+- repository areas
+  - `CONFIG_SPEC.md`
+  - `docs/runtime-spec.md`
+  - `docs/adapter-pattern.md`
+  - `docs/adapter-authoring-guide.md`
+- primary responsibility
+  - define canonical config shape
+  - define runtime behavior
+  - define adapter and boundary rules
+- relation to other layers
+  - constrains how viewer, generator, runtimes, and adapters are implemented
+
+### Generation Layer
+
+- repository areas
+  - `scripts/generate-cpp-config.js`
+  - `examples/m5-temp-fan/config/*.json`
+  - `examples/m5-temp-fan/config/generated_fan_config.h`
+- primary responsibility
+  - convert canonical JSON into generated C++ runtime config artifacts
+- relation to other layers
+  - consumes canonical config from the authoring layer and emits build inputs
+    for the C++ runtime and integration layers
+
+### Runtime Layer
+
+- repository areas
+  - `src/`
+  - `runtimes/cpp/`
+- primary responsibility
+  - evaluate `DecisionInput`
+  - resolve state and action
+  - apply escalation behavior
+- relation to other layers
+  - consumes canonical config or generated config and returns deterministic
+    runtime results to adapters or tests
+
+### Integration Layer
+
+- repository areas
+  - `examples/node-temp-sim/`
+  - `examples/m5-temp-fan/`
+- primary responsibility
+  - connect runtime behavior to mock deployment or embedded execution
+  - hold input/output adapters and hardware-facing code
+- relation to other layers
+  - uses runtime outputs together with generated config and platform-specific
+    integration code
+
+### Verification Layer
+
+- repository areas
+  - `test/`
+  - `vectors/`
+  - `runtimes/cpp/run_test_vectors.cpp`
+  - `runtimes/cpp/run_generated_config_test.cpp`
+  - `scripts/check-config.js`
+  - `scripts/check-evaluate.js`
+- primary responsibility
+  - validate canonical config
+  - verify JS/C++ parity
+  - verify generated config artifacts remain executable
+- relation to other layers
+  - checks that authoring, generation, runtime, and integration assumptions stay
+    aligned

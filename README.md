@@ -85,7 +85,7 @@ New presets and examples should also use the canonical shape.
 
 - `src/`
   - JS core library
-  - package public API の実装元
+  - implementation source of the package public API
 - `runtimes/cpp/`
   - C++ runtime
 - `viewer/`
@@ -94,7 +94,7 @@ New presets and examples should also use the canonical shape.
   - usage examples: minimal JS evaluate, simulation, M5 skeleton
 - `scripts/`
   - development / local verification utilities
-  - published runtime API ではない補助スクリプト
+  - helper scripts that are not part of the published runtime API
 - `test/`
   - JS tests
 - `vectors/`

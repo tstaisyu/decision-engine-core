@@ -53,18 +53,6 @@ New config definitions and exported config should use the canonical shape.
 The C++ runtime prototype also assumes the canonical shape.
 New presets and examples should also use the canonical shape.
 
-## What's New
-
-- Config shape is unified to canonical `states[] + rules[]`
-- C++ runtime now supports rule type parity for:
-  - `value_gte`
-  - `hysteresis`
-  - `rate_gt`
-  - `rate_lt`
-- C++ runtime also supports:
-  - state escalation
-  - action escalation
-
 ## Structure
 
 - `src/evaluate.js`: Entry point. Accepts input and returns `state` and `action`.

@@ -2,6 +2,10 @@
 
 This document defines the canonical config structure used by `decision-engine-core`.
 
+This file defines the top-level canonical config contract.
+Detailed rule semantics are described in [docs/runtime-spec.md](docs/runtime-spec.md).
+Future rule-type-specific references may be split into dedicated docs.
+
 Scope:
 
 - config shape and fields

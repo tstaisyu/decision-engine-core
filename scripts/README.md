@@ -14,6 +14,10 @@ These files are not part of the published runtime API.
   - run representative local evaluation cases
 - `evaluate-cli.js`
   - evaluate an input JSON file with a selected preset
+- `generate-cpp-config.js`
+  - generate a C++ `DecisionConfig` header from canonical JSON config
+  - runtime config only; hardware config is out of scope
+  - used because the C++ runtime does not include a JSON parser
 
 ## Examples
 
@@ -21,4 +25,5 @@ These files are not part of the published runtime API.
 npm run check:config
 npm run check:evaluate
 npm run evaluate -- examples/input.normal.json --preset simpleTemperature
+node scripts/generate-cpp-config.js examples/m5-temp-fan/config/fan_config.sample.json examples/m5-temp-fan/config/generated_fan_config.h
 ```

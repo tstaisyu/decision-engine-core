@@ -20,9 +20,11 @@ module.exports = [
         window: "readonly",
         document: "readonly",
         Blob: "readonly",
+        clearInterval: "readonly",
         structuredClone: "readonly",
         URL: "readonly",
-        localStorage: "readonly"
+        localStorage: "readonly",
+        setInterval: "readonly"
       }
     },
     rules: {

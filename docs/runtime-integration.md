@@ -14,9 +14,11 @@ DRS consists of:
 
 In this structure:
 
-- `decision-engine-core` is the JavaScript runtime implementation
-- The runtime specification will be defined separately
-- Future embedded runtimes (e.g. Arduino/M5) will implement the same behavior
+- `decision-engine-core` is the canonical-config-centered runtime and tooling repository
+- the JS runtime is the primary reference implementation
+- the embedded-oriented C++ runtime already exists as an alternative implementation
+- `docs/runtime-spec.md` defines the current portable behavior contract
+- `examples/m5-temp-fan/` provides the representative embedded integration example
 
 ## 1. Purpose
 

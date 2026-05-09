@@ -1,8 +1,8 @@
-# Runtime Specification (Draft)
+# Runtime Specification
 
 This document defines the language-independent behavior of the Decision Runtime System.
 
-## Scope (Initial)
+## Scope
 
 The current scope focuses on rules-based decision logic and escalation:
 
@@ -48,14 +48,14 @@ That means:
 This document is not trying to freeze the full JS implementation as a permanent standard.
 Instead, it defines the smallest runtime model that other implementations can follow.
 
-## 3. Future Non-JS Runtime Implementations
+## 3. Non-JS Runtime Implementations
 
-A future C++ runtime is expected to be added as a separate implementation that satisfies this spec.
+The current C++ runtime is implemented as a separate runtime that follows this spec.
 
 The expected relationship is:
 
 - JavaScript core: current reference implementation
-- C++ runtime: alternative implementation
+- C++ runtime: current alternative implementation
 - embedded runtimes: smaller platform-specific implementations derived from the same contract
 
 The long-term goal is behavioral compatibility, not implementation identity.
@@ -209,7 +209,7 @@ Example:
 { type: "value_gte", threshold: 26.0, state: "warm" }
 ```
 
-## 8. Normalization Flow
+## 9. Normalization Flow
 
 Before evaluation, config data may be normalized into canonical form.
 
@@ -224,7 +224,7 @@ Policy note:
 - canonical shape is the formal config shape of this specification
 - new config definitions, presets, exports, and examples should use canonical shape
 
-## 9. Minimal Result Format
+## 10. Minimal Result Format
 
 The minimal result format is:
 
@@ -253,7 +253,7 @@ Notes:
 - `debug` is optional and may be omitted in constrained runtimes
 - an embedded runtime may choose to exclude `debug` entirely to reduce memory and code size
 
-## 10. Evaluation Flow
+## 11. Evaluation Flow
 
 The runtime behavior is based on ordered rule evaluation and ordered escalation.
 
@@ -335,7 +335,7 @@ Required fields:
 Unsupported rule types should not stop evaluation.
 They should be ignored and the runtime should continue to the next rule.
 
-## 11. State Escalation
+## 12. State Escalation
 
 State escalation is applied after base state selection.
 
@@ -356,7 +356,7 @@ The current JS/C++ aligned example is:
 - and `stateDurationMs >= hotToCriticalDurationMs`
 - then `finalState = "critical"`
 
-## 12. Action Escalation
+## 13. Action Escalation
 
 Action escalation is applied after state resolution and base action lookup.
 
@@ -377,7 +377,7 @@ The current JS/C++ aligned example is:
 - and `requireNoCoolingEffect == false` or `coolingEffect == false`
 - then `finalAction = "fan_high"`
 
-## 13. Input Model
+## 14. Input Model
 
 The current portable input model is:
 
@@ -404,7 +404,7 @@ Example:
 }
 ```
 
-## 14. C++ Runtime Constraints
+## 15. C++ Runtime Constraints
 
 The embedded-oriented C++ runtime is intentionally small.
 
@@ -416,7 +416,7 @@ Current constraints:
 - config is loaded through C++ structures
 - the caller is responsible for preparing `previousValue`, `previousState`, `stateDurationMs`, and `coolingEffect`
 
-## 15. Version Progression
+## 16. Version Progression
 
 This specification can be understood as evolving in stages.
 
@@ -446,7 +446,7 @@ This matches the current implementation direction more closely in both:
 - the JavaScript reference implementation
 - the evolving C++ runtime prototype
 
-## 12. Core Responsibility Boundary
+## 17. Core Responsibility Boundary
 
 The core runtime is responsible for converting input and config into a decision result.
 
@@ -473,7 +473,7 @@ In short:
 
 `core decides, but does not execute hardware operations`
 
-## 14. Separation from Viewer / Adapter / Device
+## 18. Separation from Viewer / Adapter / Device
 
 The runtime spec assumes a clear separation between the core and surrounding layers.
 
@@ -512,30 +512,7 @@ Examples:
 
 The device should not re-implement decision rules as ad hoc `if` statements if the core already defines them.
 
-## 15. Items Explicitly Out of Scope for This Minimal Spec
-
-The following topics are important, but are not standardized by this document yet:
-
-- duration
-- escalation
-- hysteresis
-- runtime state
-- config version
-- multi-value input
-- dynamic config loading
-
-These are intentionally excluded from the minimal runtime spec for now.
-
-Reasons:
-
-- they increase implementation complexity
-- some of them may need a stateful runtime model
-- some of them may need a stronger config schema
-- some of them may differ between JS, C++, and embedded environments
-
-They should be documented and standardized later, after the minimal runtime contract is validated.
-
-## 16. Design Intent
+## 19. Design Intent
 
 The design intent of this spec is to preserve the main architectural principle of the project:
 
@@ -547,10 +524,10 @@ This allows the same decision behavior to be reused across:
 
 - browser simulation
 - Node.js simulation
-- future C++ runtime
+- C++ runtime
 - future M5Stack or Arduino targets
 
-## 17. Summary
+## 20. Summary
 
 The current minimal runtime spec assumes:
 

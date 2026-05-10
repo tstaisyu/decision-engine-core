@@ -12,10 +12,10 @@ This document focuses on the config and build toolchain.
 flowchart LR
 
     Viewer["React Viewer / Simulation"]
-    Canonical["Canonical JSON Config"]
-    Generator["generate-cpp-config.js"]
-    Generated["Generated C++ DecisionConfig"]
-    CppRuntime["C++ Runtime"]
+    Canonical["Canonical JSON Config<br/>(source of truth)"]
+    Generator["generate-cpp-config.js<br/>(artifact generator)"]
+    Generated["Generated C++ DecisionConfig<br/>(delivery artifact)"]
+    CppRuntime["C++ Runtime<br/>(artifact consumer)"]
     Adapters["Input / Output Adapters"]
     Hardware["Hardware / Sensors / Actuators"]
 
@@ -61,6 +61,23 @@ embedded adapters / hardware
 The viewer and JS runtime operate on canonical JSON directly.
 The C++ runtime does not parse JSON at runtime, so canonical JSON is converted
 into a generated C++ build artifact first.
+
+## 2.1 Source Config, Generated Artifact, and Runtime Consumer
+
+The embedded path uses three distinct layers:
+
+- canonical JSON config
+  - source of truth for runtime behavior
+- generator
+  - converts canonical JSON into a target-specific build artifact
+  - does not define runtime behavior or rule semantics
+- generated C++ header
+  - delivery artifact for embedded builds
+  - not the source of truth
+
+The C++ runtime then consumes that generated artifact directly.
+This keeps JSON parsing out of the embedded runtime while preserving a single
+canonical config model across viewer, JS runtime, generator, and C++ runtime.
 
 ## 3. Responsibility Separation
 

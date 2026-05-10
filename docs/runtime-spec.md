@@ -353,8 +353,18 @@ The current JS/C++ aligned example is:
 
 - if `baseState == "hot"`
 - and `previousState == "hot"`
-- and `stateDurationMs >= hotToCriticalDurationMs`
+- and the configured state-escalation duration is reached
 - then `finalState = "critical"`
+
+In canonical JSON, this is currently expressed through
+`escalations.state.hotToCritical.durationMs`.
+
+In the embedded-oriented C++ runtime, the generated `DecisionConfig` projects
+that into generic runtime-consumed fields such as:
+
+- `stateEscalationFromState`
+- `stateEscalationToState`
+- `stateEscalationDurationMs`
 
 ## 13. Action Escalation
 
@@ -373,9 +383,20 @@ Example:
 The current JS/C++ aligned example is:
 
 - if `baseAction == "fan_low"`
-- and `stateDurationMs >= fanLowToHighDurationMs`
+- and the configured action-escalation duration is reached
 - and `requireNoCoolingEffect == false` or `coolingEffect == false`
 - then `finalAction = "fan_high"`
+
+In canonical JSON, this is currently expressed through
+`escalations.action.fanLowToHigh`.
+
+In the embedded-oriented C++ runtime, the generated `DecisionConfig` projects
+that into generic runtime-consumed fields such as:
+
+- `actionEscalationFromAction`
+- `actionEscalationToAction`
+- `actionEscalationDurationMs`
+- `requireNoCoolingEffect`
 
 ## 14. Input Model
 

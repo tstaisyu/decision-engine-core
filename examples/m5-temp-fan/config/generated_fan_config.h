@@ -11,8 +11,13 @@
 
 inline DecisionConfig buildGeneratedConfig() {
   DecisionConfig config;
-  config.hotToCriticalDurationMs = 5000UL;
-  config.fanLowToHighDurationMs = 10000UL;
+  config.defaultState = "normal";
+  config.stateEscalationFromState = "hot";
+  config.stateEscalationToState = "critical";
+  config.stateEscalationDurationMs = 5000UL;
+  config.actionEscalationFromAction = "fan_low";
+  config.actionEscalationToAction = "fan_high";
+  config.actionEscalationDurationMs = 10000UL;
   config.requireNoCoolingEffect = false;
   config.states = {
       {"normal", "no_action"},

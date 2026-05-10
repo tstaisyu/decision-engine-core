@@ -105,14 +105,20 @@ void loop() {
 
 ## 最初は JSON 読み込みしない
 
-初期段階では config を C++ 構造体として埋め込みます。
+現在の embedded path では canonical JSON を runtime で直接読み込みません。
+代わりに generator が canonical JSON から generated `DecisionConfig`
+header を作り、その artifact を C++ runtime が読みます。
 
-つまり、最初は次を前提にします。
+つまり、現在の flow は次の前提です。
 
-- `DecisionConfig` をコード内で定義する
+- canonical JSON が source of truth である
+- `scripts/generate-cpp-config.js` が generated header を作る
+- C++ runtime は generated `DecisionConfig` を consume する
 - viewer export config をそのまま実機で読むことはしない
 
-将来的には、viewer export config を変換または読み込みできるようにする余地を残します。
+runtime core 自体は domain-neutral な `DecisionConfig` を consume し、
+temperature/fan example-specific semantics は canonical JSON と generated
+artifact 側に残します。
 
 ## まだやらないこと
 

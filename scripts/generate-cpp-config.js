@@ -52,8 +52,15 @@ function ruleLine(rule) {
 function buildHeader(config, outputPath) {
   const guard = toHeaderGuard(outputPath);
   const includePath = toDecisionEngineInclude(outputPath);
-  const hotToCriticalDurationMs = config.escalations?.state?.hotToCritical?.durationMs ?? 5000;
-  const fanLowToHighDurationMs = config.escalations?.action?.fanLowToHigh?.durationMs ?? 1000;
+  const defaultState = config.states.some((state) => state.name === "normal")
+    ? "normal"
+    : config.states[0]?.name || "";
+  const stateEscalationFromState = config.escalations?.state?.hotToCritical ? "hot" : "";
+  const stateEscalationToState = config.escalations?.state?.hotToCritical ? "critical" : "";
+  const stateEscalationDurationMs = config.escalations?.state?.hotToCritical?.durationMs ?? 0;
+  const actionEscalationFromAction = config.escalations?.action?.fanLowToHigh ? "fan_low" : "";
+  const actionEscalationToAction = config.escalations?.action?.fanLowToHigh ? "fan_high" : "";
+  const actionEscalationDurationMs = config.escalations?.action?.fanLowToHigh?.durationMs ?? 0;
   const requireNoCoolingEffect = config.escalations?.action?.fanLowToHigh?.requireNoCoolingEffect ?? true;
 
   return `// Copyright (c) 2026- taisyu shibata
@@ -69,8 +76,13 @@ function buildHeader(config, outputPath) {
 
 inline DecisionConfig buildGeneratedConfig() {
   DecisionConfig config;
-  config.hotToCriticalDurationMs = ${hotToCriticalDurationMs}UL;
-  config.fanLowToHighDurationMs = ${fanLowToHighDurationMs}UL;
+  config.defaultState = "${escapeCppString(defaultState)}";
+  config.stateEscalationFromState = "${escapeCppString(stateEscalationFromState)}";
+  config.stateEscalationToState = "${escapeCppString(stateEscalationToState)}";
+  config.stateEscalationDurationMs = ${stateEscalationDurationMs}UL;
+  config.actionEscalationFromAction = "${escapeCppString(actionEscalationFromAction)}";
+  config.actionEscalationToAction = "${escapeCppString(actionEscalationToAction)}";
+  config.actionEscalationDurationMs = ${actionEscalationDurationMs}UL;
   config.requireNoCoolingEffect = ${requireNoCoolingEffect ? "true" : "false"};
   config.states = {
 ${config.states.map(stateLine).join("\n")}

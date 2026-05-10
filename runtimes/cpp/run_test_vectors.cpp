@@ -37,6 +37,21 @@ void runCase(DecisionEngine& engine, const TestCase& testCase, int& passed, int&
   }
 }
 
+DecisionConfig buildMinimalTemperatureConfig() {
+  DecisionConfig config;
+  config.defaultState = "normal";
+  config.states = {
+      {"normal", "no_action"},
+      {"warm", "fan_low"},
+      {"hot", "fan_high"},
+  };
+  config.rules = {
+      {"value_gte", 30.0F, "hot"},
+      {"value_gte", 26.0F, "warm"},
+  };
+  return config;
+}
+
 }  // namespace
 
 int main() {
@@ -44,7 +59,7 @@ int main() {
   int passed = 0;
   int failed = 0;
 
-  const DecisionConfig minimalTemperatureConfig{};
+  const DecisionConfig minimalTemperatureConfig = buildMinimalTemperatureConfig();
   const TestCase minimalCases[] = {
       {"value_gte.normal", minimalTemperatureConfig, {25.0F, 1000UL}, "normal", "no_action"},
       {"value_gte.warm", minimalTemperatureConfig, {26.4F, 2000UL}, "warm", "fan_low"},
@@ -52,6 +67,7 @@ int main() {
   };
 
   DecisionConfig customActionConfig;
+  customActionConfig.defaultState = "normal";
   customActionConfig.states[1].action = "fan_mid";
   const TestCase customActionCase{
       "value_gte.custom_action",
@@ -62,6 +78,7 @@ int main() {
   };
 
   DecisionConfig unsupportedRuleConfig;
+  unsupportedRuleConfig.defaultState = "normal";
   unsupportedRuleConfig.rules = {
       {"unknown_type", 0.0F, "hot"},
       {"value_gte", 30.0F, "hot"},
@@ -76,6 +93,7 @@ int main() {
   };
 
   DecisionConfig hysteresisConfig;
+  hysteresisConfig.defaultState = "normal";
   hysteresisConfig.states = {
       {"normal", "no_action"},
       {"hot", "fan_high"},
@@ -98,6 +116,7 @@ int main() {
   };
 
   DecisionConfig rateGtConfig;
+  rateGtConfig.defaultState = "normal";
   rateGtConfig.states = {
       {"normal", "no_action"},
       {"warming", "fan_low"},
@@ -112,6 +131,7 @@ int main() {
   };
 
   DecisionConfig rateLtConfig;
+  rateLtConfig.defaultState = "normal";
   rateLtConfig.states = {
       {"normal", "no_action"},
       {"cooling", "fan_low"},
@@ -126,6 +146,9 @@ int main() {
   };
 
   DecisionConfig stateEscalationConfig;
+  stateEscalationConfig.defaultState = "normal";
+  stateEscalationConfig.stateEscalationFromState = "hot";
+  stateEscalationConfig.stateEscalationToState = "critical";
   stateEscalationConfig.states = {
       {"normal", "no_action"},
       {"hot", "fan_high"},
@@ -134,7 +157,7 @@ int main() {
   stateEscalationConfig.rules = {
       {"value_gte", 26.0F, "hot"},
   };
-  stateEscalationConfig.hotToCriticalDurationMs = 5000UL;
+  stateEscalationConfig.stateEscalationDurationMs = 5000UL;
   const TestCase stateEscalationCases[] = {
       {"state_escalation.hot_to_critical",
        stateEscalationConfig,
@@ -159,6 +182,9 @@ int main() {
   };
 
   DecisionConfig actionEscalationConfig;
+  actionEscalationConfig.defaultState = "normal";
+  actionEscalationConfig.actionEscalationFromAction = "fan_low";
+  actionEscalationConfig.actionEscalationToAction = "fan_high";
   actionEscalationConfig.states = {
       {"normal", "no_action"},
       {"warming", "fan_low"},
@@ -168,7 +194,7 @@ int main() {
       {"value_gte", 26.0F, "hot"},
       {"rate_gt", 0.1F, "warming"},
   };
-  actionEscalationConfig.fanLowToHighDurationMs = 1000UL;
+  actionEscalationConfig.actionEscalationDurationMs = 1000UL;
   actionEscalationConfig.requireNoCoolingEffect = true;
   const TestCase actionEscalationCases[] = {
       {"action_escalation.fan_low_to_high",

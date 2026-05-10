@@ -93,6 +93,7 @@ canonical config model across viewer, JS runtime, generator, and C++ runtime.
   - `states`, `rules`, `escalations`
 - generator
   - converts canonical JSON into C++ `DecisionConfig` source
+  - projects canonical config into a runtime-consumable embedded artifact
 - C++ runtime
   - embedded-oriented evaluation of `DecisionInput -> DecisionResult`
 - adapters
@@ -154,6 +155,11 @@ Hardware config belongs to the device integration layer:
 The generator should only handle runtime config.
 Hardware-specific values stay in adapters or application code.
 
+For the embedded-oriented C++ runtime, the generated header is allowed to
+project example-specific canonical names such as `hotToCritical` and
+`fanLowToHigh` into more generic `DecisionConfig` fields consumed by the
+runtime core.
+
 ## 6. Current Workflow Example
 
 The current M5 temperature fan example follows this flow:
@@ -167,6 +173,9 @@ The current M5 temperature fan example follows this flow:
 
 This keeps the runtime config canonical at the JSON level while still producing
 an embedded-friendly C++ artifact.
+
+The generated header is the place where canonical JSON is projected into the
+generic `DecisionConfig` fields expected by the C++ runtime.
 
 ## 7. Future Direction
 

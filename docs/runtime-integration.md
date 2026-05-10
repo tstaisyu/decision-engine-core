@@ -187,6 +187,10 @@ Future options:
 - add lightweight embedded format
 - generate device-specific code
 
+For the current embedded-oriented C++ path, canonical JSON is projected by the
+generator into a generated `DecisionConfig` header. The runtime consumes that
+artifact and remains independent from JSON parsing and hardware-specific code.
+
 ### 3.4 `adapter`
 
 Adapters connect real-world values and device operations to the engine.

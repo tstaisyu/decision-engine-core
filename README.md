@@ -178,13 +178,13 @@ They are not part of the published runtime API.
 ## Evaluate With Default Preset
 
 ```bash
-npm run evaluate -- examples/input.normal.json
+npm run evaluate -- examples/inputs/input.normal.json
 ```
 
 ## Evaluate With Specific Preset
 
 ```bash
-npm run evaluate -- examples/input.simple-warm.json --preset simpleTemperature
+npm run evaluate -- examples/inputs/input.simple-warm.json --preset simpleTemperature
 ```
 
 ## Available Presets
@@ -194,8 +194,8 @@ npm run evaluate -- examples/input.simple-warm.json --preset simpleTemperature
 
 ## Examples
 
-- `examples/input.normal.json`
-- `examples/input.simple-warm.json`
+- `examples/inputs/input.normal.json`
+- `examples/inputs/input.simple-warm.json`
 - `examples/m5-temp-fan/`
   - embedded end-to-end example
   - M5Stack Gray + Si7021 input -> DecisionEngine -> PWM LED verification

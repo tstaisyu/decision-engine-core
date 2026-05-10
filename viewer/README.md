@@ -17,7 +17,7 @@ npm run dev
 2. Click `Export Config` in the header controls.
 3. The current edited config is downloaded as `decision-engine-config.json` in canonical config shape with `states[]` and `rules[]`.
 4. Legacy compatibility fields are kept only for internal editing compatibility, not as the primary export shape.
-5. Replace `examples/node-temp-sim/exported-config.sample.json` with the exported file content.
+5. Replace `examples/node-temp-sim/config/exported-config.sample.json` with the exported file content.
 6. Run `npm run example:node-temp-sim:sample` from the repository root to verify the mock deploy flow.
 7. Confirm `state`, `action`, and `pwm` in the output.
 

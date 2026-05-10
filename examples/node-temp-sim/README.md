@@ -15,18 +15,18 @@ node examples/node-temp-sim/index.js
 ```
 
 ```bash
-node examples/node-temp-sim/index.js --config examples/node-temp-sim/exported-config.sample.json
+node examples/node-temp-sim/index.js --config examples/node-temp-sim/config/exported-config.sample.json
 ```
 
 ```bash
-node examples/node-temp-sim/index.js --config examples/node-temp-sim/exported-config.sample.json --input examples/node-temp-sim/input-sequence.sample.json
+node examples/node-temp-sim/index.js --config examples/node-temp-sim/config/exported-config.sample.json --input examples/node-temp-sim/inputs/input-sequence.sample.json
 ```
 
 ## viewerで作ったconfigを試す手順
 
 1. viewer で definition を編集して config JSON を export する
 2. export された config は canonical config shape の `states[]` / `rules[]` を使う
-3. export した JSON を `examples/node-temp-sim/exported-config.sample.json` に置き換える
+3. export した JSON を `examples/node-temp-sim/config/exported-config.sample.json` に置き換える
 4. `node-temp-sim` はこの viewer export config をそのまま読み込める
 5. 次を実行する
 

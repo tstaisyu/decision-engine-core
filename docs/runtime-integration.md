@@ -315,7 +315,7 @@ Current verified flow:
 ```txt
 viewer
   ↓ export config
-examples/node-temp-sim/exported-config.sample.json
+examples/node-temp-sim/config/exported-config.sample.json
   ↓ load
 examples/node-temp-sim/index.js
   ↓ evaluate
@@ -328,7 +328,7 @@ The current runtime verification flow is:
 
 1. Edit config in viewer
 2. Export config JSON
-3. Replace `examples/node-temp-sim/exported-config.sample.json`
+3. Replace `examples/node-temp-sim/config/exported-config.sample.json`
 4. Run `node-temp-sim`
 5. Check state / action / pwm table
 

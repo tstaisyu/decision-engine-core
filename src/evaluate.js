@@ -20,6 +20,10 @@ function findStateAction(states, stateName) {
 }
 
 function normalizeInput(input) {
+  // Portable runtimes only need a small input snapshot such as value,
+  // previousValue, previousState, stateDurationMs, and coolingEffect.
+  // The JS reference runtime also accepts richer derived fields so viewer,
+  // local simulation, and compatibility paths can reuse the same entrypoint.
   const {
     value,
     previousValue,
@@ -106,6 +110,9 @@ function deriveAction(normalized, stateContext, config) {
   const baseAction = findStateAction(config.states, state);
   let action = baseAction;
 
+  // Portable behavior prefers an explicit caller-provided coolingEffect flag.
+  // The JS runtime keeps a fallback path based on stateRate so existing viewer
+  // and local simulation flows can continue to work without a dedicated flag.
   const hasCoolingEffectForDecision =
     baseAction === "fan_high" || baseAction === "fan_low"
       ? typeof coolingEffect === "boolean"
@@ -135,6 +142,8 @@ function deriveAction(normalized, stateContext, config) {
 function buildResult(stateContext, actionContext) {
   const { state, baseState, previousStateSafe, rawStateDurationMs, effectiveStateDurationMs } = stateContext;
   const { action, actionEscalated } = actionContext;
+  // reason/debug are JS-side diagnostic enrichment. Portable runtimes only
+  // need the state/action result and may omit these fields entirely.
   const reason =
     `baseState=${baseState}; previousState=${previousStateSafe}; ` +
     `rawDuration=${rawStateDurationMs}; ` +
@@ -156,26 +165,29 @@ function buildResult(stateContext, actionContext) {
 
 function evaluate(input, config) {
   const normalized = normalizeInput(input);
-  const resolvedLegacyConfig = resolveConfig(isCanonicalConfigShape(config) ? {} : config, defaultConfig);
+  // Compatibility/default resolution is kept outside the portable evaluation
+  // core. Canonical config callers can provide full config directly, while
+  // JS-side convenience paths may still rely on preset/default fallback data.
+  const resolvedConfigDefaults = resolveConfig(isCanonicalConfigShape(config) ? {} : config, defaultConfig);
   const effectiveConfig = normalizeConfig(
     isCanonicalConfigShape(config)
       ? {
-          ...resolvedLegacyConfig,
+          ...resolvedConfigDefaults,
           ...config,
           escalations: {
-            ...resolvedLegacyConfig.escalations,
+            ...resolvedConfigDefaults.escalations,
             ...(config?.escalations || {}),
             action: {
-              ...resolvedLegacyConfig.escalations.action,
+              ...resolvedConfigDefaults.escalations.action,
               ...(config?.escalations?.action || {})
             },
             state: {
-              ...resolvedLegacyConfig.escalations.state,
+              ...resolvedConfigDefaults.escalations.state,
               ...(config?.escalations?.state || {})
             }
           }
         }
-      : resolvedLegacyConfig
+      : resolvedConfigDefaults
   );
   const stateContext = deriveState(normalized, effectiveConfig);
   const actionContext = deriveAction(normalized, stateContext, effectiveConfig);

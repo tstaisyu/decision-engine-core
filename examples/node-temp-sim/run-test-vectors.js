@@ -5,7 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const { evaluate } = require("../../src");
 const { simpleTemperatureConfig } = require("../../src/presets/simpleTemperatureConfig");
-const { toEngineInput } = require("../adapters/temperature-input-adapter");
+const { toEngineInput } = require("./adapters/temperature-input-adapter");
 
 function main() {
   const vectorPath = path.resolve(__dirname, "../../vectors/minimal-temperature.json");

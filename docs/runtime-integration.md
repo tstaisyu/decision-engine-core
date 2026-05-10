@@ -301,11 +301,10 @@ viewer/
 examples/
   runtime integration experiments
 
-examples/adapters/
-  input/action adapter examples
-
 examples/node-temp-sim/
   mock runtime simulation
+  adapters/
+    input/action adapter examples
 
 examples/m5-temp-fan/
   M5 integration notes

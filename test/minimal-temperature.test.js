@@ -7,7 +7,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const { evaluate } = require("../src");
 const { simpleTemperatureConfig } = require("../src/presets/simpleTemperatureConfig");
-const { toEngineInput } = require("../examples/adapters/temperature-input-adapter");
+const { toEngineInput } = require("../examples/node-temp-sim/adapters/temperature-input-adapter");
 
 test("minimal temperature vectors match expected state/action", () => {
   const vectorPath = path.resolve(__dirname, "../vectors/minimal-temperature.json");

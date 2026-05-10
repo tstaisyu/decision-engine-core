@@ -19,8 +19,8 @@
 - Node シミュレーション実行:
   - `npm run example:node-temp-sim`
 - アダプター:
-  - `examples/adapters/temperature-input-adapter.js`
-  - `examples/adapters/fan-action-adapter.js`
+  - `examples/node-temp-sim/adapters/temperature-input-adapter.js`
+  - `examples/node-temp-sim/adapters/fan-action-adapter.js`
 - M5 連携メモ:
   - `examples/m5-temp-fan/README.md`
   - `examples/m5-temp-fan/flow.md`

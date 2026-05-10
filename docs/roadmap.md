@@ -1,97 +1,86 @@
 # decision-engine-core Roadmap
 
-## 現在地
+This roadmap tracks the repository as a canonical-config-centered multi-runtime
+toolchain.
 
-- M5に埋め込まれていた温度制御ロジックを core 側へ移植済み
-- state/action の結果は M5 と一致確認済み
-- state判定は rules 配列化済み
-- M5用設定は preset として分離済み
+It focuses on repository and package evolution rather than personal task
+tracking.
 
-## Phase 1: Config仕様の固定
+## Done
 
-目的：
-UIや外部連携の前に、状態定義・action定義・昇格条件の設定形式を安定させる。
+- Canonical config shape is fixed around:
+  - `states[]`
+  - `rules[]`
+  - `escalations`
+- Config validation is implemented in the JS runtime
+- JS CLI support is implemented for local evaluation and verification
+- React viewer is implemented for config authoring and local simulation
+- Canonical config export from the viewer is implemented
+- C++ config generation from canonical JSON is implemented
+- Embedded-oriented C++ runtime is implemented
+- JS/C++ parity coverage exists through shared vectors and mirrored test cases
+- Generated-config smoke testing exists for the C++ runtime
+- A representative embedded integration example exists under `examples/m5-temp-fan/`
+- Runtime / adapter / orchestration boundaries are documented
 
-やること：
+## In Progress
 
-- config schema の整理
-- rules type の一覧化
-- action mapping の仕様化
-- escalation の仕様化
-- サンプルconfig追加
+- Keep docs aligned with the current repository reality
+- Keep canonical config, JS runtime behavior, and C++ runtime behavior in sync
+- Keep generated-config workflow and embedded examples aligned with the runtime
+  specification
 
-## Phase 2: Config validation
+## Next
 
-目的：
-壊れたconfigを読み込んでも安全に検出できるようにする。
+- Viewer UX and simulation workflow improvements
+- Generated-config workflow improvements
+  - clearer regeneration path
+  - better generated artifact handling
+- Richer parity coverage across JS and C++
+- Additional representative examples using the same adapter pattern
+- More explicit generated-config verification in local and CI-friendly flows
 
-やること：
+## Future
 
-- validateConfig(config) の追加
-- 必須項目チェック
-- 未対応rule typeチェック
-- action未定義チェック
-
-## Phase 3: CLI support
-
-目的：
-UIなしでもconfigを読み込んで評価できるようにする。
-
-やること：
-
-- configファイルを指定してevaluateするCLI追加
-- サンプル入力JSONでstate/actionを確認
-- プリセット選択
-
-## Phase 4: Local browser UI
-
-目的：
-ブラウザ上でプリセット作成・編集・確認をできるようにする。
-
-やること：
-
-- state rule編集
-- threshold / unit設定
-- action mapping編集
-- duration escalation編集
-- sample inputで即時評価
-
-## Phase 5: Embedded integration
-
-目的：
-PlatformIO / Arduino IDE / M5Stack側との接続を強化する。
-
-やること：
-
-- configからC/C++定数生成
-- M5側ログとの比較
-- firmware側との同期方法検討
-
-## 優先順位
-
-まずは UI ではなく config仕様・validator・CLI を優先する。
-UI は config仕様が固まってから作る。
+- Additional rule types, if they improve the portable runtime model
+- Additional runtime targets beyond the current JS and C++ implementations
+- More target-specific generators built on top of canonical config
+- Deeper simulation / replay / diff workflows around canonical config
+- Broader embedded integration examples beyond the current M5 temperature fan
+  path
 
 ## v0.x Structure Cleanup Candidate
 
-現在の `src/` は npm package の primary JS runtime implementation として自然な配置であり、
-現時点では移動しない。
+The current `src/` layout remains natural because it is still the npm package's
+primary JS runtime implementation.
 
-ただし、この repository は canonical-config-centered multi-runtime toolchain に近づいており、
-将来的には:
+However, the repository now includes:
+
+- authoring
+- canonical config export
+- C++ config generation
+- multiple runtime implementations
+- parity verification
+- representative embedded integration
+
+Because of that, a future layout such as:
 
 - `runtimes/js/`
 - `runtimes/cpp/`
 
-を同列に置く構成の方が自然になる可能性がある。
+may become more natural than the current `src/` + `runtimes/cpp/` split.
 
-これは v0.x 系の structure cleanup candidate としてのみ扱う。
-実施する場合は、少なくとも次への影響確認が必要:
+This is only a v0.x structure cleanup candidate.
+It should not be treated as an immediate refactor.
+
+If it is revisited later, the following impact areas must be checked:
 
 - package entrypoint
 - internal imports
 - tests
-- viewer
+- viewer integration
 - examples
+- scripts and generator paths
 
-そのため、現段階では current layout を維持し、移動は roadmap 上の検討事項に留める。
+For now, the current repository structure remains valid and should be kept
+stable unless there is a clear maintenance benefit.

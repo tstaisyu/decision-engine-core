@@ -2,7 +2,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // TODO: Replace this temporary browser-side copy with an official ESM/browser build from the core package.
+//
+// This file currently mixes:
+// - portable runtime semantics
+// - JS/browser-side convenience behavior
+// - viewer packaging convenience
+//
+// It exists as a temporary browser-consumable copy of the JS runtime path.
+// The long-term direction is to extract a smaller portable JS runtime core and
+// leave only browser/viewer-specific convenience here.
 
+// Viewer packaging convenience:
+// the viewer currently owns browser-local preset copies so it can run without
+// importing an official browser/ESM build from the core package.
 const m5TemperatureConfig = {
   escalations: {
     action: {
@@ -106,6 +118,8 @@ const presets = {
 
 const defaultConfig = m5TemperatureConfig;
 
+// Portable runtime semantics:
+// ordered rule matching shared conceptually with the JS core and C++ runtime.
 function matchRule(rule, normalized) {
   if (rule.type === "value_gte") {
     return normalized.value >= rule.threshold;
@@ -126,6 +140,8 @@ function matchRule(rule, normalized) {
   return false;
 }
 
+// Config boundary convenience:
+// lightweight rule copying/filtering for the browser-side runtime path.
 function normalizeRule(rule) {
   if (!rule || typeof rule !== "object" || Array.isArray(rule)) {
     return rule;
@@ -134,6 +150,8 @@ function normalizeRule(rule) {
   return { ...rule };
 }
 
+// Config boundary convenience:
+// preserve only browser/runtime-usable canonical rule entries.
 function resolveStateRules(config, fallback) {
   if (Array.isArray(config?.rules)) {
     return config.rules.map(normalizeRule).filter((rule) => typeof rule?.state === "string" && rule.state.length > 0);
@@ -144,6 +162,8 @@ function resolveStateRules(config, fallback) {
     : [];
 }
 
+// Config boundary convenience:
+// resolve state entries from either explicit config or viewer preset fallback.
 function resolveStateEntries(config, fallback) {
   if (Array.isArray(config?.states)) {
     return config.states.map((state) => ({ ...state }));
@@ -152,6 +172,8 @@ function resolveStateEntries(config, fallback) {
   return Array.isArray(fallback?.states) ? fallback.states.map((state) => ({ ...state })) : [];
 }
 
+// Portable runtime semantics:
+// resolve a base action from the chosen state mapping.
 function findStateAction(stateEntries, stateName) {
   if (Array.isArray(stateEntries)) {
     const matchedState = stateEntries.find((state) => state && state.name === stateName);
@@ -163,6 +185,11 @@ function findStateAction(stateEntries, stateName) {
   return "no_action";
 }
 
+// JS/browser convenience + compatibility:
+// merges preset/default config with the provided config so browser-side
+// simulation can still run even when callers do not provide a fully-expanded
+// canonical config object. This is not part of the minimum portable runtime
+// contract and should stay outside a future extracted JS core.
 function resolveConfig(config, fallback) {
   const safeConfig = config || {};
   const stateEntries = resolveStateEntries(safeConfig, fallback);
@@ -213,6 +240,11 @@ function resolveConfig(config, fallback) {
   };
 }
 
+// JS/browser convenience:
+// portable runtimes only require a small input snapshot such as value,
+// previousValue, previousState, stateDurationMs, and coolingEffect.
+// The browser runtime also accepts richer derived fields so simulation and
+// local inspection can reuse the same entrypoint.
 function normalizeInput(input) {
   const {
     value,
@@ -259,6 +291,8 @@ function normalizeInput(input) {
   };
 }
 
+// Portable runtime semantics:
+// determine base state from ordered rules, then apply state escalation.
 function deriveState(normalized, config) {
   const { previousStateSafe, rawStateDurationMs } = normalized;
   const hotToCriticalEscalationConfig = config.escalations.state.hotToCritical;
@@ -291,6 +325,10 @@ function deriveState(normalized, config) {
   };
 }
 
+// Portable runtime semantics plus JS convenience:
+// action resolution itself is part of the portable runtime contract.
+// The coolingEffect -> stateRate fallback is JS/browser convenience and would
+// likely remain outside a future minimal extracted core.
 function deriveAction(normalized, stateContext, config) {
   const { coolingEffect, stateRate } = normalized;
   const { state, effectiveStateDurationMs } = stateContext;
@@ -326,6 +364,9 @@ function deriveAction(normalized, stateContext, config) {
   };
 }
 
+// Diagnostics/debug convenience:
+// the portable runtime contract only requires state/action.
+// reason/debug are browser/JS-side enrichment for inspection and UI display.
 function buildResult(stateContext, actionContext) {
   const { state, baseState, previousStateSafe, rawStateDurationMs, effectiveStateDurationMs } = stateContext;
   const { action, actionEscalated } = actionContext;
@@ -348,6 +389,11 @@ function buildResult(stateContext, actionContext) {
   };
 }
 
+// Runtime entrypoint:
+// evaluate() is the browser-facing runtime wrapper. It currently combines
+// portable runtime evaluation with browser-side config/input convenience.
+// A future extraction would keep the deterministic state/action core while
+// moving config fallback and result enrichment into a thinner wrapper layer.
 function evaluate(input, config) {
   const normalized = normalizeInput(input);
   const effectiveConfig = resolveConfig(config, defaultConfig);

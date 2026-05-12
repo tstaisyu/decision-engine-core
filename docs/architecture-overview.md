@@ -1,4 +1,4 @@
- # Architecture Overview
+# Architecture Overview
 
 This document summarizes the current repository-wide architecture of
 `decision-engine-core`.

@@ -52,9 +52,7 @@ function ruleLine(rule) {
 function buildHeader(config, outputPath) {
   const guard = toHeaderGuard(outputPath);
   const includePath = toDecisionEngineInclude(outputPath);
-  const defaultState = config.states.some((state) => state.name === "normal")
-    ? "normal"
-    : config.states[0]?.name || "";
+  const defaultState = config.states.some((state) => state.name === "normal") ? "normal" : config.states[0]?.name || "";
   const stateEscalationFromState = config.escalations?.state?.hotToCritical ? "hot" : "";
   const stateEscalationToState = config.escalations?.state?.hotToCritical ? "critical" : "";
   const stateEscalationDurationMs = config.escalations?.state?.hotToCritical?.durationMs ?? 0;

@@ -7,6 +7,22 @@ import InputPanel from "./components/InputPanel";
 import ResultPanel from "./components/ResultPanel";
 import TimelineSimulationPanel from "./components/TimelineSimulationPanel";
 
+function getWorkspaceStatusTone(status) {
+  if (!status) {
+    return "workspace-status-neutral";
+  }
+
+  if (status.includes("error")) {
+    return "workspace-status-error";
+  }
+
+  if (status === "saved" || status === "loaded" || status === "cleared" || status === "config exported") {
+    return "workspace-status-success";
+  }
+
+  return "workspace-status-neutral";
+}
+
 function App() {
   const {
     presetNames,
@@ -37,27 +53,42 @@ function App() {
     workspaceStatus
   } = useSimulation();
 
+  const workspaceStatusClassName = ["workspace-status", getWorkspaceStatusTone(workspaceStatus)]
+    .filter(Boolean)
+    .join(" ");
+
   return (
     <main className="app-shell">
       <header className="app-header">
-        <h1>プリセットビューアー</h1>
+        <h1>Decision Config Studio</h1>
         <p className="subtitle">
-          プリセットの状態ルール、アクション、継続時間による昇格を確認し、入力に対する判定結果を比較できます。
+          canonical config を編集し、入力に対する判定結果を確認し、timeline simulation で挙動を見ながら export
+          できます。
         </p>
         <div className="workspace-controls">
-          <button type="button" className="secondary button-small" onClick={saveWorkspace}>
-            Save
-          </button>
-          <button type="button" className="secondary button-small" onClick={loadWorkspace}>
-            Load
-          </button>
-          <button type="button" className="secondary button-small" onClick={clearWorkspace}>
-            Clear
-          </button>
-          <button type="button" className="secondary button-small" onClick={exportConfig}>
-            Export Config
-          </button>
-          <span className="workspace-status">{workspaceStatus}</span>
+          <div className="control-group">
+            <span className="control-group-label">Workspace</span>
+            <div className="control-group-buttons">
+              <button type="button" className="secondary button-small" onClick={saveWorkspace}>
+                Save
+              </button>
+              <button type="button" className="secondary button-small" onClick={loadWorkspace}>
+                Load
+              </button>
+              <button type="button" className="secondary button-small" onClick={clearWorkspace}>
+                Clear
+              </button>
+            </div>
+          </div>
+          <div className="control-group control-group-export">
+            <span className="control-group-label">Export</span>
+            <div className="control-group-buttons">
+              <button type="button" className="secondary button-small" onClick={exportConfig}>
+                Export Config
+              </button>
+            </div>
+          </div>
+          {workspaceStatus ? <span className={workspaceStatusClassName}>{workspaceStatus}</span> : null}
         </div>
       </header>
 

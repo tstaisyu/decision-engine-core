@@ -19,6 +19,11 @@ function TimelineSimulationPanel({
     <section className="panel secondary-panel timeline-panel">
       <h2>タイムライン / シミュレーション（Timeline / Simulation）</h2>
       <p className="section-note">JSON 配列で時系列入力を定義し、連続評価結果を確認します。</p>
+      <div className="panel-hint-list">
+        <span>Multi-step Simulation: 複数ステップを連続評価します。</span>
+        <span>Run Simulation = すべてのステップを一括評価</span>
+        <span>Play = 評価済み結果を step-by-step で再生</span>
+      </div>
 
       <label htmlFor="timeline-sequence-json">シーケンス JSON（各要素 = 1ステップ）</label>
       <textarea

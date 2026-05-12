@@ -78,6 +78,7 @@ function InputPanel({ inputText, onInputChange, onEvaluate, error }) {
   return (
     <section className="panel secondary-panel">
       <h2>入力（Input）</h2>
+      <p className="section-note">Single-step Evaluation: 単発の入力を作り、現在の定義に対して 1 回だけ評価します。</p>
       <div className="input-block">
         <label htmlFor="sample-input">標準入力を読み込む（Sample Input）</label>
         <select id="sample-input" defaultValue="" onChange={(event) => loadSample(event.target.value)}>
@@ -91,7 +92,7 @@ function InputPanel({ inputText, onInputChange, onEvaluate, error }) {
       </div>
 
       <div className="input-block">
-        <h3>入力フォーム（Input Form）</h3>
+        <h3>基本入力（Basic Input）</h3>
         <div className="input-form-grid">
           <div className="input-row">
             <span className="input-row-label">温度（value）</span>
@@ -109,33 +110,6 @@ function InputPanel({ inputText, onInputChange, onEvaluate, error }) {
               step="any"
               value={input.previousValue ?? ""}
               onChange={(event) => updateInputField("previousValue", event.target.value)}
-            />
-          </div>
-          <div className="input-row">
-            <span className="input-row-label">温度差（tempDelta）</span>
-            <input
-              type="number"
-              step="any"
-              value={input.tempDelta ?? ""}
-              onChange={(event) => updateInputField("tempDelta", event.target.value)}
-            />
-          </div>
-          <div className="input-row">
-            <span className="input-row-label">温度変化率（tempRate）</span>
-            <input
-              type="number"
-              step="any"
-              value={input.tempRate ?? ""}
-              onChange={(event) => updateInputField("tempRate", event.target.value)}
-            />
-          </div>
-          <div className="input-row">
-            <span className="input-row-label">平均変化率（tempRateAvg）</span>
-            <input
-              type="number"
-              step="any"
-              value={input.tempRateAvg ?? ""}
-              onChange={(event) => updateInputField("tempRateAvg", event.target.value)}
             />
           </div>
           <div className="input-row">
@@ -174,6 +148,52 @@ function InputPanel({ inputText, onInputChange, onEvaluate, error }) {
           </div>
         </div>
       </div>
+
+      <details className="advanced-inputs">
+        <summary>詳細入力 / デバッグ項目（Advanced / Debug Input）</summary>
+        <p className="section-note">
+          JS/browser-side simulation convenience に使う補助入力です。portable runtime contract の最小入力
+          ではありません。
+        </p>
+        <div className="input-form-grid">
+          <div className="input-row">
+            <span className="input-row-label">温度差（tempDelta）</span>
+            <input
+              type="number"
+              step="any"
+              value={input.tempDelta ?? ""}
+              onChange={(event) => updateInputField("tempDelta", event.target.value)}
+            />
+          </div>
+          <div className="input-row">
+            <span className="input-row-label">温度変化率（tempRate）</span>
+            <input
+              type="number"
+              step="any"
+              value={input.tempRate ?? ""}
+              onChange={(event) => updateInputField("tempRate", event.target.value)}
+            />
+          </div>
+          <div className="input-row">
+            <span className="input-row-label">平均変化率（tempRateAvg）</span>
+            <input
+              type="number"
+              step="any"
+              value={input.tempRateAvg ?? ""}
+              onChange={(event) => updateInputField("tempRateAvg", event.target.value)}
+            />
+          </div>
+          <div className="input-row">
+            <span className="input-row-label">timestamp</span>
+            <input
+              type="number"
+              step="1"
+              value={input.timestamp ?? ""}
+              onChange={(event) => updateInputField("timestamp", event.target.value)}
+            />
+          </div>
+        </div>
+      </details>
 
       <details>
         <summary>JSONを確認する（Developer View）</summary>

@@ -285,127 +285,144 @@ function DefinitionPanel({
   }
 
   const changes = buildChanges();
+  const changesCount = changes.length;
 
   return (
     <section className="panel definition-panel">
       <h2>定義（Definition）</h2>
       <p className="section-note">現在の定義を編集し、入力に対する判定結果を確認できます。</p>
-
-      <div className="definition-block">
-        <h3>プリセット（Preset）</h3>
-        <label htmlFor="preset-select">使用する定義（Active Definition）</label>
-        <select id="preset-select" value={selectedPreset} onChange={(event) => onPresetChange(event.target.value)}>
-          {presetNames.map((name) => (
-            <option key={name} value={name}>
-              {name}
-            </option>
-          ))}
-        </select>
+      <div className="flow-guide">
+        <strong>操作の流れ</strong>
+        <span>1. プリセットを選ぶ</span>
+        <span>2. ルール / アクション / 昇格条件を調整する</span>
+        <span>3. 単発入力またはタイムラインで評価する</span>
       </div>
+      <details className="definition-collapsible" open>
+        <summary className="definition-collapsible-summary">
+          <span className="definition-collapsible-toggle" aria-hidden="true" />
+          <span className="definition-collapsible-title">編集パネル（Edit Config）</span>
+          <span className="definition-collapsible-meta">preset: {selectedPreset}</span>
+          <span className="definition-collapsible-meta">
+            changes: {changesCount === 0 ? "none" : `${changesCount} item${changesCount === 1 ? "" : "s"}`}
+          </span>
+        </summary>
 
-      <div className="definition-block">
-        <div className="definition-header-row">
-          <h3>変更内容（Changes）</h3>
-          <button type="button" className="secondary button-small" onClick={resetAllChanges}>
-            変更をリセット
-          </button>
-        </div>
-        <div className="changes-panel">
-          {!changes.length ? <div className="changes-item">変更なし</div> : null}
-          {changes.map((change) => (
-            <div key={change.key} className="changes-item">
-              <span className="changes-item-text">{change.label}</span>
-              <button
-                type="button"
-                className="secondary button-small"
-                onClick={() => resetChange(change.resetType, change.target)}
-              >
-                戻す
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="definition-block">
-        <h3>ルール（Rules）</h3>
-        <table className="definition-table">
-          <thead>
-            <tr>
-              <th>順</th>
-              <th>状態名（State）</th>
-              <th>条件</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rules.map((rule, index) => (
-              <tr key={`${rule.state}-${index}`}>
-                <td>{index + 1}</td>
-                <td>{rule.state}</td>
-                <td>{renderRuleCondition(rule, index)}</td>
-              </tr>
+        <div className="definition-block">
+          <h3>プリセット（Preset）</h3>
+          <label htmlFor="preset-select">使用する定義（Active Definition）</label>
+          <select id="preset-select" value={selectedPreset} onChange={(event) => onPresetChange(event.target.value)}>
+            {presetNames.map((name) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </select>
+        </div>
 
-      <div className="definition-block">
-        <h3>アクション（Actions）</h3>
-        <table className="definition-table">
-          <thead>
-            <tr>
-              <th>状態（state）</th>
-              <th>実行内容（action）</th>
-            </tr>
-          </thead>
-          <tbody>{Object.entries(actions).map(renderActionRow)}</tbody>
-        </table>
-      </div>
-
-      <div className="definition-block">
-        <h3>昇格条件（Escalations）</h3>
-        <div className="definition-subgrid">
-          <div className="definition-item">
-            <label htmlFor="state-hot-to-critical">hot → critical durationMs</label>
-            <input
-              id="state-hot-to-critical"
-              className="editable-field"
-              type="number"
-              step="1"
-              value={stateEscalations.hotToCritical?.durationMs ?? ""}
-              onChange={(event) => updateEscalationDuration("state", "hotToCritical", event.target.value)}
-            />
+        <div className="definition-block">
+          <div className="definition-header-row">
+            <h3>変更内容（Changes）</h3>
+            <button type="button" className="secondary button-small" onClick={resetAllChanges}>
+              変更をリセット
+            </button>
           </div>
-          <div className="definition-item">
-            <label htmlFor="action-fan-low-to-high">fan_low → fan_high durationMs</label>
-            <input
-              id="action-fan-low-to-high"
-              className="editable-field"
-              type="number"
-              step="1"
-              value={actionEscalations.fanLowToHigh?.durationMs ?? ""}
-              onChange={(event) => updateEscalationDuration("action", "fanLowToHigh", event.target.value)}
-            />
-          </div>
-          <div className="definition-item">
-            <label htmlFor="action-fan-low-to-high-cooling-effect">fanLowToHigh requireNoCoolingEffect</label>
-            <select
-              id="action-fan-low-to-high-cooling-effect"
-              className="editable-field"
-              value={
-                actionEscalations.fanLowToHigh?.requireNoCoolingEffect === undefined
-                  ? ""
-                  : String(actionEscalations.fanLowToHigh.requireNoCoolingEffect)
-              }
-              onChange={(event) => updateActionEscalationBoolean("fanLowToHigh", event.target.value)}
-            >
-              <option value="">default</option>
-              <option value="true">true</option>
-              <option value="false">false</option>
-            </select>
+          <div className="changes-panel">
+            {!changes.length ? <div className="changes-item">変更なし</div> : null}
+            {changes.map((change) => (
+              <div key={change.key} className="changes-item">
+                <span className="changes-item-text">{change.label}</span>
+                <button
+                  type="button"
+                  className="secondary button-small"
+                  onClick={() => resetChange(change.resetType, change.target)}
+                >
+                  戻す
+                </button>
+              </div>
+            ))}
           </div>
         </div>
-      </div>
+
+        <div className="definition-block">
+          <h3>ルール（Rules）</h3>
+          <table className="definition-table">
+            <thead>
+              <tr>
+                <th>順</th>
+                <th>状態名（State）</th>
+                <th>条件</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rules.map((rule, index) => (
+                <tr key={`${rule.state}-${index}`}>
+                  <td>{index + 1}</td>
+                  <td>{rule.state}</td>
+                  <td>{renderRuleCondition(rule, index)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="definition-block">
+          <h3>アクション（Actions）</h3>
+          <table className="definition-table">
+            <thead>
+              <tr>
+                <th>状態（state）</th>
+                <th>実行内容（action）</th>
+              </tr>
+            </thead>
+            <tbody>{Object.entries(actions).map(renderActionRow)}</tbody>
+          </table>
+        </div>
+
+        <div className="definition-block">
+          <h3>昇格条件（Escalations）</h3>
+          <div className="definition-subgrid">
+            <div className="definition-item">
+              <label htmlFor="state-hot-to-critical">hot → critical durationMs</label>
+              <input
+                id="state-hot-to-critical"
+                className="editable-field"
+                type="number"
+                step="1"
+                value={stateEscalations.hotToCritical?.durationMs ?? ""}
+                onChange={(event) => updateEscalationDuration("state", "hotToCritical", event.target.value)}
+              />
+            </div>
+            <div className="definition-item">
+              <label htmlFor="action-fan-low-to-high">fan_low → fan_high durationMs</label>
+              <input
+                id="action-fan-low-to-high"
+                className="editable-field"
+                type="number"
+                step="1"
+                value={actionEscalations.fanLowToHigh?.durationMs ?? ""}
+                onChange={(event) => updateEscalationDuration("action", "fanLowToHigh", event.target.value)}
+              />
+            </div>
+            <div className="definition-item">
+              <label htmlFor="action-fan-low-to-high-cooling-effect">fanLowToHigh requireNoCoolingEffect</label>
+              <select
+                id="action-fan-low-to-high-cooling-effect"
+                className="editable-field"
+                value={
+                  actionEscalations.fanLowToHigh?.requireNoCoolingEffect === undefined
+                    ? ""
+                    : String(actionEscalations.fanLowToHigh.requireNoCoolingEffect)
+                }
+                onChange={(event) => updateActionEscalationBoolean("fanLowToHigh", event.target.value)}
+              >
+                <option value="">default</option>
+                <option value="true">true</option>
+                <option value="false">false</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </details>
     </section>
   );
 }

@@ -810,8 +810,29 @@ details > label {
   grid-column: 1 / -1;
 }
 
+.timeline-editor {
+  margin-bottom: 12px;
+}
+
+.timeline-editor textarea {
+  min-height: 140px;
+}
+
+.timeline-button-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 12px;
+  gap: 8px;
+}
+
+.timeline-primary-button,
+.timeline-secondary-button {
+  width: 100%;
+  min-width: 0;
+}
+
 .timeline-table-wrap {
-  margin-top: 12px;
+  margin-top: 8px;
   overflow-x: auto;
 }
 
@@ -838,8 +859,106 @@ details > label {
   letter-spacing: 0.04em;
 }
 
+.timeline-table tbody tr {
+  transition:
+    background-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.timeline-table tbody tr:hover {
+  background: #f8fbff;
+}
+
+.timeline-row-initial {
+  background: #fafafa;
+}
+
+.timeline-row-state-changed {
+  background: #f0fdf4;
+}
+
+.timeline-row-action-changed {
+  background: #fff7ed;
+}
+
+.timeline-row-decision-changed {
+  background: #eff6ff;
+  box-shadow: inset 3px 0 0 #60a5fa;
+}
+
+.timeline-decision-cell {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.timeline-rule-cell {
+  max-width: 220px;
+  color: #64748b;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timeline-change-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .timeline-chart-section {
   margin-top: 14px;
+}
+
+.timeline-chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0 0 8px;
+}
+
+.timeline-chart-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #475569;
+}
+
+.timeline-chart-legend-swatch {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+}
+
+.timeline-chart-legend-swatch-value {
+  background: #2563eb;
+}
+
+.timeline-chart-legend-swatch-state {
+  background: #f59e0b;
+}
+
+.timeline-chart-legend-swatch-action {
+  background: #ef4444;
+}
+
+.timeline-chart-note {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: #64748b;
 }
 
 .timeline-chart-wrap {

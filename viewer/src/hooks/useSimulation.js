@@ -4,6 +4,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { evaluateWithPreset, getPresets } from "../lib/engineAdapter";
 
+// Viewer application orchestrator:
+// this hook owns preset selection, edited config state, single-step evaluation
+// orchestration, timeline simulation orchestration, and workspace/export
+// handling for the viewer.
+//
+// It does not define runtime semantics itself. Runtime evaluation is accessed
+// through engineAdapter.js so the viewer remains a runtime consumer rather than
+// a runtime source.
+//
+// Timeline helpers such as buildTimelineRows belong here because sequencing,
+// replay, and viewer-local simulation flow are viewer responsibilities.
 const WORKSPACE_STORAGE_KEY = "decision-engine-viewer.workspace.v1";
 const TIMELINE_PLAY_INTERVAL_MS = 1000;
 

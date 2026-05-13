@@ -6,117 +6,12 @@
 // This file currently mixes:
 // - portable runtime semantics
 // - JS/browser-side convenience behavior
-// - viewer packaging convenience
+// - a small amount of browser packaging convenience
 //
 // It exists as a temporary browser-consumable copy of the JS runtime path.
 // The long-term direction is to extract a smaller portable JS runtime core and
 // leave only browser/viewer-specific convenience here.
-
-// Viewer packaging convenience:
-// the viewer currently owns browser-local preset copies so it can run without
-// importing an official browser/ESM build from the core package.
-const m5TemperatureConfig = {
-  escalations: {
-    action: {
-      fanLowToHigh: {
-        durationMs: 1000,
-        requireNoCoolingEffect: false
-      }
-    },
-    state: {
-      hotToCritical: {
-        durationMs: 5000
-      }
-    }
-  },
-  states: [
-    {
-      name: "critical",
-      action: "alert"
-    },
-    {
-      name: "hot",
-      action: "fan_high"
-    },
-    {
-      name: "warming",
-      action: "fan_low"
-    },
-    {
-      name: "cooling",
-      action: "fan_low"
-    },
-    {
-      name: "normal",
-      action: "no_action"
-    }
-  ],
-  rules: [
-    {
-      type: "value_gte",
-      threshold: 40.0,
-      state: "critical"
-    },
-    {
-      type: "value_gte",
-      threshold: 26.0,
-      state: "hot"
-    },
-    {
-      type: "hysteresis",
-      state: "hot",
-      onThreshold: 26.0,
-      offThreshold: 25.5
-    },
-    {
-      type: "rate_gt",
-      threshold: 0.02,
-      state: "warming"
-    },
-    {
-      type: "rate_lt",
-      threshold: -0.02,
-      state: "cooling"
-    }
-  ]
-};
-
-const simpleTemperatureConfig = {
-  escalations: {},
-  states: [
-    {
-      name: "normal",
-      action: "no_action"
-    },
-    {
-      name: "warm",
-      action: "fan_low"
-    },
-    {
-      name: "hot",
-      action: "fan_high"
-    }
-  ],
-  rules: [
-    {
-      type: "value_gte",
-      threshold: 30,
-      state: "hot"
-    },
-    {
-      type: "value_gte",
-      threshold: 26,
-      state: "warm"
-    }
-  ]
-};
-
-const presets = {
-  m5Temperature: m5TemperatureConfig,
-  simpleTemperature: simpleTemperatureConfig
-};
-
-const defaultConfig = m5TemperatureConfig;
+import { defaultConfig } from "./viewerPresets";
 
 // Portable runtime semantics:
 // ordered rule matching shared conceptually with the JS core and C++ runtime.
@@ -403,4 +298,4 @@ function evaluate(input, config) {
   return buildResult(stateContext, actionContext);
 }
 
-export { evaluate, presets };
+export { evaluate };

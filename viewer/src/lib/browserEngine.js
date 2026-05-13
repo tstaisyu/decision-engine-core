@@ -11,29 +11,8 @@
 // It exists as a temporary browser-consumable copy of the JS runtime path.
 // The long-term direction is to extract a smaller portable JS runtime core and
 // leave only browser/viewer-specific convenience here.
+import { deriveState, findStateAction } from "./browserRuntimeCore";
 import { defaultConfig } from "./viewerPresets";
-
-// Portable runtime semantics:
-// ordered rule matching shared conceptually with the JS core and C++ runtime.
-function matchRule(rule, normalized) {
-  if (rule.type === "value_gte") {
-    return normalized.value >= rule.threshold;
-  }
-
-  if (rule.type === "hysteresis") {
-    return normalized.previousStateSafe === rule.state && normalized.value > rule.offThreshold;
-  }
-
-  if (rule.type === "rate_gt") {
-    return normalized.stateRate > rule.threshold;
-  }
-
-  if (rule.type === "rate_lt") {
-    return normalized.stateRate < rule.threshold;
-  }
-
-  return false;
-}
 
 // Config boundary convenience:
 // lightweight rule copying/filtering for the browser-side runtime path.
@@ -65,19 +44,6 @@ function resolveStateEntries(config, fallback) {
   }
 
   return Array.isArray(fallback?.states) ? fallback.states.map((state) => ({ ...state })) : [];
-}
-
-// Portable runtime semantics:
-// resolve a base action from the chosen state mapping.
-function findStateAction(stateEntries, stateName) {
-  if (Array.isArray(stateEntries)) {
-    const matchedState = stateEntries.find((state) => state && state.name === stateName);
-    if (typeof matchedState?.action === "string") {
-      return matchedState.action;
-    }
-  }
-
-  return "no_action";
 }
 
 // JS/browser convenience + compatibility:
@@ -186,40 +152,6 @@ function normalizeInput(input) {
   };
 }
 
-// Portable runtime semantics:
-// determine base state from ordered rules, then apply state escalation.
-function deriveState(normalized, config) {
-  const { previousStateSafe, rawStateDurationMs } = normalized;
-  const hotToCriticalEscalationConfig = config.escalations.state.hotToCritical;
-  const stateRules = config.rules;
-
-  let baseState = "normal";
-
-  const matchedRule = stateRules.find((rule) => matchRule(rule, normalized));
-  if (matchedRule) {
-    baseState = matchedRule.state;
-  }
-
-  const effectiveStateDurationMs = baseState === previousStateSafe ? rawStateDurationMs : 0;
-
-  let state = baseState;
-  if (
-    baseState === "hot" &&
-    previousStateSafe === "hot" &&
-    effectiveStateDurationMs >= hotToCriticalEscalationConfig.durationMs
-  ) {
-    state = "critical";
-  }
-
-  return {
-    baseState,
-    state,
-    previousStateSafe,
-    rawStateDurationMs,
-    effectiveStateDurationMs
-  };
-}
-
 // Portable runtime semantics plus JS convenience:
 // action resolution itself is part of the portable runtime contract.
 // The coolingEffect -> stateRate fallback is JS/browser convenience and would
@@ -230,15 +162,25 @@ function deriveAction(normalized, stateContext, config) {
   const fanLowToHighEscalationConfig = config.escalations.action.fanLowToHigh;
   const { coolingEffectRateThreshold = -0.01 } = config;
 
+  // Portable action resolution:
+  // resolve the base action from the chosen state mapping first.
   const baseAction = findStateAction(config.stateEntries, state);
   let action = baseAction;
 
+  // JS/browser convenience:
+  // portable runtimes prefer explicit coolingEffect input. The browser runtime
+  // also falls back to stateRate when coolingEffect is omitted so local
+  // simulation can still infer an action-escalation condition.
   const hasCoolingEffectForDecision =
     baseAction === "fan_high" || baseAction === "fan_low"
       ? typeof coolingEffect === "boolean"
         ? coolingEffect
         : stateRate < coolingEffectRateThreshold
       : false;
+
+  // Portable action resolution:
+  // apply the configured action escalation on top of the base action and
+  // return the final action decision.
   let actionEscalated = false;
 
   if (

@@ -1,6 +1,16 @@
 // Copyright (c) 2026- taisyu shibata
 // SPDX-License-Identifier: Apache-2.0
 
+// Browser runtime core helpers (portable semantics candidates):
+// - matchRule
+// - findStateAction
+// - deriveState
+// - deriveActionCore
+//
+// This module is intentionally kept free of viewer-only orchestration and
+// browser convenience fallback so these helpers can be promoted toward an
+// official JS runtime core over time.
+
 // Portable runtime semantics:
 // ordered rule matching shared conceptually with the JS core and C++ runtime.
 function matchRule(rule, normalized) {
@@ -70,4 +80,30 @@ function deriveState(normalized, config) {
   };
 }
 
-export { deriveState, findStateAction, matchRule };
+// Portable runtime semantics:
+// apply action escalation on top of the resolved base action and return the
+// final action decision.
+function deriveActionCore(baseAction, effectiveStateDurationMs, hasCoolingEffectForDecision, config) {
+  const fanLowToHighEscalationConfig = config.escalations.action.fanLowToHigh;
+  let action = baseAction;
+  let actionEscalated = false;
+
+  if (
+    baseAction === "fan_low" &&
+    effectiveStateDurationMs >= fanLowToHighEscalationConfig.durationMs &&
+    (fanLowToHighEscalationConfig.requireNoCoolingEffect === false
+      ? !hasCoolingEffectForDecision
+      : hasCoolingEffectForDecision)
+  ) {
+    action = "fan_high";
+    actionEscalated = true;
+  }
+
+  return {
+    baseAction,
+    action,
+    actionEscalated
+  };
+}
+
+export { deriveActionCore, deriveState, findStateAction, matchRule };

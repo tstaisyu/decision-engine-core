@@ -1,17 +1,20 @@
 // Copyright (c) 2026- taisyu shibata
 // SPDX-License-Identifier: Apache-2.0
 
-// TODO: Replace this temporary browser-side copy with an official ESM/browser build from the core package.
+// Browser runtime wrapper for viewer consumption.
 //
-// This file currently mixes:
-// - portable runtime semantics
-// - JS/browser-side convenience behavior
-// - a small amount of browser packaging convenience
+// This module keeps browser/viewer-side convenience around the runtime core:
+// - resolveConfig
+// - normalizeInput
+// - resolveCoolingEffectForBrowser
+// - deriveAction (wrapper around core action resolution)
+// - buildResult
+// - evaluate (browser-facing wrapper)
 //
-// It exists as a temporary browser-consumable copy of the JS runtime path.
-// The long-term direction is to extract a smaller portable JS runtime core and
-// leave only browser/viewer-specific convenience here.
-import { deriveState, findStateAction } from "./browserRuntimeCore";
+// Portable helper semantics are being moved into browserRuntimeCore.js.
+// The long-term direction is to keep this file as a thin browser wrapper while
+// promoting core evaluation helpers toward an official JS runtime core.
+import { deriveActionCore, deriveState, findStateAction } from "./browserRuntimeCore";
 import { defaultConfig } from "./viewerPresets";
 
 // Config boundary convenience:
@@ -156,49 +159,39 @@ function normalizeInput(input) {
 // action resolution itself is part of the portable runtime contract.
 // The coolingEffect -> stateRate fallback is JS/browser convenience and would
 // likely remain outside a future minimal extracted core.
+function resolveCoolingEffectForBrowser(baseAction, coolingEffect, stateRate, coolingEffectRateThreshold) {
+  if (baseAction !== "fan_high" && baseAction !== "fan_low") {
+    return false;
+  }
+
+  if (typeof coolingEffect === "boolean") {
+    return coolingEffect;
+  }
+
+  return stateRate < coolingEffectRateThreshold;
+}
+
 function deriveAction(normalized, stateContext, config) {
   const { coolingEffect, stateRate } = normalized;
   const { state, effectiveStateDurationMs } = stateContext;
-  const fanLowToHighEscalationConfig = config.escalations.action.fanLowToHigh;
   const { coolingEffectRateThreshold = -0.01 } = config;
 
   // Portable action resolution:
   // resolve the base action from the chosen state mapping first.
   const baseAction = findStateAction(config.stateEntries, state);
-  let action = baseAction;
 
   // JS/browser convenience:
   // portable runtimes prefer explicit coolingEffect input. The browser runtime
   // also falls back to stateRate when coolingEffect is omitted so local
   // simulation can still infer an action-escalation condition.
-  const hasCoolingEffectForDecision =
-    baseAction === "fan_high" || baseAction === "fan_low"
-      ? typeof coolingEffect === "boolean"
-        ? coolingEffect
-        : stateRate < coolingEffectRateThreshold
-      : false;
-
-  // Portable action resolution:
-  // apply the configured action escalation on top of the base action and
-  // return the final action decision.
-  let actionEscalated = false;
-
-  if (
-    baseAction === "fan_low" &&
-    effectiveStateDurationMs >= fanLowToHighEscalationConfig.durationMs &&
-    (fanLowToHighEscalationConfig.requireNoCoolingEffect === false
-      ? !hasCoolingEffectForDecision
-      : hasCoolingEffectForDecision)
-  ) {
-    action = "fan_high";
-    actionEscalated = true;
-  }
-
-  return {
+  const hasCoolingEffectForDecision = resolveCoolingEffectForBrowser(
     baseAction,
-    action,
-    actionEscalated
-  };
+    coolingEffect,
+    stateRate,
+    coolingEffectRateThreshold
+  );
+
+  return deriveActionCore(baseAction, effectiveStateDurationMs, hasCoolingEffectForDecision, config);
 }
 
 // Diagnostics/debug convenience:

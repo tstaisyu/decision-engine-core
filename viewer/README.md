@@ -36,6 +36,9 @@ npm run dev
 
 ## Notes
 
-- Uses local engine files from the parent repository (`../src`).
-- Current scope is minimal: preset selector, input JSON editor, evaluate button, and state/action result.
-- `viewer/src/lib/browserEngine.js` is a temporary browser-safe ESM copy of minimal core logic to avoid CommonJS `require()` runtime issues in Vite.
+- Current scope is authoring, evaluation, simulation, and visualization for canonical config.
+- Runtime access is routed through `viewer/src/lib/engineAdapter.js`.
+- `viewer/src/lib/viewerPresets.js` owns viewer-local preset definitions.
+- `viewer/src/lib/browserEngine.js` is the browser convenience wrapper for runtime evaluation.
+- `viewer/src/lib/browserRuntimeCore.js` holds portable-semantics-oriented helper functions.
+- Current direction: keep the viewer as a runtime consumer and continue moving portable helpers toward an official JS runtime core.

@@ -40,6 +40,27 @@ module.exports = [
     }
   },
   {
+    files: ["viewer/test/**/*.js"],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: "module",
+      globals: {
+        console: "readonly"
+      }
+    },
+    rules: {
+      "no-undef": "error",
+      "no-redeclare": "error",
+      "no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_"
+        }
+      ]
+    }
+  },
+  {
     files: ["viewer/src/**/*.jsx"],
     rules: {
       "no-unused-vars": "off"
@@ -69,7 +90,7 @@ module.exports = [
   },
   {
     files: ["**/*.js"],
-    ignores: ["viewer/src/**", "viewer/vite.config.js"],
+    ignores: ["viewer/src/**", "viewer/test/**", "viewer/vite.config.js"],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "commonjs",

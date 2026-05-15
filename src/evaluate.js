@@ -101,24 +101,25 @@ function deriveState(normalized, config) {
   };
 }
 
-function deriveAction(normalized, stateContext, config) {
-  const { coolingEffect, stateRate } = normalized;
-  const { state, effectiveStateDurationMs } = stateContext;
-  const fanLowToHighEscalationConfig = config.escalations.action.fanLowToHigh;
-  const { coolingEffectRateThreshold = -0.01 } = config;
+function resolveCoolingEffectForBrowser(baseAction, coolingEffect, stateRate, coolingEffectRateThreshold) {
+  if (baseAction !== "fan_high" && baseAction !== "fan_low") {
+    return false;
+  }
 
-  const baseAction = findStateAction(config.states, state);
+  if (typeof coolingEffect === "boolean") {
+    return coolingEffect;
+  }
+
+  return stateRate < coolingEffectRateThreshold;
+}
+
+function deriveActionCore(baseAction, effectiveStateDurationMs, hasCoolingEffectForDecision, config) {
+  const fanLowToHighEscalationConfig = config.escalations.action.fanLowToHigh;
   let action = baseAction;
 
-  // Portable behavior prefers an explicit caller-provided coolingEffect flag.
-  // The JS runtime keeps a fallback path based on stateRate so existing viewer
-  // and local simulation flows can continue to work without a dedicated flag.
-  const hasCoolingEffectForDecision =
-    baseAction === "fan_high" || baseAction === "fan_low"
-      ? typeof coolingEffect === "boolean"
-        ? coolingEffect
-        : stateRate < coolingEffectRateThreshold
-      : false;
+  // Portable action resolution:
+  // apply the configured action escalation on top of the base action and
+  // return the final action decision.
   let actionEscalated = false;
 
   if (
@@ -137,6 +138,30 @@ function deriveAction(normalized, stateContext, config) {
     action,
     actionEscalated
   };
+}
+
+function deriveAction(normalized, stateContext, config) {
+  const { coolingEffect, stateRate } = normalized;
+  const { state, effectiveStateDurationMs } = stateContext;
+  const { coolingEffectRateThreshold = -0.01 } = config;
+
+  // Portable action resolution:
+  // resolve the base action from the chosen state mapping first.
+  const baseAction = findStateAction(config.states, state);
+
+  // JS/browser convenience:
+  // portable runtimes prefer explicit caller-provided coolingEffect input.
+  // The JS runtime keeps a fallback path based on stateRate so existing
+  // simulation and compatibility flows can continue to work without a
+  // dedicated flag.
+  const hasCoolingEffectForDecision = resolveCoolingEffectForBrowser(
+    baseAction,
+    coolingEffect,
+    stateRate,
+    coolingEffectRateThreshold
+  );
+
+  return deriveActionCore(baseAction, effectiveStateDurationMs, hasCoolingEffectForDecision, config);
 }
 
 function buildResult(stateContext, actionContext) {

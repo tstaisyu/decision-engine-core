@@ -2,10 +2,29 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Portable runtime semantics helpers used by JS runtime consumers.
-// This layer keeps state/action derivation logic only and intentionally
-// excludes debug/reason enrichment, config resolution, and input normalization.
+// This layer keeps rule evaluation and state/action derivation logic only
+// and intentionally excludes debug/reason enrichment, config resolution,
+// and input normalization.
 
-const { matchRule } = require("./rules");
+function matchRule(rule, normalized) {
+  if (rule.type === "value_gte") {
+    return normalized.value >= rule.threshold;
+  }
+
+  if (rule.type === "hysteresis") {
+    return normalized.previousStateSafe === rule.state && normalized.value > rule.offThreshold;
+  }
+
+  if (rule.type === "rate_gt") {
+    return normalized.stateRate > rule.threshold;
+  }
+
+  if (rule.type === "rate_lt") {
+    return normalized.stateRate < rule.threshold;
+  }
+
+  return false;
+}
 
 function findStateAction(states, stateName) {
   if (!Array.isArray(states)) {
@@ -73,6 +92,7 @@ function deriveActionCore(baseAction, effectiveStateDurationMs, hasCoolingEffect
 }
 
 module.exports = {
+  matchRule,
   findStateAction,
   deriveState,
   deriveActionCore

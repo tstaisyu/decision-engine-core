@@ -3,20 +3,11 @@
 
 const { config: defaultConfig } = require("./config");
 const { normalizeConfig } = require("./normalizeConfig");
-const { matchRule } = require("./rules");
 const { resolveConfig } = require("./resolveConfig");
+const { findStateAction, deriveState, deriveActionCore } = require("./runtimeCore");
 
 function isCanonicalConfigShape(config) {
   return Boolean(config && (Array.isArray(config.states) || Array.isArray(config.rules)));
-}
-
-function findStateAction(states, stateName) {
-  if (!Array.isArray(states)) {
-    return "no_action";
-  }
-
-  const matchedState = states.find((state) => state && state.name === stateName);
-  return typeof matchedState?.action === "string" ? matchedState.action : "no_action";
 }
 
 function normalizeInput(input) {
@@ -69,38 +60,6 @@ function normalizeInput(input) {
   };
 }
 
-function deriveState(normalized, config) {
-  const { previousStateSafe, rawStateDurationMs } = normalized;
-  const hotToCriticalEscalationConfig = config.escalations.state.hotToCritical;
-  const stateRules = config.rules;
-
-  let baseState = "normal";
-
-  const matchedRule = stateRules.find((rule) => matchRule(rule, normalized));
-  if (matchedRule) {
-    baseState = matchedRule.state;
-  }
-
-  const effectiveStateDurationMs = baseState === previousStateSafe ? rawStateDurationMs : 0;
-
-  let state = baseState;
-  if (
-    baseState === "hot" &&
-    previousStateSafe === "hot" &&
-    effectiveStateDurationMs >= hotToCriticalEscalationConfig.durationMs
-  ) {
-    state = "critical";
-  }
-
-  return {
-    baseState,
-    state,
-    previousStateSafe,
-    rawStateDurationMs,
-    effectiveStateDurationMs
-  };
-}
-
 function resolveCoolingEffectForBrowser(baseAction, coolingEffect, stateRate, coolingEffectRateThreshold) {
   if (baseAction !== "fan_high" && baseAction !== "fan_low") {
     return false;
@@ -111,33 +70,6 @@ function resolveCoolingEffectForBrowser(baseAction, coolingEffect, stateRate, co
   }
 
   return stateRate < coolingEffectRateThreshold;
-}
-
-function deriveActionCore(baseAction, effectiveStateDurationMs, hasCoolingEffectForDecision, config) {
-  const fanLowToHighEscalationConfig = config.escalations.action.fanLowToHigh;
-  let action = baseAction;
-
-  // Portable action resolution:
-  // apply the configured action escalation on top of the base action and
-  // return the final action decision.
-  let actionEscalated = false;
-
-  if (
-    baseAction === "fan_low" &&
-    effectiveStateDurationMs >= fanLowToHighEscalationConfig.durationMs &&
-    (fanLowToHighEscalationConfig.requireNoCoolingEffect === false
-      ? !hasCoolingEffectForDecision
-      : hasCoolingEffectForDecision)
-  ) {
-    action = "fan_high";
-    actionEscalated = true;
-  }
-
-  return {
-    baseAction,
-    action,
-    actionEscalated
-  };
 }
 
 function deriveAction(normalized, stateContext, config) {

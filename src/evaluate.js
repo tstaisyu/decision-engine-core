@@ -120,13 +120,13 @@ function buildResult(stateContext, actionContext) {
   };
 }
 
-function evaluate(input, config) {
-  const normalized = normalizeInput(input);
-  // Compatibility/default resolution is kept outside the portable evaluation
-  // core. Canonical config callers can provide full config directly, while
-  // JS-side convenience paths may still rely on preset/default fallback data.
+// JS wrapper-side config preparation helper:
+// runs resolveConfig, applies canonical shape merge, and normalizes the final
+// evaluation config. This is intentionally outside runtimeCore.js.
+function resolveEvaluationConfig(config) {
   const resolvedConfigDefaults = resolveConfig(isCanonicalConfigShape(config) ? {} : config, defaultConfig);
-  const effectiveConfig = normalizeConfig(
+
+  return normalizeConfig(
     isCanonicalConfigShape(config)
       ? {
           ...resolvedConfigDefaults,
@@ -146,6 +146,14 @@ function evaluate(input, config) {
         }
       : resolvedConfigDefaults
   );
+}
+
+function evaluate(input, config) {
+  const normalized = normalizeInput(input);
+  // Compatibility/default resolution is kept outside the portable evaluation
+  // core. Canonical config callers can provide full config directly, while
+  // JS-side convenience paths may still rely on preset/default fallback data.
+  const effectiveConfig = resolveEvaluationConfig(config);
   const stateContext = deriveState(normalized, effectiveConfig);
   const actionContext = deriveAction(normalized, stateContext, effectiveConfig);
 

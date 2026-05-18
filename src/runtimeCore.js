@@ -1,11 +1,18 @@
 // Copyright (c) 2026- taisyu shibata
 // SPDX-License-Identifier: Apache-2.0
 
-// Portable runtime semantics helpers used by JS runtime consumers.
-// This layer keeps rule evaluation and state/action derivation logic only
-// and intentionally excludes debug/reason enrichment, config resolution,
-// and input normalization.
+// Portable runtime semantics helpers used by JS runtime consumers:
+// - matchRule
+// - findStateAction
+// - deriveState
+// - deriveActionCore
+//
+// This module is intentionally kept free of debug/reason enrichment,
+// config resolution, and input normalization so these helpers can be
+// promoted toward an official JS runtime core over time.
 
+// Portable runtime semantics:
+// ordered rule matching shared conceptually with the JS wrapper and C++ runtime.
 function matchRule(rule, normalized) {
   if (rule.type === "value_gte") {
     return normalized.value >= rule.threshold;
@@ -26,15 +33,21 @@ function matchRule(rule, normalized) {
   return false;
 }
 
-function findStateAction(states, stateName) {
-  if (!Array.isArray(states)) {
-    return "no_action";
+// Portable runtime semantics:
+// resolve a base action from the chosen state mapping.
+function findStateAction(stateEntries, stateName) {
+  if (Array.isArray(stateEntries)) {
+    const matchedState = stateEntries.find((state) => state && state.name === stateName);
+    if (typeof matchedState?.action === "string") {
+      return matchedState.action;
+    }
   }
 
-  const matchedState = states.find((state) => state && state.name === stateName);
-  return typeof matchedState?.action === "string" ? matchedState.action : "no_action";
+  return "no_action";
 }
 
+// Portable runtime semantics:
+// determine base state from ordered rules, then apply state escalation.
 function deriveState(normalized, config) {
   const { previousStateSafe, rawStateDurationMs } = normalized;
   const hotToCriticalEscalationConfig = config.escalations.state.hotToCritical;
@@ -67,10 +80,12 @@ function deriveState(normalized, config) {
   };
 }
 
+// Portable runtime semantics:
+// apply action escalation on top of the resolved base action and return the
+// final action decision.
 function deriveActionCore(baseAction, effectiveStateDurationMs, hasCoolingEffectForDecision, config) {
   const fanLowToHighEscalationConfig = config.escalations.action.fanLowToHigh;
   let action = baseAction;
-
   let actionEscalated = false;
 
   if (

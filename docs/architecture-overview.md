@@ -110,6 +110,21 @@ Not responsible for:
 - embedded deployment
 - config authoring UI
 
+Current note:
+
+- `src/runtimeCore.js` is the current source-of-truth candidate for a future
+  official JS runtime core
+- `viewer/src/lib/browserRuntimeCore.js` is a viewer-local ESM copy that stays
+  meaningfully aligned with the same runtime semantics
+- the root package remains CommonJS for now, while the viewer remains ESM/Vite
+- direct import unification is intentionally deferred
+- the viewer continues to consume runtime behavior through
+  `engineAdapter.js`
+- future decisions still include:
+  - CommonJS/ESM bridge design
+  - possible `runtimes/js/core` extraction
+  - browser wrapper boundary definition
+
 ### Config Boundary Layer
 
 Responsible for:

@@ -1,15 +1,26 @@
 // Copyright (c) 2026- taisyu shibata
 // SPDX-License-Identifier: Apache-2.0
 
-// Browser runtime core helpers (portable semantics candidates):
+// Viewer-local ESM copy of the portable runtime semantics helpers.
+//
+// src/runtimeCore.js is the current source-of-truth candidate for a future
+// official JS runtime core. This file stays meaningfully aligned with that
+// module while the root package remains CommonJS and the viewer stays ESM.
+//
+// For now the viewer does not import src/runtimeCore.js directly because the
+// runtime core bridge across module formats has not been formalized yet. UI
+// components and simulation hooks should continue to access runtime behavior
+// through engineAdapter.js rather than depending on this file directly.
+//
+// Portable runtime semantics helpers used by JS runtime consumers:
 // - matchRule
 // - findStateAction
 // - deriveState
 // - deriveActionCore
 //
-// This module is intentionally kept free of viewer-only orchestration and
-// browser convenience fallback so these helpers can be promoted toward an
-// official JS runtime core over time.
+// This module is intentionally kept free of debug/reason enrichment,
+// config resolution, and input normalization so these helpers can be
+// promoted toward an official JS runtime core over time.
 
 // Portable runtime semantics:
 // ordered rule matching shared conceptually with the JS core and C++ runtime.

@@ -21,6 +21,12 @@ export function getPresets() {
   return presets;
 }
 
+// Viewer evaluation entrypoint (config-first):
+// run runtime-like JS evaluation with an explicit config object.
+export function evaluateWithConfig(input, config) {
+  return evaluate(input, config);
+}
+
 // Viewer evaluation entrypoint:
 // resolve the chosen preset or edited config and run the runtime-like JS
 // evaluation path behind the adapter boundary.
@@ -31,5 +37,5 @@ export function evaluateWithPreset(input, presetName, configOverride) {
     throw new Error(`Unknown preset: ${presetName}`);
   }
 
-  return evaluate(input, preset);
+  return evaluateWithConfig(input, preset);
 }

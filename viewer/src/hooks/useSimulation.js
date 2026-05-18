@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { evaluateWithPreset, getPresets } from "../lib/engineAdapter";
+import { evaluateWithConfig, getPresets } from "../lib/engineAdapter";
 
 // Viewer application orchestrator:
 // this hook owns preset selection, edited config state, single-step evaluation
@@ -112,7 +112,7 @@ function parseSequenceText(sequenceText) {
   return parsed;
 }
 
-function buildTimelineRows(sequence, selectedPreset, selectedConfig, limit = sequence.length) {
+function buildTimelineRows(sequence, selectedConfig, limit = sequence.length) {
   let previousState = "normal";
   let previousAction = "no_action";
   let previousValue = null;
@@ -150,7 +150,7 @@ function buildTimelineRows(sequence, selectedPreset, selectedConfig, limit = seq
       stateDurationMs
     };
 
-    const evaluated = evaluateWithPreset(input, selectedPreset, selectedConfig);
+    const evaluated = evaluateWithConfig(input, selectedConfig);
 
     const nextStateDurationMs = evaluated.state === previousState ? stateDurationMs + deltaMs : 0;
     const row = {
@@ -241,13 +241,13 @@ export function useSimulation() {
       };
 
       try {
-        nextResult.edited = evaluateWithPreset(input, selectedPreset, selectedConfig);
+        nextResult.edited = evaluateWithConfig(input, selectedConfig);
       } catch (err) {
         nextResult.errors.edited = err instanceof Error ? err.message : String(err);
       }
 
       try {
-        nextResult.original = evaluateWithPreset(input, selectedPreset, baseSelectedConfig);
+        nextResult.original = evaluateWithConfig(input, baseSelectedConfig);
       } catch (err) {
         nextResult.errors.original = err instanceof Error ? err.message : String(err);
       }
@@ -264,7 +264,7 @@ export function useSimulation() {
     try {
       stopTimelinePlayback();
       const parsed = parseSequenceText(sequenceText);
-      const rows = buildTimelineRows(parsed, selectedPreset, selectedConfig);
+      const rows = buildTimelineRows(parsed, selectedConfig);
       setTimelineRows(rows);
       setTimelineDomainRows(rows);
       setTimelineError("");
@@ -279,7 +279,7 @@ export function useSimulation() {
     try {
       stopTimelinePlayback();
       const parsed = parseSequenceText(sequenceText);
-      const fullRows = buildTimelineRows(parsed, selectedPreset, selectedConfig);
+      const fullRows = buildTimelineRows(parsed, selectedConfig);
 
       setTimelineRows([]);
       setTimelineDomainRows(fullRows);

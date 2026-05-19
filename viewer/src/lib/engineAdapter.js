@@ -22,7 +22,11 @@ export function getPresets() {
 }
 
 // Viewer evaluation entrypoint (config-first):
-// run runtime-like JS evaluation with an explicit config object.
+// this boundary does not resolve preset names; it evaluates the explicit
+// config as-is. Preferred input is canonical-ready config. For now,
+// fallback/compatibility behavior remains inside browserEngine.evaluate().
+// This function is also the intended replacement point when the viewer
+// switches to an official JS runtime import.
 export function evaluateWithConfig(input, config) {
   return evaluate(input, config);
 }

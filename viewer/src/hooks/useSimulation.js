@@ -71,6 +71,19 @@ function isCanonicalConfigShape(config) {
   return Boolean(config && Array.isArray(config.states) && Array.isArray(config.rules));
 }
 
+function isViewerCanonicalReadyConfig(config) {
+  return Boolean(
+    config &&
+      typeof config === "object" &&
+      !Array.isArray(config) &&
+      Array.isArray(config.states) &&
+      Array.isArray(config.rules) &&
+      config.escalations &&
+      typeof config.escalations === "object" &&
+      !Array.isArray(config.escalations)
+  );
+}
+
 function normalizeExportConfig(config) {
   if (!config || typeof config !== "object" || Array.isArray(config)) {
     return {
@@ -103,6 +116,11 @@ function normalizeViewerConfig(config) {
   return normalizeExportConfig(config);
 }
 
+function normalizeViewerReadyConfig(config) {
+  const normalized = normalizeViewerConfig(config);
+  return isViewerCanonicalReadyConfig(normalized) ? normalized : null;
+}
+
 function parseSequenceText(sequenceText) {
   const parsed = JSON.parse(sequenceText);
   if (!Array.isArray(parsed)) {
@@ -113,6 +131,10 @@ function parseSequenceText(sequenceText) {
 }
 
 function buildTimelineRows(sequence, selectedConfig, limit = sequence.length) {
+  if (!isViewerCanonicalReadyConfig(selectedConfig)) {
+    throw new Error("評価に必要な config shape が不足しています。");
+  }
+
   let previousState = "normal";
   let previousAction = "no_action";
   let previousValue = null;
@@ -178,7 +200,7 @@ export function useSimulation() {
   const [selectedPreset, setSelectedPreset] = useState(presetNames[0] || "");
   const [selectedConfig, setSelectedConfig] = useState(() => {
     const firstPresetName = presetNames[0];
-    return firstPresetName ? normalizeViewerConfig(structuredClone(presets[firstPresetName])) : null;
+    return firstPresetName ? normalizeViewerReadyConfig(structuredClone(presets[firstPresetName])) : null;
   });
   const [inputText, setInputText] = useState(JSON.stringify(defaultInput, null, 2));
   const [result, setResult] = useState(null);
@@ -189,7 +211,9 @@ export function useSimulation() {
   const [timelineError, setTimelineError] = useState("");
   const [isTimelinePlaying, setIsTimelinePlaying] = useState(false);
   const [workspaceStatus, setWorkspaceStatus] = useState("");
-  const baseSelectedConfig = selectedPreset ? normalizeViewerConfig(structuredClone(presets[selectedPreset])) : null;
+  const baseSelectedConfig = selectedPreset
+    ? normalizeViewerReadyConfig(structuredClone(presets[selectedPreset]))
+    : null;
 
   function clearTimelineTimer() {
     if (timelineTimerRef.current !== null) {
@@ -215,12 +239,12 @@ export function useSimulation() {
   function changePreset(presetName) {
     resetTimelinePlayback();
     setSelectedPreset(presetName);
-    setSelectedConfig(normalizeViewerConfig(structuredClone(presets[presetName])));
+    setSelectedConfig(normalizeViewerReadyConfig(structuredClone(presets[presetName])));
   }
 
   function updateSelectedConfig(nextConfig) {
     resetTimelinePlayback();
-    setSelectedConfig(normalizeViewerConfig(nextConfig));
+    setSelectedConfig(normalizeViewerReadyConfig(nextConfig));
   }
 
   function updateSequenceText(nextSequenceText) {
@@ -241,12 +265,18 @@ export function useSimulation() {
       };
 
       try {
+        if (!isViewerCanonicalReadyConfig(selectedConfig)) {
+          throw new Error("edited config が評価に必要な shape を満たしていません。");
+        }
         nextResult.edited = evaluateWithConfig(input, selectedConfig);
       } catch (err) {
         nextResult.errors.edited = err instanceof Error ? err.message : String(err);
       }
 
       try {
+        if (!isViewerCanonicalReadyConfig(baseSelectedConfig)) {
+          throw new Error("original config が評価に必要な shape を満たしていません。");
+        }
         nextResult.original = evaluateWithConfig(input, baseSelectedConfig);
       } catch (err) {
         nextResult.errors.original = err instanceof Error ? err.message : String(err);
@@ -374,8 +404,13 @@ export function useSimulation() {
         throw new Error("selectedConfig が不正です。");
       }
 
+      const nextConfig = normalizeViewerReadyConfig(parsed.selectedConfig);
+      if (!nextConfig) {
+        throw new Error("selectedConfig が評価に必要な shape を満たしていません。");
+      }
+
       setSelectedPreset(parsed.selectedPreset);
-      setSelectedConfig(normalizeViewerConfig(parsed.selectedConfig));
+      setSelectedConfig(nextConfig);
       setInputText(parsed.inputText);
       setSequenceText(parsed.sequenceText);
       setResult(null);

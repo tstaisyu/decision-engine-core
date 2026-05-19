@@ -37,8 +37,13 @@ npm run dev
 ## Notes
 
 - Current scope is authoring, evaluation, simulation, and visualization for canonical config.
+- The viewer is a runtime consumer, not a runtime source.
 - Runtime access is routed through `viewer/src/lib/engineAdapter.js`.
+- `viewer/src/lib/engineAdapter.js` is the preferred runtime boundary for UI state and hooks.
+- `evaluateWithConfig(input, config)` is the preferred config-driven evaluation entrypoint.
+- `selectedPreset` is kept for UI state and preset identity, while `selectedConfig` and `baseSelectedConfig` are used for runtime evaluation.
 - `viewer/src/lib/viewerPresets.js` owns viewer-local preset definitions.
-- `viewer/src/lib/browserEngine.js` is the browser convenience wrapper for runtime evaluation.
+- `viewer/src/lib/browserEngine.js` is the browser-side wrapper and compatibility fallback layer for runtime evaluation.
+- `resolveDefinitionFallback(...)` is retained as defensive compatibility; preferred viewer paths now pass canonical-ready config.
 - `viewer/src/lib/browserRuntimeCore.js` holds portable-semantics-oriented helper functions.
-- Current direction: keep the viewer as a runtime consumer and continue moving portable helpers toward an official JS runtime core.
+- Current direction: keep the `engineAdapter.js` boundary stable while continuing to move portable helpers toward an official JS runtime core.

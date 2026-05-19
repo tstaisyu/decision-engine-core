@@ -49,6 +49,71 @@ function resolveStateEntries(config, fallback) {
   return Array.isArray(fallback?.states) ? fallback.states.map((state) => ({ ...state })) : [];
 }
 
+// JS/browser convenience:
+// state/rule fallback keeps browser-side evaluation working even when callers
+// provide a config that is not fully expanded yet.
+//
+// Preferred viewer paths now pass canonical-ready config through
+// useSimulation + evaluateWithConfig, so rules[] and states[] are usually
+// already present. This fallback remains as backward/defensive compatibility
+// and could later be removed or reduced to an optional compatibility path.
+function resolveDefinitionFallback(config, fallback) {
+  const safeConfig = config || {};
+  const stateEntries = resolveStateEntries(safeConfig, fallback);
+
+  return {
+    rules: resolveStateRules(safeConfig, fallback),
+    stateEntries,
+    states: stateEntries
+  };
+}
+
+// JS/browser compatibility:
+// escalation leaf fallback and legacy scalar field support remain here until
+// browser callers consistently provide fully-expanded canonical escalations.
+function resolveEscalationFallback(config, fallback) {
+  const safeConfig = config || {};
+
+  return {
+    ...(safeConfig.escalations || {}),
+    action: {
+      ...((safeConfig.escalations && safeConfig.escalations.action) || {}),
+      fanLowToHigh: {
+        durationMs:
+          typeof safeConfig.fanLowEscalationDurationMs === "number"
+            ? safeConfig.fanLowEscalationDurationMs
+            : safeConfig.escalations &&
+                safeConfig.escalations.action &&
+                safeConfig.escalations.action.fanLowToHigh &&
+                typeof safeConfig.escalations.action.fanLowToHigh.durationMs === "number"
+              ? safeConfig.escalations.action.fanLowToHigh.durationMs
+              : fallback.escalations.action.fanLowToHigh.durationMs,
+        requireNoCoolingEffect:
+          safeConfig.escalations &&
+          safeConfig.escalations.action &&
+          safeConfig.escalations.action.fanLowToHigh &&
+          typeof safeConfig.escalations.action.fanLowToHigh.requireNoCoolingEffect === "boolean"
+            ? safeConfig.escalations.action.fanLowToHigh.requireNoCoolingEffect
+            : fallback.escalations.action.fanLowToHigh.requireNoCoolingEffect
+      }
+    },
+    state: {
+      ...((safeConfig.escalations && safeConfig.escalations.state) || {}),
+      hotToCritical: {
+        durationMs:
+          typeof safeConfig.hotCriticalDurationMs === "number"
+            ? safeConfig.hotCriticalDurationMs
+            : safeConfig.escalations &&
+                safeConfig.escalations.state &&
+                safeConfig.escalations.state.hotToCritical &&
+                typeof safeConfig.escalations.state.hotToCritical.durationMs === "number"
+              ? safeConfig.escalations.state.hotToCritical.durationMs
+              : fallback.escalations.state.hotToCritical.durationMs
+      }
+    }
+  };
+}
+
 // JS/browser convenience + compatibility:
 // merges preset/default config with the provided config so browser-side
 // simulation can still run even when callers do not provide a fully-expanded
@@ -56,51 +121,12 @@ function resolveStateEntries(config, fallback) {
 // contract and should stay outside a future extracted JS core.
 function resolveConfig(config, fallback) {
   const safeConfig = config || {};
-  const stateEntries = resolveStateEntries(safeConfig, fallback);
+  const definitions = resolveDefinitionFallback(safeConfig, fallback);
 
   return {
     ...safeConfig,
-    rules: resolveStateRules(safeConfig, fallback),
-    stateEntries,
-    states: stateEntries,
-    escalations: {
-      ...(safeConfig.escalations || {}),
-      action: {
-        ...((safeConfig.escalations && safeConfig.escalations.action) || {}),
-        fanLowToHigh: {
-          durationMs:
-            typeof safeConfig.fanLowEscalationDurationMs === "number"
-              ? safeConfig.fanLowEscalationDurationMs
-              : safeConfig.escalations &&
-                  safeConfig.escalations.action &&
-                  safeConfig.escalations.action.fanLowToHigh &&
-                  typeof safeConfig.escalations.action.fanLowToHigh.durationMs === "number"
-                ? safeConfig.escalations.action.fanLowToHigh.durationMs
-                : fallback.escalations.action.fanLowToHigh.durationMs,
-          requireNoCoolingEffect:
-            safeConfig.escalations &&
-            safeConfig.escalations.action &&
-            safeConfig.escalations.action.fanLowToHigh &&
-            typeof safeConfig.escalations.action.fanLowToHigh.requireNoCoolingEffect === "boolean"
-              ? safeConfig.escalations.action.fanLowToHigh.requireNoCoolingEffect
-              : fallback.escalations.action.fanLowToHigh.requireNoCoolingEffect
-        }
-      },
-      state: {
-        ...((safeConfig.escalations && safeConfig.escalations.state) || {}),
-        hotToCritical: {
-          durationMs:
-            typeof safeConfig.hotCriticalDurationMs === "number"
-              ? safeConfig.hotCriticalDurationMs
-              : safeConfig.escalations &&
-                  safeConfig.escalations.state &&
-                  safeConfig.escalations.state.hotToCritical &&
-                  typeof safeConfig.escalations.state.hotToCritical.durationMs === "number"
-                ? safeConfig.escalations.state.hotToCritical.durationMs
-                : fallback.escalations.state.hotToCritical.durationMs
-        }
-      }
-    }
+    ...definitions,
+    escalations: resolveEscalationFallback(safeConfig, fallback)
   };
 }
 

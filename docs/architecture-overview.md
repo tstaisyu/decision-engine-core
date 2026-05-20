@@ -112,18 +112,23 @@ Not responsible for:
 
 Current note:
 
-- `src/runtimeCore.js` is the current source-of-truth candidate for a future
-  official JS runtime core
+- `runtimes/js/core` is the current source-of-truth for portable JS runtime
+  semantics
+- `src/runtimeCore.js` is kept as a CommonJS compatibility bridge for existing
+  `src/` consumers
+- `src/evaluate.js` remains the JS convenience wrapper around the core
 - `viewer/src/lib/browserRuntimeCore.js` is a viewer-local ESM copy that stays
   meaningfully aligned with the same runtime semantics
+- `viewer/src/lib/browserEngine.js` remains the browser-side wrapper around the
+  runtime core
 - the root package remains CommonJS for now, while the viewer remains ESM/Vite
 - direct import unification is intentionally deferred
 - the viewer continues to consume runtime behavior through
   `engineAdapter.js`
 - future decisions still include:
   - CommonJS/ESM bridge design
-  - possible `runtimes/js/core` extraction
-  - browser wrapper boundary definition
+  - browser-facing wrapper boundary definition
+  - package export strategy for an official JS runtime core
 
 ### Config Boundary Layer
 

@@ -1,7 +1,7 @@
 // Copyright (c) 2026- taisyu shibata
 // SPDX-License-Identifier: Apache-2.0
 
-// Browser runtime wrapper for viewer consumption.
+// Browser-side runtime wrapper for viewer consumption.
 //
 // This module keeps browser/viewer-side convenience around the runtime core:
 // - resolveConfig
@@ -11,9 +11,11 @@
 // - buildResult
 // - evaluate (browser-facing wrapper)
 //
-// Portable helper semantics are being moved into browserRuntimeCore.js.
+// Portable helper semantics live in browserRuntimeCore.js as a viewer-local
+// ESM copy aligned with the CommonJS source-of-truth under runtimes/js/core.
 // The long-term direction is to keep this file as a thin browser wrapper while
-// promoting core evaluation helpers toward an official JS runtime core.
+// future ESM/browser consumption of the official JS runtime core remains
+// undecided.
 import { deriveActionCore, deriveState, findStateAction } from "./browserRuntimeCore.js";
 import { defaultConfig } from "./viewerPresets.js";
 

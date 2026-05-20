@@ -36,6 +36,30 @@ The goal is to clarify the boundary between:
 - adapter
 - device
 
+## 1.1 Current JS Runtime Structure
+
+The current JS runtime is split into a portable core and wrapper layers.
+
+- `runtimes/js/core`
+  - source-of-truth for portable JS runtime semantics
+- `src/runtimeCore.js`
+  - CommonJS compatibility bridge for existing `src/` consumers
+- `src/evaluate.js`
+  - JS convenience wrapper around the portable core
+- `viewer/src/lib/browserRuntimeCore.js`
+  - viewer-local ESM copy kept meaningfully aligned with the same semantics
+
+This viewer-local ESM copy is intentionally retained for now.
+
+The following are still intentionally unresolved:
+
+- package exports for an official JS runtime core
+- a formal CommonJS/ESM bridge
+- direct viewer imports of an official JS runtime core
+
+Until those decisions are made, these modules should be treated as internal
+structure rather than public API.
+
 ---
 
 ## 2. Overall Flow

@@ -6,6 +6,17 @@ const { normalizeConfig } = require("./normalizeConfig");
 const { resolveConfig } = require("./resolveConfig");
 const { findStateAction, deriveState, deriveActionCore } = require("./runtimeCore");
 
+// JS runtime convenience wrapper:
+// this module connects canonical config resolution, input enrichment,
+// JS-specific cooling-effect fallback, and diagnostics around the portable
+// runtime semantics that now live under runtimes/js/core.
+//
+// It intentionally stays outside the official runtime core because it owns:
+// - normalizeInput
+// - resolveConfig / normalizeConfig bridging
+// - buildResult debug/reason enrichment
+// - JS wrapper orchestration in evaluate()
+
 function isCanonicalConfigShape(config) {
   return Boolean(config && (Array.isArray(config.states) || Array.isArray(config.rules)));
 }

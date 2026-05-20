@@ -48,6 +48,10 @@ The current JS runtime is split into a portable core and wrapper layers.
   - JS convenience wrapper around the portable core
 - `viewer/src/lib/browserRuntimeCore.js`
   - viewer-local ESM copy kept meaningfully aligned with the same semantics
+- `viewer/src/lib/browserEngine.js`
+  - browser-side wrapper around the portable core
+- `viewer/src/lib/engineAdapter.js`
+  - viewer runtime consume boundary
 
 This viewer-local ESM copy is intentionally retained for now.
 
@@ -95,6 +99,27 @@ Not part of this parity boundary:
 
 ESM/browser import strategy remains unresolved, so the viewer-local ESM copy is
 still maintained explicitly rather than treated as a stable public import path.
+
+Current consume topology:
+
+- `src/evaluate.js` currently consumes the core through the
+  `src/runtimeCore.js` CommonJS bridge
+- `test/js-viewer-runtimecore-parity.test.js` also uses that bridge when
+  comparing root-side semantics to the viewer-local ESM copy
+- `runtimes/js/core` is currently read directly only by `src/runtimeCore.js`
+
+Near-term direct-consume candidates:
+
+- `src/evaluate.js`
+- root parity tests
+
+Not a direct-consume candidate yet:
+
+- viewer runtime paths
+
+The bridge is intentionally retained for now because it keeps the root package
+CommonJS, avoids package export changes, leaves ESM/browser strategy open, and
+supports low-risk incremental migration.
 
 ---
 

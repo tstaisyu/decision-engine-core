@@ -16,6 +16,7 @@ const { findStateAction, deriveState, deriveActionCore } = require("./runtimeCor
 // - resolveConfig / normalizeConfig bridging
 // - buildResult debug/reason enrichment
 // - JS wrapper orchestration in evaluate()
+// It currently consumes core helpers via src/runtimeCore.js and may later consume runtimes/js/core directly.
 
 function isCanonicalConfigShape(config) {
   return Boolean(config && (Array.isArray(config.states) || Array.isArray(config.rules)));

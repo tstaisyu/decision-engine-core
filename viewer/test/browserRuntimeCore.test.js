@@ -93,6 +93,36 @@ test("deriveActionCore resolves action escalation behavior", () => {
   assert.equal(shortDuration.action, "fan_low");
   assert.equal(shortDuration.actionEscalated, false);
 
+  const coolingEffectIgnored = deriveActionCore("fan_low", 1500, true, config);
+  assert.equal(coolingEffectIgnored.action, "fan_high");
+  assert.equal(coolingEffectIgnored.actionEscalated, true);
+
+  const requiresNoCoolingEffect = deriveActionCore("fan_low", 1500, true, {
+    escalations: {
+      action: {
+        fanLowToHigh: {
+          durationMs: 1000,
+          requireNoCoolingEffect: true
+        }
+      }
+    }
+  });
+  assert.equal(requiresNoCoolingEffect.action, "fan_low");
+  assert.equal(requiresNoCoolingEffect.actionEscalated, false);
+
+  const noCoolingEffectSatisfied = deriveActionCore("fan_low", 1500, false, {
+    escalations: {
+      action: {
+        fanLowToHigh: {
+          durationMs: 1000,
+          requireNoCoolingEffect: true
+        }
+      }
+    }
+  });
+  assert.equal(noCoolingEffectSatisfied.action, "fan_high");
+  assert.equal(noCoolingEffectSatisfied.actionEscalated, true);
+
   const unchanged = deriveActionCore("fan_high", 3000, false, config);
   assert.equal(unchanged.action, "fan_high");
   assert.equal(unchanged.actionEscalated, false);

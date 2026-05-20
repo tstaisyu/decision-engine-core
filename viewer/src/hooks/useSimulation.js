@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { evaluateWithConfig, getPresets } from "../lib/engineAdapter";
+import { evaluateWithConfig, getPresets } from "../lib/engineAdapter.js";
 
 // Viewer application orchestrator:
 // this hook owns preset selection, edited config state, single-step evaluation
@@ -72,6 +72,9 @@ function isCanonicalConfigShape(config) {
 }
 
 function isViewerCanonicalReadyConfig(config) {
+  const actionEscalation = config?.escalations?.action?.fanLowToHigh;
+  const stateEscalation = config?.escalations?.state?.hotToCritical;
+
   return Boolean(
     config &&
       typeof config === "object" &&
@@ -80,7 +83,14 @@ function isViewerCanonicalReadyConfig(config) {
       Array.isArray(config.rules) &&
       config.escalations &&
       typeof config.escalations === "object" &&
-      !Array.isArray(config.escalations)
+      !Array.isArray(config.escalations) &&
+      actionEscalation &&
+      typeof actionEscalation === "object" &&
+      typeof actionEscalation.durationMs === "number" &&
+      typeof actionEscalation.requireNoCoolingEffect === "boolean" &&
+      stateEscalation &&
+      typeof stateEscalation === "object" &&
+      typeof stateEscalation.durationMs === "number"
   );
 }
 

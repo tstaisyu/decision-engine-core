@@ -281,7 +281,7 @@ runCase(
   "fan_low"
 );
 runCase(
-  "action_escalation.cooling_effect_blocks",
+  "action_escalation.cooling_effect_allowed_when_not_required",
   m5TemperatureConfig,
   {
     value: 25.3,
@@ -295,7 +295,7 @@ runCase(
     coolingEffect: true
   },
   "warming",
-  "fan_low"
+  "fan_high"
 );
 runCase(
   "action_escalation.base_action_already_high",

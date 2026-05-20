@@ -12,8 +12,8 @@
 //
 // If the viewer later switches to an official JS runtime import, this file is
 // the intended replacement point.
-import { evaluate } from "./browserEngine";
-import { presets } from "./viewerPresets";
+import { evaluate } from "./browserEngine.js";
+import { presets } from "./viewerPresets.js";
 
 // Viewer preset access:
 // exposes the available starting configs without leaking where they are owned.

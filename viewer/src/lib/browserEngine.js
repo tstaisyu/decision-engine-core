@@ -14,8 +14,8 @@
 // Portable helper semantics are being moved into browserRuntimeCore.js.
 // The long-term direction is to keep this file as a thin browser wrapper while
 // promoting core evaluation helpers toward an official JS runtime core.
-import { deriveActionCore, deriveState, findStateAction } from "./browserRuntimeCore";
-import { defaultConfig } from "./viewerPresets";
+import { deriveActionCore, deriveState, findStateAction } from "./browserRuntimeCore.js";
+import { defaultConfig } from "./viewerPresets.js";
 
 // Config boundary convenience:
 // lightweight rule copying/filtering for the browser-side runtime path.
@@ -27,106 +27,39 @@ function normalizeRule(rule) {
   return { ...rule };
 }
 
-// Config boundary convenience:
-// preserve only browser/runtime-usable canonical rule entries.
-function resolveStateRules(config, fallback) {
-  if (Array.isArray(config?.rules)) {
-    return config.rules.map(normalizeRule).filter((rule) => typeof rule?.state === "string" && rule.state.length > 0);
+function assertCanonicalEscalationLeaves(config) {
+  const actionEscalation = config?.escalations?.action?.fanLowToHigh;
+  const stateEscalation = config?.escalations?.state?.hotToCritical;
+
+  if (typeof stateEscalation?.durationMs !== "number") {
+    throw new Error("escalations.state.hotToCritical.durationMs is required for browser evaluation");
   }
 
-  return Array.isArray(fallback?.rules)
-    ? fallback.rules.map(normalizeRule).filter((rule) => typeof rule?.state === "string" && rule.state.length > 0)
-    : [];
-}
-
-// Config boundary convenience:
-// resolve state entries from either explicit config or viewer preset fallback.
-function resolveStateEntries(config, fallback) {
-  if (Array.isArray(config?.states)) {
-    return config.states.map((state) => ({ ...state }));
+  if (typeof actionEscalation?.durationMs !== "number") {
+    throw new Error("escalations.action.fanLowToHigh.durationMs is required for browser evaluation");
   }
 
-  return Array.isArray(fallback?.states) ? fallback.states.map((state) => ({ ...state })) : [];
+  if (typeof actionEscalation?.requireNoCoolingEffect !== "boolean") {
+    throw new Error("escalations.action.fanLowToHigh.requireNoCoolingEffect is required for browser evaluation");
+  }
 }
 
 // JS/browser convenience:
-// state/rule fallback keeps browser-side evaluation working even when callers
-// provide a config that is not fully expanded yet.
-//
-// Preferred viewer paths now pass canonical-ready config through
-// useSimulation + evaluateWithConfig, so rules[] and states[] are usually
-// already present. This fallback remains as backward/defensive compatibility
-// and could later be removed or reduced to an optional compatibility path.
-function resolveDefinitionFallback(config, fallback) {
+// prepare a canonical-ready config for evaluation without supplementing
+// missing rules/states/escalation leaves.
+function resolveConfig(config) {
   const safeConfig = config || {};
-  const stateEntries = resolveStateEntries(safeConfig, fallback);
-
-  return {
-    rules: resolveStateRules(safeConfig, fallback),
-    stateEntries,
-    states: stateEntries
-  };
-}
-
-// JS/browser compatibility:
-// escalation leaf fallback and legacy scalar field support remain here until
-// browser callers consistently provide fully-expanded canonical escalations.
-function resolveEscalationFallback(config, fallback) {
-  const safeConfig = config || {};
-
-  return {
-    ...(safeConfig.escalations || {}),
-    action: {
-      ...((safeConfig.escalations && safeConfig.escalations.action) || {}),
-      fanLowToHigh: {
-        durationMs:
-          typeof safeConfig.fanLowEscalationDurationMs === "number"
-            ? safeConfig.fanLowEscalationDurationMs
-            : safeConfig.escalations &&
-                safeConfig.escalations.action &&
-                safeConfig.escalations.action.fanLowToHigh &&
-                typeof safeConfig.escalations.action.fanLowToHigh.durationMs === "number"
-              ? safeConfig.escalations.action.fanLowToHigh.durationMs
-              : fallback.escalations.action.fanLowToHigh.durationMs,
-        requireNoCoolingEffect:
-          safeConfig.escalations &&
-          safeConfig.escalations.action &&
-          safeConfig.escalations.action.fanLowToHigh &&
-          typeof safeConfig.escalations.action.fanLowToHigh.requireNoCoolingEffect === "boolean"
-            ? safeConfig.escalations.action.fanLowToHigh.requireNoCoolingEffect
-            : fallback.escalations.action.fanLowToHigh.requireNoCoolingEffect
-      }
-    },
-    state: {
-      ...((safeConfig.escalations && safeConfig.escalations.state) || {}),
-      hotToCritical: {
-        durationMs:
-          typeof safeConfig.hotCriticalDurationMs === "number"
-            ? safeConfig.hotCriticalDurationMs
-            : safeConfig.escalations &&
-                safeConfig.escalations.state &&
-                safeConfig.escalations.state.hotToCritical &&
-                typeof safeConfig.escalations.state.hotToCritical.durationMs === "number"
-              ? safeConfig.escalations.state.hotToCritical.durationMs
-              : fallback.escalations.state.hotToCritical.durationMs
-      }
-    }
-  };
-}
-
-// JS/browser convenience + compatibility:
-// merges preset/default config with the provided config so browser-side
-// simulation can still run even when callers do not provide a fully-expanded
-// canonical config object. This is not part of the minimum portable runtime
-// contract and should stay outside a future extracted JS core.
-function resolveConfig(config, fallback) {
-  const safeConfig = config || {};
-  const definitions = resolveDefinitionFallback(safeConfig, fallback);
+  const stateEntries = Array.isArray(safeConfig.states) ? safeConfig.states.map((state) => ({ ...state })) : [];
+  const rules = Array.isArray(safeConfig.rules)
+    ? safeConfig.rules.map(normalizeRule).filter((rule) => typeof rule?.state === "string" && rule.state.length > 0)
+    : [];
+  assertCanonicalEscalationLeaves(safeConfig);
 
   return {
     ...safeConfig,
-    ...definitions,
-    escalations: resolveEscalationFallback(safeConfig, fallback)
+    rules,
+    stateEntries,
+    states: stateEntries
   };
 }
 
@@ -252,7 +185,7 @@ function buildResult(stateContext, actionContext) {
 // moving config fallback and result enrichment into a thinner wrapper layer.
 function evaluate(input, config) {
   const normalized = normalizeInput(input);
-  const effectiveConfig = resolveConfig(config, defaultConfig);
+  const effectiveConfig = resolveConfig(config ?? defaultConfig);
   const stateContext = deriveState(normalized, effectiveConfig);
   const actionContext = deriveAction(normalized, stateContext, effectiveConfig);
 

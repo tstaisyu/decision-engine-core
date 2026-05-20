@@ -106,6 +106,7 @@ test("runtimeCore parity: deriveActionCore stays aligned between src and viewer 
 
   const samples = [
     { baseAction: "fan_low", effectiveStateDurationMs: 1500, hasCoolingEffectForDecision: false },
+    { baseAction: "fan_low", effectiveStateDurationMs: 1500, hasCoolingEffectForDecision: true },
     { baseAction: "fan_low", effectiveStateDurationMs: 800, hasCoolingEffectForDecision: false },
     { baseAction: "fan_high", effectiveStateDurationMs: 3000, hasCoolingEffectForDecision: false }
   ];
@@ -126,4 +127,24 @@ test("runtimeCore parity: deriveActionCore stays aligned between src and viewer 
       )
     );
   }
+
+  const strictNoCoolingConfig = {
+    escalations: {
+      action: {
+        fanLowToHigh: {
+          durationMs: 1000,
+          requireNoCoolingEffect: true
+        }
+      }
+    }
+  };
+
+  assert.deepEqual(
+    srcDeriveActionCore("fan_low", 1500, false, strictNoCoolingConfig),
+    viewerDeriveActionCore("fan_low", 1500, false, strictNoCoolingConfig)
+  );
+  assert.deepEqual(
+    srcDeriveActionCore("fan_low", 1500, true, strictNoCoolingConfig),
+    viewerDeriveActionCore("fan_low", 1500, true, strictNoCoolingConfig)
+  );
 });

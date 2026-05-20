@@ -43,7 +43,8 @@ npm run dev
 - `evaluateWithConfig(input, config)` is the preferred config-driven evaluation entrypoint.
 - `selectedPreset` is kept for UI state and preset identity, while `selectedConfig` and `baseSelectedConfig` are used for runtime evaluation.
 - `viewer/src/lib/viewerPresets.js` owns viewer-local preset definitions.
-- `viewer/src/lib/browserEngine.js` is the browser-side wrapper and compatibility fallback layer for runtime evaluation.
-- `resolveDefinitionFallback(...)` is retained as defensive compatibility; preferred viewer paths now pass canonical-ready config.
+- `viewer/src/lib/browserEngine.js` is the browser-side wrapper layer for runtime evaluation.
+- Preferred viewer paths now pass canonical-ready config with `states[]` and `rules[]` already present.
+- Preferred viewer paths also pass canonical escalation leaves without relying on browser-side compatibility fallback.
 - `viewer/src/lib/browserRuntimeCore.js` holds portable-semantics-oriented helper functions.
 - Current direction: keep the `engineAdapter.js` boundary stable while continuing to move portable helpers toward an official JS runtime core.

@@ -68,7 +68,19 @@ const m5TemperatureConfig = {
 };
 
 const simpleTemperatureConfig = {
-  escalations: {},
+  escalations: {
+    action: {
+      fanLowToHigh: {
+        durationMs: 1000,
+        requireNoCoolingEffect: false
+      }
+    },
+    state: {
+      hotToCritical: {
+        durationMs: 5000
+      }
+    }
+  },
   states: [
     {
       name: "normal",

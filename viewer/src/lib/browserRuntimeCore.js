@@ -102,9 +102,7 @@ function deriveActionCore(baseAction, effectiveStateDurationMs, hasCoolingEffect
   if (
     baseAction === "fan_low" &&
     effectiveStateDurationMs >= fanLowToHighEscalationConfig.durationMs &&
-    (fanLowToHighEscalationConfig.requireNoCoolingEffect === false
-      ? !hasCoolingEffectForDecision
-      : hasCoolingEffectForDecision)
+    (fanLowToHighEscalationConfig.requireNoCoolingEffect === true ? !hasCoolingEffectForDecision : true)
   ) {
     action = "fan_high";
     actionEscalated = true;

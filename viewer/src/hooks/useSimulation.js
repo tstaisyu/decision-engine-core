@@ -77,20 +77,20 @@ function isViewerCanonicalReadyConfig(config) {
 
   return Boolean(
     config &&
-      typeof config === "object" &&
-      !Array.isArray(config) &&
-      Array.isArray(config.states) &&
-      Array.isArray(config.rules) &&
-      config.escalations &&
-      typeof config.escalations === "object" &&
-      !Array.isArray(config.escalations) &&
-      actionEscalation &&
-      typeof actionEscalation === "object" &&
-      typeof actionEscalation.durationMs === "number" &&
-      typeof actionEscalation.requireNoCoolingEffect === "boolean" &&
-      stateEscalation &&
-      typeof stateEscalation === "object" &&
-      typeof stateEscalation.durationMs === "number"
+    typeof config === "object" &&
+    !Array.isArray(config) &&
+    Array.isArray(config.states) &&
+    Array.isArray(config.rules) &&
+    config.escalations &&
+    typeof config.escalations === "object" &&
+    !Array.isArray(config.escalations) &&
+    actionEscalation &&
+    typeof actionEscalation === "object" &&
+    typeof actionEscalation.durationMs === "number" &&
+    typeof actionEscalation.requireNoCoolingEffect === "boolean" &&
+    stateEscalation &&
+    typeof stateEscalation === "object" &&
+    typeof stateEscalation.durationMs === "number"
   );
 }
 

@@ -15,9 +15,7 @@ const {
 let viewerCorePromise;
 function loadViewerCore() {
   if (!viewerCorePromise) {
-    const modulePath = pathToFileURL(
-      path.resolve(__dirname, "../viewer/src/lib/browserRuntimeCore.js")
-    ).href;
+    const modulePath = pathToFileURL(path.resolve(__dirname, "../viewer/src/lib/browserRuntimeCore.js")).href;
     viewerCorePromise = import(modulePath);
   }
 

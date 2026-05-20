@@ -60,6 +60,42 @@ The following are still intentionally unresolved:
 Until those decisions are made, these modules should be treated as internal
 structure rather than public API.
 
+### Maintenance Note: Viewer-local ESM Copy
+
+`viewer/src/lib/browserRuntimeCore.js` is maintained as a viewer-local ESM copy
+of `runtimes/js/core`.
+
+Sync target:
+
+- `matchRule`
+- `findStateAction`
+- `deriveState`
+- `deriveActionCore`
+
+These are the portable state/action semantics that should stay meaningfully
+aligned across:
+
+- `runtimes/js/core`
+- the viewer-local ESM copy
+- JS/C++ parity expectations
+
+The main synchronization checks are:
+
+- JS/C++ parity tests
+- JS/viewer runtimeCore parity tests
+
+Not part of this parity boundary:
+
+- browser fallback behavior
+- diagnostics / debug enrichment
+- `buildResult`
+- `normalizeInput`
+- config resolution
+- viewer orchestration
+
+ESM/browser import strategy remains unresolved, so the viewer-local ESM copy is
+still maintained explicitly rather than treated as a stable public import path.
+
 ---
 
 ## 2. Overall Flow

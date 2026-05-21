@@ -43,6 +43,7 @@ It is used for:
 The JS runtime and the current embedded-oriented C++ runtime follow the same runtime specification, and additional runtimes are expected to do the same.
 
 Current JS runtime note: `runtimes/js/core` is the source-of-truth for portable JS runtime semantics, and `src/runtimeCore.js` remains a CommonJS compatibility bridge.
+`src/evaluate.js` is the current JS convenience runtime wrapper and future main runtime entry candidate.
 For the current internal structure and runtime boundary notes, see [docs/runtime-integration.md](docs/runtime-integration.md).
 
 ## Config Shape Policy

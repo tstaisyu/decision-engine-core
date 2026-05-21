@@ -61,6 +61,10 @@ function resolveConfig(config) {
 // Browser-only fallback:
 // these helpers are runtime-adjacent but intentionally remain outside the
 // portable core because they depend on browser/JS convenience behavior.
+// For now this fallback and the deriveAction wrapper stay together here so the
+// browser-side action-resolution flow remains readable in one place. If they
+// are extracted later, deriveAction and resolveCoolingEffectForBrowser should
+// move together as a paired browser-action helper.
 // Portable runtime semantics plus JS convenience:
 // action resolution itself is part of the portable runtime contract.
 // The coolingEffect -> stateRate fallback is JS/browser convenience and would

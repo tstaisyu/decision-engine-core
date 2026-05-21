@@ -62,7 +62,36 @@ The viewer and JS runtime operate on canonical JSON directly.
 The C++ runtime does not parse JSON at runtime, so canonical JSON is converted
 into a generated C++ build artifact first.
 
-## 2.1 Source Config, Generated Artifact, and Runtime Consumer
+## 2.1 JS Runtime Layer Topology
+
+This topology is separate from the toolchain/deployment flow above. It shows
+how the current JS runtime layers are consumed internally.
+
+```mermaid
+flowchart LR
+
+    UI["Viewer UI / Simulation<br/>(runtime consumer)"]
+    Adapter["viewer/src/lib/engineAdapter.js<br/>(viewer consume boundary)"]
+    Browser["viewer/src/lib/browserEngine.js<br/>(browser wrapper)"]
+    Eval["src/evaluate.js<br/>(JS convenience runtime)"]
+    Core["runtimes/js/core<br/>(portable semantics source-of-truth)"]
+    Copy["viewer/src/lib/browserRuntimeCore.js<br/>(temporary viewer-local ESM copy)"]
+
+    UI --> Adapter
+    Adapter --> Browser
+    Browser --> Copy
+    Eval --> Core
+    Copy -. parity maintenance .-> Core
+```
+
+The original toolchain flow describes config generation and deployment
+direction. This runtime topology instead highlights:
+
+- semantics source-of-truth
+- browser consume boundary
+- viewer-side runtime layering
+
+## 2.2 Source Config, Generated Artifact, and Runtime Consumer
 
 The embedded path uses three distinct layers:
 

@@ -146,6 +146,10 @@ Recommended layering:
 as-is because it still carries viewer-specific assumptions. It remains useful
 as a browser wrapper prototype.
 
+`src/evaluate.js` is the current JS convenience runtime wrapper and the future
+main/default runtime export candidate. It is intentionally not the portable
+core; portable deterministic state/action semantics remain in `runtimes/js/core`.
+
 The CommonJS/ESM browser bridge should be absorbed by the provider/package
 side, not by the viewer consumer side.
 

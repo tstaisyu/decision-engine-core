@@ -167,9 +167,8 @@ core; portable deterministic state/action semantics remain in `runtimes/js/core`
 The CommonJS/ESM browser bridge should be absorbed by the provider/package
 side, not by the viewer consumer side.
 
-The viewer-local ESM copy is expected to remain for now and become a
-replacement candidate only after an official ESM/browser-consumable entry
-exists.
+The viewer-local ESM copy is expected to remain for now and only becomes a
+replacement target after an official ESM/browser-consumable entry exists.
 
 `package.exports` remains intentionally unchanged for now.
 
@@ -195,8 +194,8 @@ prototype rather than a public runtime export.
 If the viewer-local ESM copy is replaced later, the intended replacement target
 is an official browser/ESM core entry, not `browserEngine.js`.
 
-CommonJS/ESM dual-entry concerns should be absorbed by the provider/package
-side, not by the viewer consumer side.
+CommonJS/ESM dual-entry concerns should continue to be absorbed by the
+provider/package side, not by the viewer consumer side.
 
 Before expanding `package.exports`, the following boundaries should be treated
 as fixed first:
@@ -224,8 +223,8 @@ Current internal note:
   ESM copy
 
 Before any public export promotion, build-based generation or a formal dual
-package strategy should be reconsidered. The handwritten/bridge-style ESM entry
-is intentionally temporary rather than a long-term fixed public shape.
+package strategy should be reconsidered. This handwritten/bridge-style ESM
+entry is intentionally temporary rather than a long-term fixed public shape.
 
 ---
 

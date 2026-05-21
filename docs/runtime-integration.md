@@ -87,6 +87,7 @@ The main synchronization checks are:
 
 - JS/C++ parity tests
 - JS/viewer runtimeCore parity tests
+- JS runtime three-way parity tests
 
 Not part of this parity boundary:
 
@@ -99,6 +100,19 @@ Not part of this parity boundary:
 
 ESM/browser import strategy remains unresolved, so the viewer-local ESM copy is
 still maintained explicitly rather than treated as a stable public import path.
+
+Current parity maintenance period:
+
+- `runtimes/js/core`
+  - CommonJS source-of-truth
+- `runtimes/js/core/index.mjs`
+  - internal ESM/browser-consumable entry
+- `viewer/src/lib/browserRuntimeCore.js`
+  - viewer-local ESM copy
+
+The viewer-local ESM copy is still intentionally retained, and viewer import
+replacement is not performed yet. Public exports and viewer replacement remain
+follow-up decisions after this parity maintenance period.
 
 Current consume topology:
 

@@ -19,6 +19,7 @@
 import { deriveActionCore, deriveState, findStateAction } from "./browserRuntimeCore.js";
 import { normalizeInput } from "./browserInput.js";
 import { buildResult } from "./browserResult.js";
+import { assertCanonicalEscalationLeaves } from "./browserConfigAssert.js";
 import { defaultConfig } from "./viewerPresets.js";
 
 // Portable semantics consume:
@@ -36,23 +37,6 @@ function normalizeRule(rule) {
   }
 
   return { ...rule };
-}
-
-function assertCanonicalEscalationLeaves(config) {
-  const actionEscalation = config?.escalations?.action?.fanLowToHigh;
-  const stateEscalation = config?.escalations?.state?.hotToCritical;
-
-  if (typeof stateEscalation?.durationMs !== "number") {
-    throw new Error("escalations.state.hotToCritical.durationMs is required for browser evaluation");
-  }
-
-  if (typeof actionEscalation?.durationMs !== "number") {
-    throw new Error("escalations.action.fanLowToHigh.durationMs is required for browser evaluation");
-  }
-
-  if (typeof actionEscalation?.requireNoCoolingEffect !== "boolean") {
-    throw new Error("escalations.action.fanLowToHigh.requireNoCoolingEffect is required for browser evaluation");
-  }
 }
 
 // JS/browser convenience:

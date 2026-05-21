@@ -17,6 +17,8 @@
 // future ESM/browser consumption of the official JS runtime core remains
 // undecided.
 import { deriveActionCore, deriveState, findStateAction } from "./browserRuntimeCore.js";
+import { normalizeInput } from "./browserInput.js";
+import { buildResult } from "./browserResult.js";
 import { defaultConfig } from "./viewerPresets.js";
 
 // Portable semantics consume:
@@ -72,60 +74,6 @@ function resolveConfig(config) {
   };
 }
 
-// Input normalization:
-// browser/local simulation paths may provide richer JS-friendly input than the
-// portable core requires, so normalization stays in this wrapper layer.
-// JS/browser convenience:
-// portable runtimes only require a small input snapshot such as value,
-// previousValue, previousState, stateDurationMs, and coolingEffect.
-// The browser runtime also accepts richer derived fields so simulation and
-// local inspection can reuse the same entrypoint.
-function normalizeInput(input) {
-  const {
-    value,
-    previousValue,
-    tempDelta,
-    tempRate,
-    tempRateAvg,
-    coolingEffect,
-    maxTemp,
-    previousState,
-    previousAction,
-    stateDurationMs,
-    timestamp
-  } = input;
-
-  const effectiveTempDelta =
-    typeof tempDelta === "number"
-      ? tempDelta
-      : typeof value === "number" && typeof previousValue === "number"
-        ? value - previousValue
-        : 0;
-  const effectiveTempRate = typeof tempRate === "number" ? tempRate : effectiveTempDelta;
-  const stateRate = typeof tempRateAvg === "number" ? tempRateAvg : effectiveTempRate;
-  const previousStateSafe = typeof previousState === "string" ? previousState : "normal";
-  const rawStateDurationMs = typeof stateDurationMs === "number" ? stateDurationMs : 0;
-
-  return {
-    value,
-    previousValue,
-    tempDelta,
-    tempRate,
-    tempRateAvg,
-    coolingEffect,
-    maxTemp,
-    previousState,
-    previousAction,
-    stateDurationMs,
-    timestamp,
-    effectiveTempDelta,
-    effectiveTempRate,
-    stateRate,
-    previousStateSafe,
-    rawStateDurationMs
-  };
-}
-
 // Browser-only fallback:
 // these helpers are runtime-adjacent but intentionally remain outside the
 // portable core because they depend on browser/JS convenience behavior.
@@ -166,34 +114,6 @@ function deriveAction(normalized, stateContext, config) {
   );
 
   return deriveActionCore(baseAction, effectiveStateDurationMs, hasCoolingEffectForDecision, config);
-}
-
-// Diagnostics / result shaping:
-// browser inspection and viewer display use reason/debug fields that are not
-// part of the portable runtime contract.
-// Diagnostics/debug convenience:
-// the portable runtime contract only requires state/action.
-// reason/debug are browser/JS-side enrichment for inspection and UI display.
-function buildResult(stateContext, actionContext) {
-  const { state, baseState, previousStateSafe, rawStateDurationMs, effectiveStateDurationMs } = stateContext;
-  const { action, actionEscalated } = actionContext;
-  const reason =
-    `baseState=${baseState}; previousState=${previousStateSafe}; ` +
-    `rawDuration=${rawStateDurationMs}; ` +
-    `effectiveDuration=${effectiveStateDurationMs}; ` +
-    `actionEscalated=${actionEscalated}`;
-
-  return {
-    state,
-    action,
-    reason,
-    debug: {
-      baseState,
-      rawStateDurationMs,
-      effectiveStateDurationMs,
-      actionEscalated
-    }
-  };
 }
 
 // Wrapper evaluation entrypoint:

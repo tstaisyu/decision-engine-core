@@ -165,6 +165,15 @@ Viewer consume boundary note:
 This keeps future viewer-local ESM copy replacement work from spreading into UI
 components or higher-level viewer orchestration.
 
+Deep-import note:
+
+- production deep imports are currently limited to repo-internal runtime chains
+- viewer UI/components do not deep-import runtime core modules directly
+- parity-test deep imports are intentional internal-surface verification
+- examples use the public runtime entry rather than internal runtime-core paths
+- no deep-import cleanup is required yet, but internal test paths and the
+  internal ESM entry should be reviewed when package exports are introduced
+
 The bridge is intentionally retained for now because it keeps the root package
 CommonJS, avoids package export changes, leaves ESM/browser strategy open, and
 supports low-risk incremental migration.

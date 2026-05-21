@@ -107,6 +107,21 @@ Runtime layer boundary note:
 acceptable as long as new semantics or viewer orchestration concerns are not
 pushed into it.
 
+Near-term browserEngine.js separation note:
+
+- `browserEngine.js` remains acceptable as a browser-side wrapper because
+  viewer orchestration still lives in `useSimulation.js`
+- likely helper-level separation candidates are:
+  - `normalizeInput`
+  - `buildResult`
+  - `assertCanonicalEscalationLeaves`
+  - the `deriveAction` wrapper and its cooling-effect fallback
+- the `evaluate()` connection path should stay grouped for now
+- future `browserRuntimeCore` replacement work is expected to concentrate in
+  `browserEngine.js` imports and nearby core-helper call sites
+- the viewer-facing `engineAdapter.js` boundary should remain stable during
+  that work
+
 ### Maintenance Note: Viewer-local ESM Copy
 
 `viewer/src/lib/browserRuntimeCore.js` is maintained as a viewer-local ESM copy

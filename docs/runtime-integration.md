@@ -158,6 +158,44 @@ exists.
 If direct consume is introduced later, it should be limited to the portable
 core or the JS convenience runtime, not viewer-specific wrappers.
 
+## 1.3 Future Export / Browser Entry Direction
+
+The current direction is to treat future JS runtime exports as two layers:
+
+- main/default export
+  - JS convenience runtime
+- core subpath export
+  - portable JS runtime core
+
+Browser-consumable entry should start from an official ESM/browser entry for
+the portable core, not from viewer-specific wrappers.
+
+`viewer/src/lib/browserEngine.js` should remain internal because it still
+contains viewer-oriented browser wrapper assumptions and is better treated as a
+prototype rather than a public runtime export.
+
+If the viewer-local ESM copy is replaced later, the intended replacement target
+is an official browser/ESM core entry, not `browserEngine.js`.
+
+CommonJS/ESM dual-entry concerns should be absorbed by the provider/package
+side, not by the viewer consumer side.
+
+Before expanding `package.exports`, the following boundaries should be treated
+as fixed first:
+
+- portable core boundary
+- convenience runtime boundary
+- browser wrapper boundary
+- public API commitment
+
+The preferred migration order is:
+
+1. internal core boundary
+2. browser/ESM core entry
+3. viewer-local ESM copy replacement
+4. core subpath export
+5. convenience runtime export
+
 ---
 
 ## 2. Overall Flow

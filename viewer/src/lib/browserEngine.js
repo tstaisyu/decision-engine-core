@@ -19,6 +19,13 @@
 import { deriveActionCore, deriveState, findStateAction } from "./browserRuntimeCore.js";
 import { defaultConfig } from "./viewerPresets.js";
 
+// Portable semantics consume:
+// these imports are the browser wrapper's only dependency on the portable
+// state/action core and form the main replacement-sensitive area if the
+// viewer-local ESM copy is swapped out later.
+
+// Config shaping / canonical assert:
+// these helpers keep browser evaluation on the strict canonical-ready path.
 // Config boundary convenience:
 // lightweight rule copying/filtering for the browser-side runtime path.
 function normalizeRule(rule) {
@@ -65,6 +72,9 @@ function resolveConfig(config) {
   };
 }
 
+// Input normalization:
+// browser/local simulation paths may provide richer JS-friendly input than the
+// portable core requires, so normalization stays in this wrapper layer.
 // JS/browser convenience:
 // portable runtimes only require a small input snapshot such as value,
 // previousValue, previousState, stateDurationMs, and coolingEffect.
@@ -116,6 +126,9 @@ function normalizeInput(input) {
   };
 }
 
+// Browser-only fallback:
+// these helpers are runtime-adjacent but intentionally remain outside the
+// portable core because they depend on browser/JS convenience behavior.
 // Portable runtime semantics plus JS convenience:
 // action resolution itself is part of the portable runtime contract.
 // The coolingEffect -> stateRate fallback is JS/browser convenience and would
@@ -155,6 +168,9 @@ function deriveAction(normalized, stateContext, config) {
   return deriveActionCore(baseAction, effectiveStateDurationMs, hasCoolingEffectForDecision, config);
 }
 
+// Diagnostics / result shaping:
+// browser inspection and viewer display use reason/debug fields that are not
+// part of the portable runtime contract.
 // Diagnostics/debug convenience:
 // the portable runtime contract only requires state/action.
 // reason/debug are browser/JS-side enrichment for inspection and UI display.
@@ -180,6 +196,9 @@ function buildResult(stateContext, actionContext) {
   };
 }
 
+// Wrapper evaluation entrypoint:
+// keep the browser-facing evaluation flow grouped here even if helper-level
+// extraction happens later.
 // Runtime entrypoint:
 // evaluate() is the browser-facing runtime wrapper. It currently combines
 // portable runtime evaluation with browser-side config/input convenience.

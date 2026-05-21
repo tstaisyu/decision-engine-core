@@ -85,6 +85,28 @@ it is still internal at this stage. `runtimes/js/core/index.mjs` is likewise an
 internal ESM/browser-consumable entry rather than a public API or package
 export.
 
+Runtime layer boundary note:
+
+- `runtimes/js/core`
+  - owns deterministic state/action semantics only
+  - does not own config fallback, diagnostics/debug, browser logic, or UI concerns
+- `src/runtimeCore.js`
+  - remains a thin CommonJS bridge and does not add semantics
+- `src/evaluate.js`
+  - remains the JS convenience wrapper and should not absorb viewer/browser-specific assumptions
+- `viewer/src/lib/browserRuntimeCore.js`
+  - remains a viewer-local semantics copy without fallback, diagnostics, or orchestration concerns
+- `viewer/src/lib/browserEngine.js`
+  - remains the browser-side wrapper and should not become the portable semantics source-of-truth
+- `viewer/src/lib/engineAdapter.js`
+  - remains the viewer-facing runtime boundary and should not absorb semantics internals
+- `viewer/src/hooks/useSimulation.js`
+  - owns orchestration/workspace concerns and does not define runtime semantics
+
+`browserEngine.js` is currently the heaviest runtime layer, but this is still
+acceptable as long as new semantics or viewer orchestration concerns are not
+pushed into it.
+
 ### Maintenance Note: Viewer-local ESM Copy
 
 `viewer/src/lib/browserRuntimeCore.js` is maintained as a viewer-local ESM copy

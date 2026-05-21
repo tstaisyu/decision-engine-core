@@ -131,6 +131,19 @@ Not a direct-consume candidate yet:
 
 - viewer runtime paths
 
+Viewer consume boundary note:
+
+- viewer UI/components do not consume the runtime core directly
+- the viewer-side consumer boundary is `viewer/src/lib/engineAdapter.js`
+- the current runtime path is:
+  `useSimulation -> engineAdapter -> browserEngine -> browserRuntimeCore`
+- the smallest semantics-source replacement point is
+  `viewer/src/lib/browserEngine.js`
+- the stable viewer-facing boundary remains `viewer/src/lib/engineAdapter.js`
+
+This keeps future viewer-local ESM copy replacement work from spreading into UI
+components or higher-level viewer orchestration.
+
 The bridge is intentionally retained for now because it keeps the root package
 CommonJS, avoids package export changes, leaves ESM/browser strategy open, and
 supports low-risk incremental migration.

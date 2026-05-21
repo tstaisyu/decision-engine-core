@@ -111,11 +111,14 @@ Near-term browserEngine.js separation note:
 
 - `browserEngine.js` remains acceptable as a browser-side wrapper because
   viewer orchestration still lives in `useSimulation.js`
-- likely helper-level separation candidates are:
-  - `normalizeInput`
-  - `buildResult`
-  - `assertCanonicalEscalationLeaves`
-  - the `deriveAction` wrapper and its cooling-effect fallback
+- helper-level extractions already completed:
+  - `normalizeInput` -> `viewer/src/lib/browserInput.js`
+  - `buildResult` -> `viewer/src/lib/browserResult.js`
+  - `assertCanonicalEscalationLeaves` -> `viewer/src/lib/browserConfigAssert.js`
+- `browserEngine.js` now stays centered on wrapper evaluation entry and the
+  browser-side action-resolution flow
+- if further extraction is needed later, the next candidate is the
+  `deriveAction` wrapper together with its cooling-effect fallback
 - the `evaluate()` connection path should stay grouped for now
 - future `browserRuntimeCore` replacement work is expected to concentrate in
   `browserEngine.js` imports and nearby core-helper call sites

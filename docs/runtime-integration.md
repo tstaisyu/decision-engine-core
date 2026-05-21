@@ -64,6 +64,27 @@ The following are still intentionally unresolved:
 Until those decisions are made, these modules should be treated as internal
 structure rather than public API.
 
+Current public/internal boundary:
+
+- public now
+  - `src/index.js` via `evaluate`
+- current public wrapper / future main export candidate
+  - `src/evaluate.js`
+- internal now
+  - `runtimes/js/core/index.js`
+  - `runtimes/js/core/index.mjs`
+  - `src/runtimeCore.js`
+  - `viewer/src/lib/browserEngine.js`
+  - `viewer/src/lib/browserRuntimeCore.js`
+- future public candidates
+  - main/default runtime entry: `src/evaluate.js`
+  - core subpath entry: `runtimes/js/core`
+
+`runtimes/js/core/index.js` remains the portable semantics source-of-truth, but
+it is still internal at this stage. `runtimes/js/core/index.mjs` is likewise an
+internal ESM/browser-consumable entry rather than a public API or package
+export.
+
 ### Maintenance Note: Viewer-local ESM Copy
 
 `viewer/src/lib/browserRuntimeCore.js` is maintained as a viewer-local ESM copy

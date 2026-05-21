@@ -200,6 +200,19 @@ The preferred migration order is:
 4. core subpath export
 5. convenience runtime export
 
+Current internal note:
+
+- `runtimes/js/core/index.mjs` is an internal ESM/browser-consumable core entry
+- it is not a public API or package export at this stage
+- the source-of-truth remains `runtimes/js/core/index.js`
+- synchronization is checked through CommonJS/ESM parity tests
+- this entry exists to validate a future replacement path for the viewer-local
+  ESM copy
+
+Before any public export promotion, build-based generation or a formal dual
+package strategy should be reconsidered. The handwritten/bridge-style ESM entry
+is intentionally temporary rather than a long-term fixed public shape.
+
 ---
 
 ## 2. Overall Flow

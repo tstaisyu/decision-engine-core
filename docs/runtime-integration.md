@@ -121,6 +121,43 @@ The bridge is intentionally retained for now because it keeps the root package
 CommonJS, avoids package export changes, leaves ESM/browser strategy open, and
 supports low-risk incremental migration.
 
+## 1.2 Next-phase JS Runtime Entry Strategy
+
+The current direction is to treat future public JS runtime entrypoints as two
+layers:
+
+- default / main runtime entry
+  - JS convenience runtime
+- core subpath entry
+  - portable JS runtime core
+
+Recommended layering:
+
+- `runtimes/js/core`
+  - portable core
+- `src/evaluate.js`
+  - JS convenience runtime candidate
+- `viewer/src/lib/browserEngine.js`
+  - browser/viewer wrapper prototype
+- `viewer/src/lib/engineAdapter.js`
+  - viewer consume boundary
+
+`browserEngine.js` should not be treated as the future official browser runtime
+as-is because it still carries viewer-specific assumptions. It remains useful
+as a browser wrapper prototype.
+
+The CommonJS/ESM browser bridge should be absorbed by the provider/package
+side, not by the viewer consumer side.
+
+The viewer-local ESM copy is expected to remain for now and become a
+replacement candidate only after an official ESM/browser-consumable entry
+exists.
+
+`package.exports` remains intentionally unchanged for now.
+
+If direct consume is introduced later, it should be limited to the portable
+core or the JS convenience runtime, not viewer-specific wrappers.
+
 ---
 
 ## 2. Overall Flow

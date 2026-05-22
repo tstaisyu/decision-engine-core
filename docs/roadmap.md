@@ -22,6 +22,9 @@ tracking.
 - Generated-config smoke testing exists for the C++ runtime
 - A representative embedded integration example exists under `examples/m5-temp-fan/`
 - Runtime / adapter / orchestration boundaries are documented
+- `runtimes/js/core` is materialized as the portable JS runtime semantics source-of-truth
+- Viewer runtime consumption is now routed through the internal ESM core entry via `browserEngine.js`
+- Runtime public/internal boundaries, parity boundaries, and consume topology are documented
 
 ## In Progress
 
@@ -29,6 +32,18 @@ tracking.
 - Keep canonical config, JS runtime behavior, and C++ runtime behavior in sync
 - Keep generated-config workflow and embedded examples aligned with the runtime
   specification
+
+## Current Milestone Focus (M6)
+
+- Core evaluate topology / public runtime entry decision
+  - confirm runtime responsibility mapping across portable core, convenience runtime, and browser wrapper
+  - decide whether a dedicated `evaluateCore` entry is necessary or current helper composition is sufficient
+  - define the boundary between portable core, convenience runtime, and browser-only logic
+  - decide how helper/core-level parity should relate to JS/C++ topology
+  - confirm the future public runtime shape for main/default runtime entry vs core subpath entry
+  - review browser/runtime convergence and the long-term role of `browserEngine.js`
+  - review package exports readiness without freezing transitional bridges too early
+  - define stabilization / exit criteria for bridge removal and parity-maintenance cleanup
 
 ## Next
 

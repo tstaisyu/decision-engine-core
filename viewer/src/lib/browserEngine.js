@@ -11,12 +11,10 @@
 // - buildResult
 // - evaluate (browser-facing wrapper)
 //
-// Portable helper semantics live in browserRuntimeCore.js as a viewer-local
-// ESM copy aligned with the CommonJS source-of-truth under runtimes/js/core.
-// The long-term direction is to keep this file as a thin browser wrapper while
-// future ESM/browser consumption of the official JS runtime core remains
-// undecided.
-import { deriveActionCore, deriveState, findStateAction } from "./browserRuntimeCore.js";
+// Portable helper semantics are now consumed from the internal ESM/browser-
+// consumable core entry under runtimes/js/core while this file remains a thin
+// browser wrapper around that portable runtime behavior.
+import { deriveActionCore, deriveState, findStateAction } from "../../../runtimes/js/core/index.mjs";
 import { normalizeInput } from "./browserInput.js";
 import { buildResult } from "./browserResult.js";
 import { assertCanonicalEscalationLeaves } from "./browserConfigAssert.js";

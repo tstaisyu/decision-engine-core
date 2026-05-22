@@ -85,6 +85,17 @@ it is still internal at this stage. `runtimes/js/core/index.mjs` is likewise an
 internal ESM/browser-consumable entry rather than a public API or package
 export.
 
+Package exports readiness note:
+
+- the current public JS runtime API remains centered on the root `evaluate` entry
+- `package.exports` intentionally remains unset for now
+- a future core subpath such as `decision-engine-core/core` is a candidate, but
+  not yet a committed public boundary
+- `src/runtimeCore.js` remains a transitional CommonJS bridge and should not be
+  promoted into the public API surface
+- changing exports too early would risk freezing transitional internal
+  structure before the final CommonJS/ESM and browser-consume boundaries are fixed
+
 Runtime layer boundary note:
 
 - `runtimes/js/core`

@@ -74,13 +74,15 @@ flowchart LR
     Adapter["viewer/src/lib/engineAdapter.js<br/>(viewer consume boundary)"]
     Browser["viewer/src/lib/browserEngine.js<br/>(browser wrapper)"]
     Eval["src/evaluate.js<br/>(JS convenience runtime)"]
-    Core["runtimes/js/core<br/>(portable semantics source-of-truth)"]
+    Bridge["src/runtimeCore.js<br/>(CommonJS compatibility bridge)"]
+    Core["runtimes/js/core / index.mjs<br/>(portable semantics source-of-truth<br/>+ internal ESM entry)"]
     Copy["viewer/src/lib/browserRuntimeCore.js<br/>(temporary viewer-local ESM copy)"]
 
     UI --> Adapter
     Adapter --> Browser
-    Browser --> Copy
-    Eval --> Core
+    Browser --> Core
+    Eval --> Bridge
+    Bridge --> Core
     Copy -. parity maintenance .-> Core
 ```
 

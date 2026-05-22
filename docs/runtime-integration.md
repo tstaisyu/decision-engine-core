@@ -49,7 +49,7 @@ The current JS runtime is split into a portable core and wrapper layers.
 - `viewer/src/lib/browserRuntimeCore.js`
   - viewer-local ESM copy kept meaningfully aligned with the same semantics
 - `viewer/src/lib/browserEngine.js`
-  - browser-side wrapper around the portable core
+  - browser-side wrapper consuming the internal ESM/browser core entry
 - `viewer/src/lib/engineAdapter.js`
   - viewer runtime consume boundary
 
@@ -161,6 +161,8 @@ Not part of this parity boundary:
 
 ESM/browser import strategy remains unresolved, so the viewer-local ESM copy is
 still maintained explicitly rather than treated as a stable public import path.
+It is no longer on the main viewer runtime-consumer path, but it remains as a
+viewer-local parity maintenance target.
 
 Current parity maintenance period:
 
@@ -171,14 +173,21 @@ Current parity maintenance period:
 - `viewer/src/lib/browserRuntimeCore.js`
   - viewer-local ESM copy
 
-The viewer-local ESM copy is still intentionally retained, and viewer import
-replacement is not performed yet. Public exports and viewer replacement remain
-follow-up decisions after this parity maintenance period.
+The viewer-local ESM copy is still intentionally retained for:
+
+- viewer-local parity maintenance
+- existing viewer-local runtimeCore tests
+- JS runtime three-way parity comparison
+
+Public exports and final viewer replacement remain follow-up decisions after
+this parity maintenance period.
 
 Current consume topology:
 
 - `src/evaluate.js` currently consumes the core through the
   `src/runtimeCore.js` CommonJS bridge
+- `viewer/src/lib/browserEngine.js` now consumes the portable core through
+  `runtimes/js/core/index.mjs`
 - `test/js-viewer-runtimecore-parity.test.js` also uses that bridge when
   comparing root-side semantics to the viewer-local ESM copy
 - `runtimes/js/core` is currently read directly only by `src/runtimeCore.js`
@@ -197,7 +206,7 @@ Viewer consume boundary note:
 - viewer UI/components do not consume the runtime core directly
 - the viewer-side consumer boundary is `viewer/src/lib/engineAdapter.js`
 - the current runtime path is:
-  `useSimulation -> engineAdapter -> browserEngine -> browserRuntimeCore`
+  `useSimulation -> engineAdapter -> browserEngine -> runtimes/js/core/index.mjs`
 - the smallest semantics-source replacement point is
   `viewer/src/lib/browserEngine.js`
 - the stable viewer-facing boundary remains `viewer/src/lib/engineAdapter.js`

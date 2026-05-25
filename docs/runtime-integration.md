@@ -267,6 +267,40 @@ as a browser wrapper prototype.
 main/default runtime export candidate. It is intentionally not the portable
 core; portable deterministic state/action semantics remain in `runtimes/js/core`.
 
+Public contract fixation note:
+
+- `evaluate` is the current and future main/default public JS runtime entry
+- its public contract is:
+  - input: JS object
+  - config: convenience-runtime input that may include resolution/normalization
+  - output: `state`, `action`, `reason`, `debug`
+- `evaluate` owns input normalization, config resolution/canonical
+  merge/normalization, JS-side convenience fallback, result shaping, and
+  convenience runtime orchestration
+- `evaluate` does not own portable semantics source-of-truth, browser/viewer
+  wrapper logic, package-internal bridge logic, or UI/workspace orchestration
+- core helpers remain future public candidates, but stay internal until their
+  normalized-input contract, canonical-ready config preconditions,
+  helper-level docs/tests, and supported-API status are fixed
+- the smallest future export shape remains:
+  - `decision-engine-core`
+  - `decision-engine-core/core`
+  but `package.json` / `package.exports` remain intentionally unchanged for now
+
+Core subpath export note:
+
+- `decision-engine-core/core` remains a future public candidate
+- it is not added to exports at this stage because most consumers should still
+  be able to use `evaluate` directly
+- a public core subpath would be valuable for custom wrappers, lightweight
+  state/action evaluation, and browser/worker-style low-level reuse
+- it remains internal for now because normalized-input expectations,
+  canonical-ready config preconditions, helper-level compatibility guarantees,
+  and internal-topology flexibility are not fully fixed yet
+- the current public boundary therefore remains:
+  - main/default runtime: `evaluate`
+  - core helpers: internal future candidate
+
 The CommonJS/ESM browser bridge should be absorbed by the provider/package
 side, not by the viewer consumer side.
 

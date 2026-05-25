@@ -45,6 +45,18 @@ tracking.
   - review package exports readiness without freezing transitional bridges too early
   - define stabilization / exit criteria for bridge removal and parity-maintenance cleanup
 
+M6 completion note:
+
+- M6 is treated as complete at the topology/contract decision level
+- public main runtime: `evaluate`
+- internal portable core: `runtimes/js/core`
+- internal browser wrapper: `viewer/src/lib/browserEngine.js`
+- `evaluateCore` remains an unimplemented candidate
+- core helpers remain internal future public candidates
+- `decision-engine-core/core` remains a future candidate and is not added to
+  exports at this stage
+- `package.exports` remains intentionally unchanged
+
 ## Next
 
 - Viewer UX and simulation workflow improvements

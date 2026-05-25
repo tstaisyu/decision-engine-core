@@ -278,6 +278,22 @@ replacement target after an official ESM/browser-consumable entry exists.
 If direct consume is introduced later, it should be limited to the portable
 core or the JS convenience runtime, not viewer-specific wrappers.
 
+evaluateCore note:
+
+- the current runtime topology remains:
+  - `runtimes/js/core` for portable helper semantics
+  - `src/evaluate.js` for the JS convenience runtime
+  - `viewer/src/lib/browserEngine.js` for the browser wrapper
+- an `evaluateCore` entry is still a candidate, but it is not implemented now
+  because it would add maintenance and parity surface before its value is
+  clearly proven
+- if added later, it should start as an internal entry for canonical-ready
+  config only and should exclude config shaping, fallback behavior,
+  diagnostics/debug enrichment, and browser-only logic
+- current public runtime candidates remain `evaluate` and future core helpers;
+  `evaluateCore` should not be promoted to public API immediately even if it is
+  introduced internally
+
 ## 1.3 Future Export / Browser Entry Direction
 
 The current direction is to treat future JS runtime exports as two layers:

@@ -57,6 +57,21 @@ M6 completion note:
   exports at this stage
 - `package.exports` remains intentionally unchanged
 
+M7 completion note:
+
+- M7 is treated as complete as a supported-API / package-exports preparation phase
+- the current public boundary remains evaluate-only
+- `decision-engine-core/core` is not exported at this stage
+- core helpers remain semantics-stable but externally immature
+- core helpers therefore remain internal future public candidates
+- `package.exports` remains intentionally unchanged
+- future work before any core subpath promotion includes:
+  - helper-level API docs
+  - normalized input contract
+  - canonical-ready config preconditions
+  - compatibility policy
+  - direct helper usage examples
+
 ## Next
 
 - Viewer UX and simulation workflow improvements

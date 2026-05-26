@@ -301,6 +301,30 @@ Core subpath export note:
   - main/default runtime: `evaluate`
   - core helpers: internal future candidate
 
+Helper-level external contract note:
+
+- the following portable helpers remain future public candidates, but are not
+  yet treated as supported public API:
+  - `matchRule`
+  - `findStateAction`
+  - `deriveState`
+  - `deriveActionCore`
+- they remain internal because normalized-input expectations,
+  canonical-ready config leaf preconditions, helper return shapes/fallback
+  values, and helper-level compatibility guarantees are not fixed enough yet
+- before any public promotion, they would need:
+  - helper-level API docs
+  - normalized input contract docs
+  - canonical-ready config precondition docs
+  - helper-level supported tests
+  - backward-compatibility policy
+  - direct helper usage examples
+- the current conclusion is:
+  - semantics stable
+  - external contract not yet mature
+  - future public candidate
+  - not yet supported public API
+
 The CommonJS/ESM browser bridge should be absorbed by the provider/package
 side, not by the viewer consumer side.
 

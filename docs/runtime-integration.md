@@ -270,15 +270,52 @@ core; portable deterministic state/action semantics remain in `runtimes/js/core`
 Public contract fixation note:
 
 - `evaluate` is the current and future main/default public JS runtime entry
+- it is the main/default public API candidate, but `package.exports`
+  implementation is still intentionally deferred
 - its public contract is:
   - input: JS object
-  - config: convenience-runtime input that may include resolution/normalization
+  - minimal input fields:
+    - `value`
+    - `previousValue`
+    - `previousState`
+    - `stateDurationMs`
+    - `coolingEffect`
+  - richer convenience fields may also be accepted:
+    - `tempDelta`
+    - `tempRate`
+    - `tempRateAvg`
+    - `previousAction`
+    - `timestamp`
+    - `maxTemp`
+  - unknown extra fields are ignored
+  - config: canonical-ready config is accepted directly, while the convenience
+    runtime may also apply default merge, `resolveConfig`, and `normalizeConfig`
   - output: `state`, `action`, `reason`, `debug`
 - `evaluate` owns input normalization, config resolution/canonical
   merge/normalization, JS-side convenience fallback, result shaping, and
   convenience runtime orchestration
+- supported convenience behavior includes accepting omitted
+  `previousState`, `stateDurationMs`, `tempDelta`, `tempRate`,
+  `tempRateAvg`, and `coolingEffect` fields as long as evaluation can still
+  proceed through the JS convenience path
+- this guarantee is intentionally limited to omission acceptance and
+  successful evaluation rather than exact fallback derivation formulas
+- `reason` is included in the JS `evaluate()` result as a diagnostic string
+- `debug` is included in the JS `evaluate()` result as a diagnostic object
+- escalated action cases include `debug.actionEscalated`
+- exact fallback derivation formulas, exact `reason` string formatting, full
+  `debug` object shape, and future additive debug fields remain intentionally
+  unfrozen
+- compatibility expectations for the future main/default public API candidate
+  are limited to the `evaluate(input, config)` call shape, acceptance of the
+  minimal input fields and canonical-ready config, `state` / `action` return
+  values, diagnostic `reason` / `debug` presence, and omission acceptance for
+  JS convenience fields
 - `evaluate` does not own portable semantics source-of-truth, browser/viewer
   wrapper logic, package-internal bridge logic, or UI/workspace orchestration
+- before any future `package.exports` implementation, the remaining
+  stabilization items are the final exports shape, CommonJS/ESM strategy,
+  internal ESM entry handling, and bridge/parity-maintenance exit criteria
 - core helpers remain future public candidates, but stay internal until their
   normalized-input contract, canonical-ready config preconditions,
   helper-level docs/tests, and supported-API status are fixed

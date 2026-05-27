@@ -2,6 +2,10 @@
 
 ## 役割の違い
 
+- `examples/minimal-evaluate.js`
+  - public `evaluate(input, config)` の最小例です
+  - minimal input と canonical-ready config を使い、`state` / `action` と
+    diagnostics の存在だけを確認します
 - `examples/temperature.js`
   - 最小の JS `evaluate()` 使用例です
   - config と input をその場で作り、戻り値の `state` / `action` を見るための小さな例です

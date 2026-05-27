@@ -151,3 +151,91 @@ test("fan_low escalation -> fan_high / actionEscalated true", () => {
   assert.equal(result.action, "fan_high");
   assert.equal(result.debug.actionEscalated, true);
 });
+
+test('previousState omission defaults safely and evaluation still succeeds', () => {
+  const input = buildInput();
+  delete input.previousState;
+
+  const result = evaluate(input, m5TemperatureConfig);
+
+  assert.equal(typeof result.state, "string");
+  assert.equal(typeof result.action, "string");
+});
+
+test("stateDurationMs omission defaults safely and evaluation still succeeds", () => {
+  const input = buildInput();
+  delete input.stateDurationMs;
+
+  const result = evaluate(input, m5TemperatureConfig);
+
+  assert.equal(typeof result.state, "string");
+  assert.equal(typeof result.action, "string");
+});
+
+test("tempDelta/tempRate/tempRateAvg omission path still evaluates successfully", () => {
+  const input = buildInput({
+    value: 25.3,
+    previousValue: 25.1
+  });
+  delete input.tempDelta;
+  delete input.tempRate;
+  delete input.tempRateAvg;
+
+  const result = evaluate(input, m5TemperatureConfig);
+
+  assert.equal(typeof result.state, "string");
+  assert.equal(typeof result.action, "string");
+});
+
+test("coolingEffect omission still evaluates through JS convenience fallback path", () => {
+  const input = buildInput({
+    value: 25.4,
+    previousValue: 25.2,
+    tempDelta: 0.2,
+    tempRate: 0.2,
+    tempRateAvg: 0.03,
+    previousState: "warming",
+    previousAction: "fan_low",
+    stateDurationMs: 1000
+  });
+  delete input.coolingEffect;
+
+  const result = evaluate(input, m5TemperatureConfig);
+
+  assert.equal(result.state, "warming");
+  assert.equal(typeof result.action, "string");
+  assert.equal(typeof result.debug.actionEscalated, "boolean");
+});
+
+test("evaluate returns reason diagnostics", () => {
+  const result = evaluate(buildInput(), m5TemperatureConfig);
+
+  assert.equal(typeof result.reason, "string");
+  assert.ok(result.reason.length > 0);
+});
+
+test("evaluate returns debug diagnostics", () => {
+  const result = evaluate(buildInput(), m5TemperatureConfig);
+
+  assert.equal(typeof result.debug, "object");
+  assert.ok(result.debug);
+});
+
+test("escalated action cases keep debug.actionEscalated diagnostics", () => {
+  const result = evaluate(
+    buildInput({
+      value: 25.4,
+      previousValue: 25.2,
+      tempDelta: 0.2,
+      tempRate: 0.2,
+      tempRateAvg: 0.03,
+      previousState: "warming",
+      previousAction: "fan_low",
+      stateDurationMs: 1000
+    }),
+    m5TemperatureConfig
+  );
+
+  assert.equal(result.action, "fan_high");
+  assert.equal(result.debug.actionEscalated, true);
+});

@@ -72,6 +72,29 @@ M7 completion note:
   - compatibility policy
   - direct helper usage examples
 
+## Next Milestone Focus (M8)
+
+- Public API Stabilization / Export Trigger Conditions
+  - define stabilization conditions for the `evaluate` public boundary
+  - define promotion conditions for future public core helpers
+  - define trigger conditions for `package.exports`
+  - define promotion conditions for the internal ESM entry
+  - define exit criteria for `src/runtimeCore.js` bridge and
+    `browserRuntimeCore.js` parity maintenance
+- M8 does not:
+  - implement `package.exports` immediately
+  - publish `decision-engine-core/core` immediately
+  - delete `browserRuntimeCore.js` immediately
+  - delete `src/runtimeCore.js` bridge immediately
+  - mix viewer UX or generated-config flow work into this milestone
+- M8 completion should:
+  - confirm whether `evaluate` is sufficiently fixed as a supported public API
+  - define the conditions required before core helpers can become public
+  - define export-trigger conditions rather than forcing export implementation
+  - classify the future treatment of the internal ESM entry, bridge, and parity
+    maintenance
+  - separate follow-up work that should move into M9 or later
+
 ## Next
 
 - Viewer UX and simulation workflow improvements

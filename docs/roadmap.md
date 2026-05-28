@@ -106,6 +106,12 @@ M7 completion note:
       `exported-config.sample.json`
     - generated C++ header consistency and exported JSON canonical validity now
       have a CI-friendly verification path
+  - M9-2 progress:
+    - `generate:m5-config` now provides the standard regeneration path for
+      `generated_fan_config.h`
+    - `check:generated-config` now points to `generate:m5-config` first when
+      regeneration is needed
+    - direct `generate-cpp-config.js` usage remains available as a fallback
   - clearer regeneration path
   - better generated artifact handling
 - Richer parity coverage across JS and C++

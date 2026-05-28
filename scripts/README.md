@@ -30,12 +30,16 @@ These files are not part of the published runtime API.
   - generate a C++ `DecisionConfig` header from canonical JSON config
   - runtime config only; hardware config is out of scope
   - used because the C++ runtime does not include a JSON parser
+- `npm run generate:m5-config`
+  - regenerate `examples/m5-temp-fan/config/generated_fan_config.h`
+    from `fan_config.sample.json`
 
 ## Examples
 
 ```bash
 npm run check:config
 npm run check:generated-config
+npm run generate:m5-config
 npm run check:evaluate
 npm run evaluate -- examples/inputs/input.normal.json --preset simpleTemperature
 node scripts/generate-cpp-config.js examples/m5-temp-fan/config/fan_config.sample.json examples/m5-temp-fan/config/generated_fan_config.h

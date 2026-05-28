@@ -54,6 +54,8 @@ function main() {
       console.error("generated_fan_config.h is out of date.");
       printFirstDiffSummary(committed, generated);
       console.error("Regenerate it with:");
+      console.error("npm run generate:m5-config");
+      console.error("or:");
       console.error(
         "node scripts/generate-cpp-config.js examples/m5-temp-fan/config/fan_config.sample.json examples/m5-temp-fan/config/generated_fan_config.h"
       );

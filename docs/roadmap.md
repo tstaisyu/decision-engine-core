@@ -144,6 +144,21 @@ M7 completion note:
       - `m5-temp-fan`: embedded adapter flow
       - `node-single-step`: JS application-side single-step adapter flow
 - More explicit generated-config verification in local and CI-friendly flows
+  - M9-5 progress:
+    - added `.github/workflows/verify-runtime.yml` with the `Verify Runtime`
+      workflow for `push` and `pull_request`
+    - it runs:
+      - `npm run check:config`
+      - `npm run check:generated-config`
+      - `npm test`
+      - `npm run cpp:test-vectors`
+    - coverage now includes canonical validity, exported config validity,
+      generated C++ header consistency, JS runtime tests, JS-side parity
+      tests, C++ parity tests, and generated-config consume tests
+    - this runtime verification flow is intentionally separated from the
+      existing lint/format CI workflow
+    - future CI additions can include `check:evaluate`, example smoke tests,
+      viewer build/test, and a Node version matrix
 
 ## Future
 

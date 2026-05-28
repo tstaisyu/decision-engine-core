@@ -44,3 +44,41 @@ npm run check:evaluate
 npm run evaluate -- examples/inputs/input.normal.json --preset simpleTemperature
 node scripts/generate-cpp-config.js examples/m5-temp-fan/config/fan_config.sample.json examples/m5-temp-fan/config/generated_fan_config.h
 ```
+
+## Generated/Exported Config Change Checklist
+
+When you change generated or exported config-related files, run:
+
+```bash
+npm run check:config
+npm run check:generated-config
+# if generated_fan_config.h is stale:
+npm run generate:m5-config
+npm test
+npm run cpp:test-vectors
+```
+
+Role of each command:
+
+- `npm run check:config`
+  - canonical validity for preset and exported config samples
+- `npm run check:generated-config`
+  - generated artifact consistency
+- `npm run generate:m5-config`
+  - regenerate `generated_fan_config.h` when it is stale
+- `npm test`
+  - JS/runtime/example verification
+- `npm run cpp:test-vectors`
+  - C++ parity and generated-config consume verification
+
+## CI Minimum Verification Set
+
+```bash
+npm run check:config
+npm run check:generated-config
+npm test
+npm run cpp:test-vectors
+```
+
+Use `generate:m5-config` as the repair command.
+Use `check:generated-config` as the verification command.

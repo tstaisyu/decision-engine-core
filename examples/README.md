@@ -12,6 +12,10 @@
 - `examples/node-temp-sim/`
   - 時系列入力、adapter、exported config を含むシミュレーション例です
   - viewer export config を流し込み、`state` / `action` / `pwm` の流れを確認する用途です
+- `examples/node-single-step/`
+  - JS application-side の single-step adapter 例です
+  - raw input -> input adapter -> `evaluate()` -> action adapter ->
+    diagnostics という最小 consume pattern を示します
 - `scripts/evaluate-cli.js`
   - 入力 JSON と preset を指定して評価する CLI です
   - examples ではなく、コマンドラインから core を使うための補助ツールです

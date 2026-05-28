@@ -125,6 +125,20 @@ M7 completion note:
       for `customActionConfig` and `unsupportedRuleConfig`
     - these were parity fixture fixes rather than runtime semantics changes
 - Additional representative examples using the same adapter pattern
+  - M9-4 progress:
+    - added `examples/node-single-step/` as a JS application-side single-step
+      adapter consume example
+    - it demonstrates raw domain input, input adapter, exported/canonical
+      config consume, `evaluate(input, config)`, state/action handling,
+      diagnostics presence, and action-adapter output command mapping
+    - it reuses `examples/node-temp-sim/config/exported-config.sample.json`
+    - diagnostics remain intentionally decoupled from exact string formatting
+      and full debug object shape
+    - current role split is now:
+      - `minimal-evaluate`: shortest public API path
+      - `node-temp-sim`: time-series simulation
+      - `m5-temp-fan`: embedded adapter flow
+      - `node-single-step`: JS application-side single-step adapter flow
 - More explicit generated-config verification in local and CI-friendly flows
 
 ## Future

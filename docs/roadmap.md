@@ -115,6 +115,15 @@ M7 completion note:
   - clearer regeneration path
   - better generated artifact handling
 - Richer parity coverage across JS and C++
+  - M9-3 progress:
+    - added generated-config consume parity coverage on the JS side for
+      `generated_config.normal`, `generated_config.warm`, and
+      `generated_config.hot`
+    - parity remains focused on `state` / `action`, while
+      `reason` / `debug` stay out of scope
+    - fixed C++ parity fixture construction bugs in `run_test_vectors.cpp`
+      for `customActionConfig` and `unsupportedRuleConfig`
+    - these were parity fixture fixes rather than runtime semantics changes
 - Additional representative examples using the same adapter pattern
 - More explicit generated-config verification in local and CI-friendly flows
 

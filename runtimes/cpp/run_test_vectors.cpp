@@ -66,8 +66,7 @@ int main() {
       {"value_gte.hot", minimalTemperatureConfig, {30.1F, 3000UL}, "hot", "fan_high"},
   };
 
-  DecisionConfig customActionConfig;
-  customActionConfig.defaultState = "normal";
+  DecisionConfig customActionConfig = buildMinimalTemperatureConfig();
   customActionConfig.states[1].action = "fan_mid";
   const TestCase customActionCase{
       "value_gte.custom_action",
@@ -77,8 +76,7 @@ int main() {
       "fan_mid",
   };
 
-  DecisionConfig unsupportedRuleConfig;
-  unsupportedRuleConfig.defaultState = "normal";
+  DecisionConfig unsupportedRuleConfig = buildMinimalTemperatureConfig();
   unsupportedRuleConfig.rules = {
       {"unknown_type", 0.0F, "hot"},
       {"value_gte", 30.0F, "hot"},

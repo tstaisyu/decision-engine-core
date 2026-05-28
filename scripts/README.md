@@ -10,6 +10,17 @@ These files are not part of the published runtime API.
 
 - `check-config.js`
   - validate the default preset config
+- `check-generated-cpp-config.js`
+  - regenerate the sample generated C++ config into a temporary file
+  - fail if the committed generated header is out of date
+  - this check targets `examples/m5-temp-fan/config/fan_config.sample.json`
+    and `examples/m5-temp-fan/config/generated_fan_config.h`
+  - generator output depends on the output path/filename because the
+    generated include path and header guard are derived from them
+  - for that reason, the check regenerates under the committed target path
+    conditions before comparing
+  - if it fails, regenerate the committed header with
+    `generate-cpp-config.js`
 - `check-evaluate.js`
   - run representative local evaluation cases
 - `evaluate-cli.js`
@@ -23,6 +34,7 @@ These files are not part of the published runtime API.
 
 ```bash
 npm run check:config
+npm run check:generated-config
 npm run check:evaluate
 npm run evaluate -- examples/inputs/input.normal.json --preset simpleTemperature
 node scripts/generate-cpp-config.js examples/m5-temp-fan/config/fan_config.sample.json examples/m5-temp-fan/config/generated_fan_config.h

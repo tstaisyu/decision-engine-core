@@ -12,9 +12,9 @@
 inline DecisionConfig buildGeneratedConfig() {
   DecisionConfig config;
   config.defaultState = "normal";
-  config.stateEscalationFromState = "hot";
-  config.stateEscalationToState = "critical";
-  config.stateEscalationDurationMs = 5000UL;
+  config.stateEscalationFromState = "";
+  config.stateEscalationToState = "";
+  config.stateEscalationDurationMs = 0UL;
   config.actionEscalationFromAction = "fan_low";
   config.actionEscalationToAction = "fan_high";
   config.actionEscalationDurationMs = 10000UL;

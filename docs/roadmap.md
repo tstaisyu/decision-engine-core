@@ -151,14 +151,19 @@ M7 completion note:
       - `npm run check:config`
       - `npm run check:generated-config`
       - `npm test`
+      - `node examples/minimal-evaluate.js`
+      - `node examples/node-single-step/index.js`
+      - `npm run example:node-temp-sim:sample`
       - `npm run cpp:test-vectors`
     - coverage now includes canonical validity, exported config validity,
       generated C++ header consistency, JS runtime tests, JS-side parity
-      tests, C++ parity tests, and generated-config consume tests
+      tests, generated-config consume tests, the public `evaluate()` shortest
+      path, the JS application-side single-step adapter flow, and the exported
+      config time-series simulation flow
     - this runtime verification flow is intentionally separated from the
       existing lint/format CI workflow
-    - future CI additions can include `check:evaluate`, example smoke tests,
-      viewer build/test, and a Node version matrix
+    - deferred items remain `check:evaluate`, viewer build/test, a larger
+      example matrix, and a Node version matrix
 
 ## Future
 

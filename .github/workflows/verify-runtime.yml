@@ -30,5 +30,14 @@ jobs:
       - name: Run JS runtime tests
         run: npm test
 
+      - name: Run minimal evaluate example
+        run: node examples/minimal-evaluate.js
+
+      - name: Run node single-step adapter example
+        run: node examples/node-single-step/index.js
+
+      - name: Run node temp simulation sample
+        run: npm run example:node-temp-sim:sample
+
       - name: Run C++ parity and generated-config tests
         run: npm run cpp:test-vectors

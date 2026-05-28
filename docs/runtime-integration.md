@@ -322,7 +322,7 @@ Public contract fixation note:
 - the smallest future export shape remains:
   - `decision-engine-core`
   - `decision-engine-core/core`
-  but `package.json` / `package.exports` remain intentionally unchanged for now
+    but `package.json` / `package.exports` remain intentionally unchanged for now
 
 Core subpath export note:
 

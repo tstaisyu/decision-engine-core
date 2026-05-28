@@ -152,7 +152,7 @@ test("fan_low escalation -> fan_high / actionEscalated true", () => {
   assert.equal(result.debug.actionEscalated, true);
 });
 
-test('previousState omission defaults safely and evaluation still succeeds', () => {
+test("previousState omission defaults safely and evaluation still succeeds", () => {
   const input = buildInput();
   delete input.previousState;
 

@@ -134,6 +134,10 @@ M7 completion note:
     - it reuses `examples/node-temp-sim/config/exported-config.sample.json`
     - diagnostics remain intentionally decoupled from exact string formatting
       and full debug object shape
+    - `examples/node-single-step/README.md` now includes a Mermaid flow for
+      raw input -> input adapter -> `evaluate(input, config)` -> action
+      adapter -> application command -> diagnostics, clarifying that this is a
+      single-snapshot application flow rather than a time-series simulation
     - current role split is now:
       - `minimal-evaluate`: shortest public API path
       - `node-temp-sim`: time-series simulation

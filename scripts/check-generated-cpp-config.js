@@ -43,10 +43,14 @@ function main() {
   const committed = fs.readFileSync(committedOutputPath, "utf8");
 
   try {
-    execFileSync(process.execPath, [path.resolve(__dirname, "generate-cpp-config.js"), inputPath, committedOutputPath], {
-      cwd: repoRoot,
-      stdio: "pipe"
-    });
+    execFileSync(
+      process.execPath,
+      [path.resolve(__dirname, "generate-cpp-config.js"), inputPath, committedOutputPath],
+      {
+        cwd: repoRoot,
+        stdio: "pipe"
+      }
+    );
 
     const generated = fs.readFileSync(committedOutputPath, "utf8");
 

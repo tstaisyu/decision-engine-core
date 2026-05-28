@@ -25,10 +25,7 @@ function buildInput(overrides) {
 function runCase(name, input, expectedState, expectedAction) {
   test(name, () => {
     const result = evaluate(buildInput(input), generatedConfigSample);
-    assert.deepEqual(
-      { state: result.state, action: result.action },
-      { state: expectedState, action: expectedAction }
-    );
+    assert.deepEqual({ state: result.state, action: result.action }, { state: expectedState, action: expectedAction });
   });
 }
 

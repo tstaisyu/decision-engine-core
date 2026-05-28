@@ -36,4 +36,3 @@ console.log("action:", result.action);
 // depend on exact string formatting or the full debug object shape.
 console.log("has reason:", typeof result.reason === "string");
 console.log("has debug:", Boolean(result.debug && typeof result.debug === "object"));
-

@@ -10,6 +10,7 @@ These files are not part of the published runtime API.
 
 - `check-config.js`
   - validate the default preset config
+  - validate the exported canonical config sample used by `node-temp-sim`
 - `check-generated-cpp-config.js`
   - regenerate the sample generated C++ config into a temporary file
   - fail if the committed generated header is out of date

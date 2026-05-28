@@ -99,6 +99,13 @@ M7 completion note:
 
 - Viewer UX and simulation workflow improvements
 - Generated-config workflow improvements
+  - M9-1 progress:
+    - `check:generated-config` now verifies consistency between
+      `fan_config.sample.json` and committed `generated_fan_config.h`
+    - `check:config` now validates both the default preset config and
+      `exported-config.sample.json`
+    - generated C++ header consistency and exported JSON canonical validity now
+      have a CI-friendly verification path
   - clearer regeneration path
   - better generated artifact handling
 - Richer parity coverage across JS and C++

@@ -27,6 +27,7 @@
 
 - [ ] README の onboarding 導線が最新
 - [ ] `examples/README.md` の example 導線が最新
+- [ ] `CHANGELOG.md` が今回の release 対象差分を反映している
 - [ ] `CONFIG_SPEC.md` が最新
 - [ ] `docs/runtime-spec.md` が最新
 - [ ] `docs/runtime-integration.md` の public/internal boundary note が最新
@@ -36,6 +37,7 @@
 
 ## Release
 
+- [ ] `CHANGELOG.md` を repo 内の継続履歴として更新済みである
 - [ ] release 対象 commit で `Verify Runtime` workflow の最新成功を確認する
 - [ ] `npm run lint` が通る
 - [ ] `npm run format:check` が通る
@@ -43,7 +45,9 @@
 - [ ] リリース対象の version を確認する
 - [ ] `git tag vX.Y.Z` を作成する
 - [ ] GitHub Release を作成する
-- [ ] リリースノートを貼り付ける
+- [ ] 必要なら `docs/release-notes-template.md` を元に GitHub Release note を作成する
+- [ ] GitHub Release note を配布・公開用 summary として作成する
+- [ ] GitHub Release note が `CHANGELOG.md` と整合している
 
 ## Post-release
 

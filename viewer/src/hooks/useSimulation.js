@@ -1,10 +1,22 @@
 // Copyright (c) 2026- taisyu shibata
 // SPDX-License-Identifier: Apache-2.0
 
-import { useMemo, useState } from "react";
-import { evaluateWithPreset, getPresets } from "../lib/engineAdapter";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { evaluateWithConfig, getPresets } from "../lib/engineAdapter.js";
 
+// Viewer application orchestrator:
+// this hook owns preset selection, edited config state, single-step evaluation
+// orchestration, timeline simulation orchestration, and workspace/export
+// handling for the viewer.
+//
+// It does not define runtime semantics itself. Runtime evaluation is accessed
+// through engineAdapter.js so the viewer remains a runtime consumer rather than
+// a runtime source.
+//
+// Timeline helpers such as buildTimelineRows belong here because sequencing,
+// replay, and viewer-local simulation flow are viewer responsibilities.
 const WORKSPACE_STORAGE_KEY = "decision-engine-viewer.workspace.v1";
+const TIMELINE_PLAY_INTERVAL_MS = 1000;
 
 const defaultInput = {
   value: 31.5,
@@ -59,6 +71,29 @@ function isCanonicalConfigShape(config) {
   return Boolean(config && Array.isArray(config.states) && Array.isArray(config.rules));
 }
 
+function isViewerCanonicalReadyConfig(config) {
+  const actionEscalation = config?.escalations?.action?.fanLowToHigh;
+  const stateEscalation = config?.escalations?.state?.hotToCritical;
+
+  return Boolean(
+    config &&
+    typeof config === "object" &&
+    !Array.isArray(config) &&
+    Array.isArray(config.states) &&
+    Array.isArray(config.rules) &&
+    config.escalations &&
+    typeof config.escalations === "object" &&
+    !Array.isArray(config.escalations) &&
+    actionEscalation &&
+    typeof actionEscalation === "object" &&
+    typeof actionEscalation.durationMs === "number" &&
+    typeof actionEscalation.requireNoCoolingEffect === "boolean" &&
+    stateEscalation &&
+    typeof stateEscalation === "object" &&
+    typeof stateEscalation.durationMs === "number"
+  );
+}
+
 function normalizeExportConfig(config) {
   if (!config || typeof config !== "object" || Array.isArray(config)) {
     return {
@@ -91,30 +126,140 @@ function normalizeViewerConfig(config) {
   return normalizeExportConfig(config);
 }
 
+function normalizeViewerReadyConfig(config) {
+  const normalized = normalizeViewerConfig(config);
+  return isViewerCanonicalReadyConfig(normalized) ? normalized : null;
+}
+
+function parseSequenceText(sequenceText) {
+  const parsed = JSON.parse(sequenceText);
+  if (!Array.isArray(parsed)) {
+    throw new Error("シーケンスは JSON 配列で指定してください。");
+  }
+
+  return parsed;
+}
+
+function buildTimelineRows(sequence, selectedConfig, limit = sequence.length) {
+  if (!isViewerCanonicalReadyConfig(selectedConfig)) {
+    throw new Error("評価に必要な config shape が不足しています。");
+  }
+
+  let previousState = "normal";
+  let previousAction = "no_action";
+  let previousValue = null;
+  let stateDurationMs = 0;
+  let accumulatedElapsedMs = 0;
+  let previousTimestampMs = null;
+
+  return sequence.slice(0, limit).map((item, index) => {
+    if (!item || typeof item !== "object" || Array.isArray(item)) {
+      throw new Error(`ステップ ${index + 1}: 各要素はオブジェクトである必要があります。`);
+    }
+    if (typeof item.value !== "number") {
+      throw new Error(`ステップ ${index + 1}: value (number) は必須です。`);
+    }
+
+    let deltaMs = 1000;
+    if (typeof item.elapsedMs === "number" && Number.isFinite(item.elapsedMs)) {
+      deltaMs = item.elapsedMs;
+    } else {
+      const ts = parseTimestamp(item.timestamp);
+      if (ts !== null && previousTimestampMs !== null) {
+        deltaMs = Math.max(0, ts - previousTimestampMs);
+      }
+      if (ts !== null) {
+        previousTimestampMs = ts;
+      }
+    }
+    accumulatedElapsedMs += deltaMs;
+
+    const input = {
+      ...item,
+      previousState,
+      previousAction,
+      previousValue: typeof item.previousValue === "number" ? item.previousValue : previousValue,
+      stateDurationMs
+    };
+
+    const evaluated = evaluateWithConfig(input, selectedConfig);
+
+    const nextStateDurationMs = evaluated.state === previousState ? stateDurationMs + deltaMs : 0;
+    const row = {
+      step: index + 1,
+      elapsedMs: accumulatedElapsedMs,
+      value: item.value,
+      state: evaluated.state,
+      action: evaluated.action,
+      appliedRule: getMatchedRuleLabel(evaluated),
+      stateDurationMs: nextStateDurationMs
+    };
+
+    previousState = evaluated.state;
+    previousAction = evaluated.action;
+    previousValue = item.value;
+    stateDurationMs = nextStateDurationMs;
+    return row;
+  });
+}
+
 export function useSimulation() {
   const presets = useMemo(() => getPresets(), []);
   const presetNames = Object.keys(presets);
+  const timelineTimerRef = useRef(null);
   const [selectedPreset, setSelectedPreset] = useState(presetNames[0] || "");
   const [selectedConfig, setSelectedConfig] = useState(() => {
     const firstPresetName = presetNames[0];
-    return firstPresetName ? normalizeViewerConfig(structuredClone(presets[firstPresetName])) : null;
+    return firstPresetName ? normalizeViewerReadyConfig(structuredClone(presets[firstPresetName])) : null;
   });
   const [inputText, setInputText] = useState(JSON.stringify(defaultInput, null, 2));
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const [sequenceText, setSequenceText] = useState(JSON.stringify(defaultSequence, null, 2));
   const [timelineRows, setTimelineRows] = useState([]);
+  const [timelineDomainRows, setTimelineDomainRows] = useState([]);
   const [timelineError, setTimelineError] = useState("");
+  const [isTimelinePlaying, setIsTimelinePlaying] = useState(false);
   const [workspaceStatus, setWorkspaceStatus] = useState("");
-  const baseSelectedConfig = selectedPreset ? normalizeViewerConfig(structuredClone(presets[selectedPreset])) : null;
+  const baseSelectedConfig = selectedPreset
+    ? normalizeViewerReadyConfig(structuredClone(presets[selectedPreset]))
+    : null;
+
+  function clearTimelineTimer() {
+    if (timelineTimerRef.current !== null) {
+      clearInterval(timelineTimerRef.current);
+      timelineTimerRef.current = null;
+    }
+  }
+
+  function stopTimelinePlayback() {
+    clearTimelineTimer();
+    setIsTimelinePlaying(false);
+  }
+
+  function resetTimelinePlayback() {
+    stopTimelinePlayback();
+    setTimelineRows([]);
+    setTimelineDomainRows([]);
+    setTimelineError("");
+  }
+
+  useEffect(() => clearTimelineTimer, []);
 
   function changePreset(presetName) {
+    resetTimelinePlayback();
     setSelectedPreset(presetName);
-    setSelectedConfig(normalizeViewerConfig(structuredClone(presets[presetName])));
+    setSelectedConfig(normalizeViewerReadyConfig(structuredClone(presets[presetName])));
   }
 
   function updateSelectedConfig(nextConfig) {
-    setSelectedConfig(normalizeViewerConfig(nextConfig));
+    resetTimelinePlayback();
+    setSelectedConfig(normalizeViewerReadyConfig(nextConfig));
+  }
+
+  function updateSequenceText(nextSequenceText) {
+    stopTimelinePlayback();
+    setSequenceText(nextSequenceText);
   }
 
   function evaluateCurrent() {
@@ -130,13 +275,19 @@ export function useSimulation() {
       };
 
       try {
-        nextResult.edited = evaluateWithPreset(input, selectedPreset, selectedConfig);
+        if (!isViewerCanonicalReadyConfig(selectedConfig)) {
+          throw new Error("edited config が評価に必要な shape を満たしていません。");
+        }
+        nextResult.edited = evaluateWithConfig(input, selectedConfig);
       } catch (err) {
         nextResult.errors.edited = err instanceof Error ? err.message : String(err);
       }
 
       try {
-        nextResult.original = evaluateWithPreset(input, selectedPreset, baseSelectedConfig);
+        if (!isViewerCanonicalReadyConfig(baseSelectedConfig)) {
+          throw new Error("original config が評価に必要な shape を満たしていません。");
+        }
+        nextResult.original = evaluateWithConfig(input, baseSelectedConfig);
       } catch (err) {
         nextResult.errors.original = err instanceof Error ? err.message : String(err);
       }
@@ -151,72 +302,61 @@ export function useSimulation() {
 
   function runSimulation() {
     try {
-      const parsed = JSON.parse(sequenceText);
-      if (!Array.isArray(parsed)) {
-        throw new Error("シーケンスは JSON 配列で指定してください。");
-      }
-
-      let previousState = "normal";
-      let previousAction = "no_action";
-      let previousValue = null;
-      let stateDurationMs = 0;
-      let accumulatedElapsedMs = 0;
-      let previousTimestampMs = null;
-
-      const rows = parsed.map((item, index) => {
-        if (!item || typeof item !== "object" || Array.isArray(item)) {
-          throw new Error(`ステップ ${index + 1}: 各要素はオブジェクトである必要があります。`);
-        }
-        if (typeof item.value !== "number") {
-          throw new Error(`ステップ ${index + 1}: value (number) は必須です。`);
-        }
-
-        let deltaMs = 1000;
-        if (typeof item.elapsedMs === "number" && Number.isFinite(item.elapsedMs)) {
-          deltaMs = item.elapsedMs;
-        } else {
-          const ts = parseTimestamp(item.timestamp);
-          if (ts !== null && previousTimestampMs !== null) {
-            deltaMs = Math.max(0, ts - previousTimestampMs);
-          }
-          if (ts !== null) {
-            previousTimestampMs = ts;
-          }
-        }
-        accumulatedElapsedMs += deltaMs;
-
-        const input = {
-          ...item,
-          previousState,
-          previousAction,
-          previousValue: typeof item.previousValue === "number" ? item.previousValue : previousValue,
-          stateDurationMs
-        };
-
-        const evaluated = evaluateWithPreset(input, selectedPreset, selectedConfig);
-
-        const nextStateDurationMs = evaluated.state === previousState ? stateDurationMs + deltaMs : 0;
-        const row = {
-          step: index + 1,
-          elapsedMs: accumulatedElapsedMs,
-          value: item.value,
-          state: evaluated.state,
-          action: evaluated.action,
-          appliedRule: getMatchedRuleLabel(evaluated),
-          stateDurationMs: nextStateDurationMs
-        };
-
-        previousState = evaluated.state;
-        previousAction = evaluated.action;
-        previousValue = item.value;
-        stateDurationMs = nextStateDurationMs;
-        return row;
-      });
-
+      stopTimelinePlayback();
+      const parsed = parseSequenceText(sequenceText);
+      const rows = buildTimelineRows(parsed, selectedConfig);
       setTimelineRows(rows);
+      setTimelineDomainRows(rows);
       setTimelineError("");
     } catch (err) {
       setTimelineRows([]);
+      setTimelineDomainRows([]);
+      setTimelineError(err instanceof Error ? err.message : String(err));
+    }
+  }
+
+  function playSimulation() {
+    try {
+      stopTimelinePlayback();
+      const parsed = parseSequenceText(sequenceText);
+      const fullRows = buildTimelineRows(parsed, selectedConfig);
+
+      setTimelineRows([]);
+      setTimelineDomainRows(fullRows);
+      setTimelineError("");
+
+      if (!fullRows.length) {
+        return;
+      }
+
+      let stepCount = 0;
+      const advance = () => {
+        stepCount += 1;
+        setTimelineRows(fullRows.slice(0, stepCount));
+
+        if (stepCount >= fullRows.length) {
+          stopTimelinePlayback();
+        }
+      };
+
+      setIsTimelinePlaying(true);
+      advance();
+
+      if (parsed.length > 1) {
+        timelineTimerRef.current = setInterval(() => {
+          try {
+            advance();
+          } catch (err) {
+            stopTimelinePlayback();
+            setTimelineRows([]);
+            setTimelineError(err instanceof Error ? err.message : String(err));
+          }
+        }, TIMELINE_PLAY_INTERVAL_MS);
+      }
+    } catch (err) {
+      stopTimelinePlayback();
+      setTimelineRows([]);
+      setTimelineDomainRows([]);
       setTimelineError(err instanceof Error ? err.message : String(err));
     }
   }
@@ -274,14 +414,18 @@ export function useSimulation() {
         throw new Error("selectedConfig が不正です。");
       }
 
+      const nextConfig = normalizeViewerReadyConfig(parsed.selectedConfig);
+      if (!nextConfig) {
+        throw new Error("selectedConfig が評価に必要な shape を満たしていません。");
+      }
+
       setSelectedPreset(parsed.selectedPreset);
-      setSelectedConfig(normalizeViewerConfig(parsed.selectedConfig));
+      setSelectedConfig(nextConfig);
       setInputText(parsed.inputText);
       setSequenceText(parsed.sequenceText);
       setResult(null);
       setError("");
-      setTimelineRows([]);
-      setTimelineError("");
+      resetTimelinePlayback();
       setWorkspaceStatus("loaded");
     } catch (err) {
       setWorkspaceStatus(`load error: ${err instanceof Error ? err.message : String(err)}`);
@@ -340,10 +484,15 @@ export function useSimulation() {
     error,
     evaluateCurrent,
     sequenceText,
-    setSequenceText,
+    setSequenceText: updateSequenceText,
     timelineRows,
+    timelineDomainRows,
     timelineError,
+    isTimelinePlaying,
     runSimulation,
+    playSimulation,
+    stopSimulation: stopTimelinePlayback,
+    resetSimulation: resetTimelinePlayback,
     saveWorkspace,
     loadWorkspace,
     clearWorkspace,

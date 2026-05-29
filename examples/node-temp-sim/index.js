@@ -5,8 +5,8 @@ const fs = require("fs");
 const path = require("path");
 const { evaluate } = require("../../src");
 const { presets } = require("../../src/presets");
-const { toEngineInput } = require("../adapters/temperature-input-adapter");
-const { mapActionToFanCommand } = require("../adapters/fan-action-adapter");
+const { toEngineInput } = require("./adapters/temperature-input-adapter");
+const { mapActionToFanCommand } = require("./adapters/fan-action-adapter");
 
 const DEFAULT_CONFIG = presets.m5Temperature;
 const DEFAULT_SEQUENCE = [

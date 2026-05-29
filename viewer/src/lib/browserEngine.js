@@ -1,131 +1,34 @@
 // Copyright (c) 2026- taisyu shibata
 // SPDX-License-Identifier: Apache-2.0
 
-// TODO: Replace this temporary browser-side copy with an official ESM/browser build from the core package.
+// Browser-side runtime wrapper for viewer consumption.
+//
+// This module keeps browser/viewer-side convenience around the runtime core:
+// - resolveConfig
+// - normalizeInput
+// - resolveCoolingEffectForBrowser
+// - deriveAction (wrapper around core action resolution)
+// - buildResult
+// - evaluate (browser-facing wrapper)
+//
+// Portable helper semantics are now consumed from the internal ESM/browser-
+// consumable core entry under runtimes/js/core while this file remains a thin
+// browser wrapper around that portable runtime behavior.
+import { deriveActionCore, deriveState, findStateAction } from "../../../runtimes/js/core/index.mjs";
+import { normalizeInput } from "./browserInput.js";
+import { buildResult } from "./browserResult.js";
+import { assertCanonicalEscalationLeaves } from "./browserConfigAssert.js";
+import { defaultConfig } from "./viewerPresets.js";
 
-const m5TemperatureConfig = {
-  escalations: {
-    action: {
-      fanLowToHigh: {
-        durationMs: 1000,
-        requireNoCoolingEffect: false
-      }
-    },
-    state: {
-      hotToCritical: {
-        durationMs: 5000
-      }
-    }
-  },
-  states: [
-    {
-      name: "critical",
-      action: "alert"
-    },
-    {
-      name: "hot",
-      action: "fan_high"
-    },
-    {
-      name: "warming",
-      action: "fan_low"
-    },
-    {
-      name: "cooling",
-      action: "fan_low"
-    },
-    {
-      name: "normal",
-      action: "no_action"
-    }
-  ],
-  rules: [
-    {
-      type: "value_gte",
-      threshold: 40.0,
-      state: "critical"
-    },
-    {
-      type: "value_gte",
-      threshold: 26.0,
-      state: "hot"
-    },
-    {
-      type: "hysteresis",
-      state: "hot",
-      onThreshold: 26.0,
-      offThreshold: 25.5
-    },
-    {
-      type: "rate_gt",
-      threshold: 0.02,
-      state: "warming"
-    },
-    {
-      type: "rate_lt",
-      threshold: -0.02,
-      state: "cooling"
-    }
-  ]
-};
+// Portable semantics consume:
+// these imports are the browser wrapper's only dependency on the portable
+// state/action core and form the main replacement-sensitive area if the
+// viewer-local ESM copy is swapped out later.
 
-const simpleTemperatureConfig = {
-  escalations: {},
-  states: [
-    {
-      name: "normal",
-      action: "no_action"
-    },
-    {
-      name: "warm",
-      action: "fan_low"
-    },
-    {
-      name: "hot",
-      action: "fan_high"
-    }
-  ],
-  rules: [
-    {
-      type: "value_gte",
-      threshold: 30,
-      state: "hot"
-    },
-    {
-      type: "value_gte",
-      threshold: 26,
-      state: "warm"
-    }
-  ]
-};
-
-const presets = {
-  m5Temperature: m5TemperatureConfig,
-  simpleTemperature: simpleTemperatureConfig
-};
-
-const defaultConfig = m5TemperatureConfig;
-
-function matchRule(rule, normalized) {
-  if (rule.type === "value_gte") {
-    return normalized.value >= rule.threshold;
-  }
-
-  if (rule.type === "hysteresis") {
-    return normalized.previousStateSafe === rule.state && normalized.value > rule.offThreshold;
-  }
-
-  if (rule.type === "rate_gt") {
-    return normalized.stateRate > rule.threshold;
-  }
-
-  if (rule.type === "rate_lt") {
-    return normalized.stateRate < rule.threshold;
-  }
-
-  return false;
-}
-
+// Config shaping / canonical assert:
+// these helpers keep browser evaluation on the strict canonical-ready path.
+// Config boundary convenience:
+// lightweight rule copying/filtering for the browser-side runtime path.
 function normalizeRule(rule) {
   if (!rule || typeof rule !== "object" || Array.isArray(rule)) {
     return rule;
@@ -134,227 +37,86 @@ function normalizeRule(rule) {
   return { ...rule };
 }
 
-function resolveStateRules(config, fallback) {
-  if (Array.isArray(config?.rules)) {
-    return config.rules.map(normalizeRule).filter((rule) => typeof rule?.state === "string" && rule.state.length > 0);
-  }
-
-  return Array.isArray(fallback?.rules)
-    ? fallback.rules.map(normalizeRule).filter((rule) => typeof rule?.state === "string" && rule.state.length > 0)
-    : [];
-}
-
-function resolveStateEntries(config, fallback) {
-  if (Array.isArray(config?.states)) {
-    return config.states.map((state) => ({ ...state }));
-  }
-
-  return Array.isArray(fallback?.states) ? fallback.states.map((state) => ({ ...state })) : [];
-}
-
-function findStateAction(stateEntries, stateName) {
-  if (Array.isArray(stateEntries)) {
-    const matchedState = stateEntries.find((state) => state && state.name === stateName);
-    if (typeof matchedState?.action === "string") {
-      return matchedState.action;
-    }
-  }
-
-  return "no_action";
-}
-
-function resolveConfig(config, fallback) {
+// JS/browser convenience:
+// prepare a canonical-ready config for evaluation without supplementing
+// missing rules/states/escalation leaves.
+function resolveConfig(config) {
   const safeConfig = config || {};
-  const stateEntries = resolveStateEntries(safeConfig, fallback);
+  const stateEntries = Array.isArray(safeConfig.states) ? safeConfig.states.map((state) => ({ ...state })) : [];
+  const rules = Array.isArray(safeConfig.rules)
+    ? safeConfig.rules.map(normalizeRule).filter((rule) => typeof rule?.state === "string" && rule.state.length > 0)
+    : [];
+  assertCanonicalEscalationLeaves(safeConfig);
 
   return {
     ...safeConfig,
-    rules: resolveStateRules(safeConfig, fallback),
+    rules,
     stateEntries,
-    states: stateEntries,
-    escalations: {
-      ...(safeConfig.escalations || {}),
-      action: {
-        ...((safeConfig.escalations && safeConfig.escalations.action) || {}),
-        fanLowToHigh: {
-          durationMs:
-            typeof safeConfig.fanLowEscalationDurationMs === "number"
-              ? safeConfig.fanLowEscalationDurationMs
-              : safeConfig.escalations &&
-                  safeConfig.escalations.action &&
-                  safeConfig.escalations.action.fanLowToHigh &&
-                  typeof safeConfig.escalations.action.fanLowToHigh.durationMs === "number"
-                ? safeConfig.escalations.action.fanLowToHigh.durationMs
-                : fallback.escalations.action.fanLowToHigh.durationMs,
-          requireNoCoolingEffect:
-            safeConfig.escalations &&
-            safeConfig.escalations.action &&
-            safeConfig.escalations.action.fanLowToHigh &&
-            typeof safeConfig.escalations.action.fanLowToHigh.requireNoCoolingEffect === "boolean"
-              ? safeConfig.escalations.action.fanLowToHigh.requireNoCoolingEffect
-              : fallback.escalations.action.fanLowToHigh.requireNoCoolingEffect
-        }
-      },
-      state: {
-        ...((safeConfig.escalations && safeConfig.escalations.state) || {}),
-        hotToCritical: {
-          durationMs:
-            typeof safeConfig.hotCriticalDurationMs === "number"
-              ? safeConfig.hotCriticalDurationMs
-              : safeConfig.escalations &&
-                  safeConfig.escalations.state &&
-                  safeConfig.escalations.state.hotToCritical &&
-                  typeof safeConfig.escalations.state.hotToCritical.durationMs === "number"
-                ? safeConfig.escalations.state.hotToCritical.durationMs
-                : fallback.escalations.state.hotToCritical.durationMs
-        }
-      }
-    }
+    states: stateEntries
   };
 }
 
-function normalizeInput(input) {
-  const {
-    value,
-    previousValue,
-    tempDelta,
-    tempRate,
-    tempRateAvg,
-    coolingEffect,
-    maxTemp,
-    previousState,
-    previousAction,
-    stateDurationMs,
-    timestamp
-  } = input;
-
-  const effectiveTempDelta =
-    typeof tempDelta === "number"
-      ? tempDelta
-      : typeof value === "number" && typeof previousValue === "number"
-        ? value - previousValue
-        : 0;
-  const effectiveTempRate = typeof tempRate === "number" ? tempRate : effectiveTempDelta;
-  const stateRate = typeof tempRateAvg === "number" ? tempRateAvg : effectiveTempRate;
-  const previousStateSafe = typeof previousState === "string" ? previousState : "normal";
-  const rawStateDurationMs = typeof stateDurationMs === "number" ? stateDurationMs : 0;
-
-  return {
-    value,
-    previousValue,
-    tempDelta,
-    tempRate,
-    tempRateAvg,
-    coolingEffect,
-    maxTemp,
-    previousState,
-    previousAction,
-    stateDurationMs,
-    timestamp,
-    effectiveTempDelta,
-    effectiveTempRate,
-    stateRate,
-    previousStateSafe,
-    rawStateDurationMs
-  };
-}
-
-function deriveState(normalized, config) {
-  const { previousStateSafe, rawStateDurationMs } = normalized;
-  const hotToCriticalEscalationConfig = config.escalations.state.hotToCritical;
-  const stateRules = config.rules;
-
-  let baseState = "normal";
-
-  const matchedRule = stateRules.find((rule) => matchRule(rule, normalized));
-  if (matchedRule) {
-    baseState = matchedRule.state;
+// Browser-only fallback:
+// these helpers are runtime-adjacent but intentionally remain outside the
+// portable core because they depend on browser/JS convenience behavior.
+// For now this fallback and the deriveAction wrapper stay together here so the
+// browser-side action-resolution flow remains readable in one place. If they
+// are extracted later, deriveAction and resolveCoolingEffectForBrowser should
+// move together as a paired browser-action helper.
+// Portable runtime semantics plus JS convenience:
+// action resolution itself is part of the portable runtime contract.
+// The coolingEffect -> stateRate fallback is JS/browser convenience and would
+// likely remain outside a future minimal extracted core.
+function resolveCoolingEffectForBrowser(baseAction, coolingEffect, stateRate, coolingEffectRateThreshold) {
+  if (baseAction !== "fan_high" && baseAction !== "fan_low") {
+    return false;
   }
 
-  const effectiveStateDurationMs = baseState === previousStateSafe ? rawStateDurationMs : 0;
-
-  let state = baseState;
-  if (
-    baseState === "hot" &&
-    previousStateSafe === "hot" &&
-    effectiveStateDurationMs >= hotToCriticalEscalationConfig.durationMs
-  ) {
-    state = "critical";
+  if (typeof coolingEffect === "boolean") {
+    return coolingEffect;
   }
 
-  return {
-    baseState,
-    state,
-    previousStateSafe,
-    rawStateDurationMs,
-    effectiveStateDurationMs
-  };
+  return stateRate < coolingEffectRateThreshold;
 }
 
 function deriveAction(normalized, stateContext, config) {
   const { coolingEffect, stateRate } = normalized;
   const { state, effectiveStateDurationMs } = stateContext;
-  const fanLowToHighEscalationConfig = config.escalations.action.fanLowToHigh;
   const { coolingEffectRateThreshold = -0.01 } = config;
 
+  // Portable action resolution:
+  // resolve the base action from the chosen state mapping first.
   const baseAction = findStateAction(config.stateEntries, state);
-  let action = baseAction;
 
-  const hasCoolingEffectForDecision =
-    baseAction === "fan_high" || baseAction === "fan_low"
-      ? typeof coolingEffect === "boolean"
-        ? coolingEffect
-        : stateRate < coolingEffectRateThreshold
-      : false;
-  let actionEscalated = false;
-
-  if (
-    baseAction === "fan_low" &&
-    effectiveStateDurationMs >= fanLowToHighEscalationConfig.durationMs &&
-    (fanLowToHighEscalationConfig.requireNoCoolingEffect === false
-      ? !hasCoolingEffectForDecision
-      : hasCoolingEffectForDecision)
-  ) {
-    action = "fan_high";
-    actionEscalated = true;
-  }
-
-  return {
+  // JS/browser convenience:
+  // portable runtimes prefer explicit coolingEffect input. The browser runtime
+  // also falls back to stateRate when coolingEffect is omitted so local
+  // simulation can still infer an action-escalation condition.
+  const hasCoolingEffectForDecision = resolveCoolingEffectForBrowser(
     baseAction,
-    action,
-    actionEscalated
-  };
+    coolingEffect,
+    stateRate,
+    coolingEffectRateThreshold
+  );
+
+  return deriveActionCore(baseAction, effectiveStateDurationMs, hasCoolingEffectForDecision, config);
 }
 
-function buildResult(stateContext, actionContext) {
-  const { state, baseState, previousStateSafe, rawStateDurationMs, effectiveStateDurationMs } = stateContext;
-  const { action, actionEscalated } = actionContext;
-  const reason =
-    `baseState=${baseState}; previousState=${previousStateSafe}; ` +
-    `rawDuration=${rawStateDurationMs}; ` +
-    `effectiveDuration=${effectiveStateDurationMs}; ` +
-    `actionEscalated=${actionEscalated}`;
-
-  return {
-    state,
-    action,
-    reason,
-    debug: {
-      baseState,
-      rawStateDurationMs,
-      effectiveStateDurationMs,
-      actionEscalated
-    }
-  };
-}
-
+// Wrapper evaluation entrypoint:
+// keep the browser-facing evaluation flow grouped here even if helper-level
+// extraction happens later.
+// Runtime entrypoint:
+// evaluate() is the browser-facing runtime wrapper. It currently combines
+// portable runtime evaluation with browser-side config/input convenience.
+// A future extraction would keep the deterministic state/action core while
+// moving config fallback and result enrichment into a thinner wrapper layer.
 function evaluate(input, config) {
   const normalized = normalizeInput(input);
-  const effectiveConfig = resolveConfig(config, defaultConfig);
+  const effectiveConfig = resolveConfig(config ?? defaultConfig);
   const stateContext = deriveState(normalized, effectiveConfig);
   const actionContext = deriveAction(normalized, stateContext, effectiveConfig);
 
   return buildResult(stateContext, actionContext);
 }
 
-export { evaluate, presets };
+export { evaluate };

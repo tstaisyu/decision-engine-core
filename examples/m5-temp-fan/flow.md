@@ -1,15 +1,22 @@
 # Flow
 
 ```text
-sensor
+Si7021 temperature input
   ↓
-temperature-input-adapter
+adapters/temperature_input_adapter
   ↓
 evaluate(input, config)
   ↓
 result.action
   ↓
-fan-action-adapter
+adapters/fan_output_adapter
   ↓
-PWM / fan control
+PWM output
+  ↓
+LED verification
 ```
+
+Current status:
+
+- verified: PWM LED output
+- not yet verified: real fan output

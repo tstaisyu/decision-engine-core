@@ -17,7 +17,7 @@ npm run dev
 2. Click `Export Config` in the header controls.
 3. The current edited config is downloaded as `decision-engine-config.json` in canonical config shape with `states[]` and `rules[]`.
 4. Legacy compatibility fields are kept only for internal editing compatibility, not as the primary export shape.
-5. Replace `examples/node-temp-sim/exported-config.sample.json` with the exported file content.
+5. Replace `examples/node-temp-sim/config/exported-config.sample.json` with the exported file content.
 6. Run `npm run example:node-temp-sim:sample` from the repository root to verify the mock deploy flow.
 7. Confirm `state`, `action`, and `pwm` in the output.
 
@@ -36,6 +36,15 @@ npm run dev
 
 ## Notes
 
-- Uses local engine files from the parent repository (`../src`).
-- Current scope is minimal: preset selector, input JSON editor, evaluate button, and state/action result.
-- `viewer/src/lib/browserEngine.js` is a temporary browser-safe ESM copy of minimal core logic to avoid CommonJS `require()` runtime issues in Vite.
+- Current scope is authoring, evaluation, simulation, and visualization for canonical config.
+- The viewer is a runtime consumer, not a runtime source.
+- Runtime access is routed through `viewer/src/lib/engineAdapter.js`.
+- `viewer/src/lib/engineAdapter.js` is the preferred runtime boundary for UI state and hooks.
+- `evaluateWithConfig(input, config)` is the preferred config-driven evaluation entrypoint.
+- `selectedPreset` is kept for UI state and preset identity, while `selectedConfig` and `baseSelectedConfig` are used for runtime evaluation.
+- `viewer/src/lib/viewerPresets.js` owns viewer-local preset definitions.
+- `viewer/src/lib/browserEngine.js` is the browser-side wrapper layer for runtime evaluation.
+- Preferred viewer paths now pass canonical-ready config with `states[]` and `rules[]` already present.
+- Preferred viewer paths also pass canonical escalation leaves without relying on browser-side compatibility fallback.
+- `viewer/src/lib/browserRuntimeCore.js` holds portable-semantics-oriented helper functions.
+- Current direction: keep the `engineAdapter.js` boundary stable while continuing to move portable helpers toward an official JS runtime core.

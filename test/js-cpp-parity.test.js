@@ -6,6 +6,9 @@ const assert = require("node:assert/strict");
 const { evaluate } = require("../src");
 const { m5TemperatureConfig } = require("../src/presets/m5TemperatureConfig");
 
+// Mirrors the named parity cases used by runtimes/cpp/run_test_vectors.cpp.
+// Shared vector intent lives under vectors/.
+
 function buildInput(overrides) {
   return {
     deviceId: "parity-device-001",
@@ -278,7 +281,7 @@ runCase(
   "fan_low"
 );
 runCase(
-  "action_escalation.cooling_effect_blocks",
+  "action_escalation.cooling_effect_allowed_when_not_required",
   m5TemperatureConfig,
   {
     value: 25.3,
@@ -292,7 +295,7 @@ runCase(
     coolingEffect: true
   },
   "warming",
-  "fan_low"
+  "fan_high"
 );
 runCase(
   "action_escalation.base_action_already_high",

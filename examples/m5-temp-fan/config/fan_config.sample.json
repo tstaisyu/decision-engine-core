@@ -1,0 +1,40 @@
+{
+  "escalations": {
+    "action": {
+      "fanLowToHigh": {
+        "durationMs": 10000,
+        "requireNoCoolingEffect": false
+      }
+    }
+  },
+  "states": [
+    {
+      "name": "normal",
+      "action": "no_action"
+    },
+    {
+      "name": "warm",
+      "action": "fan_low"
+    },
+    {
+      "name": "hot",
+      "action": "fan_high"
+    },
+    {
+      "name": "critical",
+      "action": "fan_high"
+    }
+  ],
+  "rules": [
+    {
+      "type": "value_gte",
+      "threshold": 34,
+      "state": "hot"
+    },
+    {
+      "type": "value_gte",
+      "threshold": 32,
+      "state": "warm"
+    }
+  ]
+}

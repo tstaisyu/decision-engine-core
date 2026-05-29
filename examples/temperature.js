@@ -1,6 +1,8 @@
 // Copyright (c) 2026- taisyu shibata
 // SPDX-License-Identifier: Apache-2.0
 
+// Minimal JS evaluate() usage example with inline canonical config and inline inputs.
+
 const { evaluate } = require("../src");
 
 const config = {

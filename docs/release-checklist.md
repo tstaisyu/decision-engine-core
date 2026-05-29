@@ -2,9 +2,12 @@
 
 ## Local Verification
 
+- [ ] `npm run verify:release` が通る
 - [ ] `npm run check:config` が通る
 - [ ] `npm run check:generated-config` が通る
 - [ ] generated artifact が stale の場合、`npm run generate:m5-config` で再生成して再度 `npm run check:generated-config` を通す
+- [ ] `npm run lint` が通る
+- [ ] `npm run format:check` が通る
 - [ ] `npm test` が通る
 - [ ] `npm run cpp:test-vectors` が通る
 - [ ] `node examples/minimal-evaluate.js` が通る

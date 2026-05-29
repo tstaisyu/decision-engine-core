@@ -165,6 +165,30 @@ M7 completion note:
     - deferred items remain `check:evaluate`, viewer build/test, a larger
       example matrix, and a Node version matrix
 
+M10 completion note:
+
+- M10 is treated as complete as a release / verification consolidation phase
+- release checklist now reflects the current verification reality across:
+  - local verification
+  - CI verification
+  - pre-release manual review
+- README onboarding now points consumers to the representative runtime
+  examples and the supported `evaluate(input, config)` public API
+- compatibility/support expectations are summarized in the runtime
+  integration notes without adding a separate policy document
+
+M11 completion note:
+
+- M11 is treated as complete as a release-engineering / compatibility-policy
+  consolidation phase
+- a repository-side `CHANGELOG.md` is now in place
+- historical manual tags are backfilled as baseline entries
+- release checklist and changelog are connected in the release flow
+- a GitHub Release notes template now exists for public-facing release
+  summaries
+- the next release line is expected to use changelog-first release metadata
+  rather than ad-hoc manual release notes
+
 ## Future
 
 - Additional rule types, if they improve the portable runtime model

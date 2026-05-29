@@ -1,6 +1,6 @@
 {
   "name": "decision-engine-core",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Rule-driven decision core for evaluating sensor input and returning state and action.",
   "main": "src/index.js",
   "type": "commonjs",
@@ -12,6 +12,7 @@
     "check:config": "node scripts/check-config.js",
     "check:generated-config": "node scripts/check-generated-cpp-config.js",
     "generate:m5-config": "node scripts/generate-cpp-config.js examples/m5-temp-fan/config/fan_config.sample.json examples/m5-temp-fan/config/generated_fan_config.h",
+    "verify:release": "bash scripts/verify-release.sh",
     "evaluate": "node scripts/evaluate-cli.js",
     "cpp:test-vectors": "mkdir -p build && g++ -std=c++17 runtimes/cpp/DecisionEngine.cpp runtimes/cpp/run_test_vectors.cpp -o build/cpp-test-vectors && ./build/cpp-test-vectors && g++ -std=c++17 runtimes/cpp/DecisionEngine.cpp runtimes/cpp/run_generated_config_test.cpp -o build/cpp-generated-config-test && ./build/cpp-generated-config-test",
     "test": "node --test",

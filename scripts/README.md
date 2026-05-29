@@ -33,6 +33,10 @@ These files are not part of the published runtime API.
 - `npm run generate:m5-config`
   - regenerate `examples/m5-temp-fan/config/generated_fan_config.h`
     from `fan_config.sample.json`
+- `verify-release.sh`
+  - run the release-local verification command set in one pass
+- `npm run verify:release`
+  - convenience entry for the release verification runner
 
 ## Examples
 
@@ -40,6 +44,7 @@ These files are not part of the published runtime API.
 npm run check:config
 npm run check:generated-config
 npm run generate:m5-config
+npm run verify:release
 npm run check:evaluate
 npm run evaluate -- examples/inputs/input.normal.json --preset simpleTemperature
 node scripts/generate-cpp-config.js examples/m5-temp-fan/config/fan_config.sample.json examples/m5-temp-fan/config/generated_fan_config.h
@@ -82,3 +87,31 @@ npm run cpp:test-vectors
 
 Use `generate:m5-config` as the repair command.
 Use `check:generated-config` as the verification command.
+
+## Release Verification Runner
+
+Use the release runner when you want to execute the local release verification
+set in one command:
+
+```bash
+npm run verify:release
+```
+
+It runs:
+
+- `npm run check:config`
+- `npm run check:generated-config`
+- `npm run lint`
+- `npm run format:check`
+- `npm test`
+- `npm run cpp:test-vectors`
+- `node examples/minimal-evaluate.js`
+- `node examples/node-single-step/index.js`
+- `npm run example:node-temp-sim:sample`
+
+It does not replace manual release checks such as:
+
+- changelog review
+- GitHub Actions status confirmation
+- GitHub Release note preparation
+- it intentionally does not run `npm run format`, because that command rewrites files

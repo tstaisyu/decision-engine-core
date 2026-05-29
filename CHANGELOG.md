@@ -27,6 +27,67 @@ They do not attempt a complete reconstruction of every intermediate change.
 The current changelog format is intended to be applied consistently from the
 next release onward.
 
+## [v0.3.0]
+
+Repository consolidation release for the current structured runtime and
+verification line.
+
+### Public API
+
+- clarified the supported JS public API boundary around the root
+  `evaluate(input, config)` entry
+- documented supported compatibility expectations for `evaluate(input, config)`
+- kept core helpers, `decision-engine-core/core`, public ESM entrypoints, and
+  `package.exports`-based subpath imports as future candidates rather than
+  supported public API
+
+### Runtime / Internal Topology
+
+- materialized `runtimes/js/core` as the portable JS runtime semantics
+  source-of-truth
+- clarified the JS runtime layering across:
+  - `runtimes/js/core`
+  - `src/runtimeCore.js`
+  - `src/evaluate.js`
+  - `viewer/src/lib/browserEngine.js`
+  - `viewer/src/lib/engineAdapter.js`
+- documented the current deferred `package.exports` strategy and internal ESM
+  entry handling
+
+### Generated Config / Verification
+
+- added canonical/exported config verification through `npm run check:config`
+- added generated C++ header consistency verification through
+  `npm run check:generated-config`
+- added a standard regeneration path with `npm run generate:m5-config`
+- strengthened generated-config consume parity and C++ parity fixture coverage
+
+### Examples / Docs / CI
+
+- added representative JS examples for:
+  - shortest public API usage (`minimal-evaluate`)
+  - JS application-side single-step adapter flow (`node-single-step`)
+  - exported config time-series simulation (`node-temp-sim`)
+  - embedded/generated-config consume flow (`m5-temp-fan`)
+- added the `Verify Runtime` GitHub Actions workflow covering:
+  - config validation
+  - generated-config consistency
+  - JS tests
+  - example smoke tests
+  - C++ parity verification
+- consolidated release checklist, README onboarding, compatibility/support
+  notes, changelog, and GitHub Release notes template
+
+### Compatibility Notes
+
+- no intended breaking change to the current supported JS runtime behavior
+- this release advances repository structure, verification, onboarding, and
+  release-engineering maturity rather than introducing a new supported public
+  API surface
+- `package.exports` remains intentionally deferred
+- breaking changes: none intended for the supported `evaluate(input, config)`
+  boundary
+
 ## [v0.2.0]
 
 Historical/manual release baseline for the pre-`runtimes/js/core`

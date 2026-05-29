@@ -1,7 +1,16 @@
 // Copyright (c) 2026- taisyu shibata
 // SPDX-License-Identifier: Apache-2.0
 
-const { resolveStateRules } = require("./rules");
+// JS config resolution / fallback helpers stay outside the portable runtime
+// core so preset/default merging can evolve independently.
+
+function resolveStateRules(config, defaultConfig) {
+  if (config && Array.isArray(config.rules)) {
+    return config.rules;
+  }
+
+  return Array.isArray(defaultConfig?.rules) ? defaultConfig.rules : [];
+}
 
 function resolveConfig(config, defaultConfig) {
   const resolvedStates = Array.isArray(config?.states)

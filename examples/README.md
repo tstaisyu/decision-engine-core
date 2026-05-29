@@ -1,5 +1,25 @@
 # Examples
 
+## 役割の違い
+
+- `examples/minimal-evaluate.js`
+  - public `evaluate(input, config)` の最小例です
+  - minimal input と canonical-ready config を使い、`state` / `action` と
+    diagnostics の存在だけを確認します
+- `examples/temperature.js`
+  - 最小の JS `evaluate()` 使用例です
+  - config と input をその場で作り、戻り値の `state` / `action` を見るための小さな例です
+- `examples/node-temp-sim/`
+  - 時系列入力、adapter、exported config を含むシミュレーション例です
+  - viewer export config を流し込み、`state` / `action` / `pwm` の流れを確認する用途です
+- `examples/node-single-step/`
+  - JS application-side の single-step adapter 例です
+  - raw input -> input adapter -> `evaluate()` -> action adapter ->
+    diagnostics という最小 consume pattern を示します
+- `scripts/evaluate-cli.js`
+  - 入力 JSON と preset を指定して評価する CLI です
+  - examples ではなく、コマンドラインから core を使うための補助ツールです
+
 ## Adapter Examples (M5 Temperature + Fan)
 
 実運用連携を想定した実験用サンプルを追加しています。
@@ -7,8 +27,8 @@
 - Node シミュレーション実行:
   - `npm run example:node-temp-sim`
 - アダプター:
-  - `examples/adapters/temperature-input-adapter.js`
-  - `examples/adapters/fan-action-adapter.js`
+  - `examples/node-temp-sim/adapters/temperature-input-adapter.js`
+  - `examples/node-temp-sim/adapters/fan-action-adapter.js`
 - M5 連携メモ:
   - `examples/m5-temp-fan/README.md`
   - `examples/m5-temp-fan/flow.md`

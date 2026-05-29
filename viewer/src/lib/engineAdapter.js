@@ -1,12 +1,39 @@
 // Copyright (c) 2026- taisyu shibata
 // SPDX-License-Identifier: Apache-2.0
 
-import { evaluate, presets } from "./browserEngine";
+// Runtime boundary for the viewer:
+// this adapter is the viewer-facing entrypoint for runtime evaluation and
+// preset access. The UI and simulation hooks should depend on this file rather
+// than browserEngine.js directly.
+//
+// Today it bridges to:
+// - browserEngine.js for runtime-like JS evaluation
+// - viewerPresets.js for viewer-local preset ownership
+//
+// If the viewer later switches to an official JS runtime import, this file is
+// the intended replacement point.
+import { evaluate } from "./browserEngine.js";
+import { presets } from "./viewerPresets.js";
 
+// Viewer preset access:
+// exposes the available starting configs without leaking where they are owned.
 export function getPresets() {
   return presets;
 }
 
+// Viewer evaluation entrypoint (config-first):
+// this boundary does not resolve preset names; it evaluates the explicit
+// config as-is. Preferred input is canonical-ready config. For now,
+// fallback/compatibility behavior remains inside browserEngine.evaluate().
+// This function is also the intended replacement point when the viewer
+// switches to an official JS runtime import.
+export function evaluateWithConfig(input, config) {
+  return evaluate(input, config);
+}
+
+// Viewer evaluation entrypoint:
+// resolve the chosen preset or edited config and run the runtime-like JS
+// evaluation path behind the adapter boundary.
 export function evaluateWithPreset(input, presetName, configOverride) {
   const preset = configOverride || presets[presetName];
 
@@ -14,5 +41,5 @@ export function evaluateWithPreset(input, presetName, configOverride) {
     throw new Error(`Unknown preset: ${presetName}`);
   }
 
-  return evaluate(input, preset);
+  return evaluateWithConfig(input, preset);
 }

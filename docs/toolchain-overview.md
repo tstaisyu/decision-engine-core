@@ -1,0 +1,310 @@
+# Toolchain Overview
+
+This document describes how `decision-engine-core` connects viewer output,
+canonical config, generated C++ config, runtime evaluation, and embedded
+integration.
+
+`runtime-integration.md` explains integration boundaries.
+`adapter-pattern.md` and `adapter-authoring-guide.md` explain adapter design.
+This document focuses on the config and build toolchain.
+
+```mermaid
+flowchart LR
+
+    Viewer["React Viewer / Simulation"]
+    Canonical["Canonical JSON Config<br/>(source of truth)"]
+    Generator["generate-cpp-config.js<br/>(artifact generator)"]
+    Generated["Generated C++ DecisionConfig<br/>(delivery artifact)"]
+    CppRuntime["C++ Runtime<br/>(artifact consumer)"]
+    Adapters["Input / Output Adapters"]
+    Hardware["Hardware / Sensors / Actuators"]
+
+    Viewer -->|export| Canonical
+    Canonical -->|generate| Generator
+    Generator --> Generated
+    Generated -->|include| CppRuntime
+    CppRuntime --> Adapters
+    Adapters --> Hardware
+```
+
+## 1. Purpose
+
+The project uses canonical config so that the same decision behavior can be
+represented once and reused across multiple runtimes.
+
+The project keeps JS and C++ runtimes separate because they serve different
+execution environments:
+
+- JS runtime is the reference implementation for validation, viewer simulation,
+  and local tooling
+- C++ runtime is the lightweight embedded-oriented implementation
+
+Both runtimes are expected to evaluate the same canonical config under the same
+runtime specification.
+
+## 2. High-Level Architecture
+
+```text
+viewer (React)
+  ↓
+canonical JSON config
+  ↓
+scripts/generate-cpp-config.js
+  ↓
+generated C++ header
+  ↓
+C++ runtime
+  ↓
+embedded adapters / hardware
+```
+
+The viewer and JS runtime operate on canonical JSON directly.
+The C++ runtime does not parse JSON at runtime, so canonical JSON is converted
+into a generated C++ build artifact first.
+
+## 2.1 JS Runtime Layer Topology
+
+This topology is separate from the toolchain/deployment flow above. It shows
+how the current JS runtime layers are consumed internally.
+
+```mermaid
+flowchart LR
+
+    UI["Viewer UI / Simulation<br/>(runtime consumer)"]
+    Adapter["viewer/src/lib/engineAdapter.js<br/>(viewer consume boundary)"]
+    Browser["viewer/src/lib/browserEngine.js<br/>(browser wrapper)"]
+    Eval["src/evaluate.js<br/>(JS convenience runtime)"]
+    Bridge["src/runtimeCore.js<br/>(CommonJS compatibility bridge)"]
+    Core["runtimes/js/core / index.mjs<br/>(portable semantics source-of-truth<br/>+ internal ESM entry)"]
+    Copy["viewer/src/lib/browserRuntimeCore.js<br/>(temporary viewer-local ESM copy)"]
+
+    UI --> Adapter
+    Adapter --> Browser
+    Browser --> Core
+    Eval --> Bridge
+    Bridge --> Core
+    Copy -. parity maintenance .-> Core
+```
+
+The original toolchain flow describes config generation and deployment
+direction. This runtime topology instead highlights:
+
+- semantics source-of-truth
+- browser consume boundary
+- viewer-side runtime layering
+
+## 2.2 Source Config, Generated Artifact, and Runtime Consumer
+
+The embedded path uses three distinct layers:
+
+- canonical JSON config
+  - source of truth for runtime behavior
+- generator
+  - converts canonical JSON into a target-specific build artifact
+  - does not define runtime behavior or rule semantics
+- generated C++ header
+  - delivery artifact for embedded builds
+  - not the source of truth
+
+The C++ runtime then consumes that generated artifact directly.
+This keeps JSON parsing out of the embedded runtime while preserving a single
+canonical config model across viewer, JS runtime, generator, and C++ runtime.
+
+## 3. Responsibility Separation
+
+- viewer
+  - config editing
+  - local simulation
+  - canonical JSON export
+- JS runtime
+  - reference evaluation behavior
+  - local validation and parity testing
+- canonical config
+  - shared runtime behavior definition
+  - `states`, `rules`, `escalations`
+- generator
+  - converts canonical JSON into C++ `DecisionConfig` source
+  - projects canonical config into a runtime-consumable embedded artifact
+- C++ runtime
+  - embedded-oriented evaluation of `DecisionInput -> DecisionResult`
+- adapters
+  - translate between runtime data and external signals or commands
+- hardware config
+  - board-specific pins, PWM values, I2C addresses, and wiring assumptions
+
+```mermaid
+flowchart TB
+
+    subgraph Runtime
+        Engine["DecisionEngine<br/>(state/action decision only)"]
+    end
+
+    subgraph Adapters
+        Input["Input Adapter<br/>(sensor -> DecisionInput)"]
+        Output["Output Adapter<br/>DecisionResult -> hardware command"]
+    end
+
+    subgraph Hardware
+        Sensors["Sensors"]
+        Actuators["Actuators"]
+    end
+
+    Sensors --> Input
+    Input --> Engine
+    Engine --> Output
+    Output --> Actuators
+```
+
+## 4. Why the C++ Runtime Does Not Parse JSON
+
+The C++ runtime intentionally avoids runtime JSON parsing because the embedded
+path benefits from:
+
+- lightweight runtime dependencies
+- embedded-friendly memory and binary footprint
+- deterministic generated build artifacts
+- simpler integration into existing firmware projects
+
+The canonical JSON remains the source format.
+The generated header is the embedded delivery format.
+
+## 5. Runtime Config vs Hardware Config
+
+Runtime config belongs to the decision layer:
+
+- `states`
+- `rules`
+- `escalations`
+
+Hardware config belongs to the device integration layer:
+
+- GPIO
+- PWM
+- I2C address
+- sensor wiring
+
+The generator should only handle runtime config.
+Hardware-specific values stay in adapters or application code.
+
+For the embedded-oriented C++ runtime, the generated header is allowed to
+project example-specific canonical names such as `hotToCritical` and
+`fanLowToHigh` into more generic `DecisionConfig` fields consumed by the
+runtime core.
+
+## 6. Current Workflow Example
+
+The current M5 temperature fan example follows this flow:
+
+- `examples/m5-temp-fan/config/fan_config.sample.json`
+- `scripts/generate-cpp-config.js`
+- `examples/m5-temp-fan/config/generated_fan_config.h`
+- `buildFanConfig()`
+- `DecisionEngine.evaluate()`
+- `fan_output_adapter`
+
+This keeps the runtime config canonical at the JSON level while still producing
+an embedded-friendly C++ artifact.
+
+The generated header is the place where canonical JSON is projected into the
+generic `DecisionConfig` fields expected by the C++ runtime.
+
+## 7. Future Direction
+
+Likely extensions of this toolchain include:
+
+- improved viewer export paths
+- additional generators for other targets
+- parity validation across more runtimes
+- possible ROS2-oriented integration
+- broader multi-runtime architecture support
+
+The core direction remains:
+
+```text
+canonical config
+  -> generated runtime artifact
+  -> runtime evaluation
+  -> adapter-based integration
+```
+
+## 8. Current Repository Layers
+
+### Authoring Layer
+
+- repository areas
+  - `viewer/`
+- primary responsibility
+  - config editing
+  - local simulation
+  - canonical JSON export
+- relation to other layers
+  - produces canonical config used by the specification, generation, and
+    runtime layers
+
+### Specification Layer
+
+- repository areas
+  - `CONFIG_SPEC.md`
+  - `docs/runtime-spec.md`
+  - `docs/adapter-pattern.md`
+  - `docs/adapter-authoring-guide.md`
+- primary responsibility
+  - define canonical config shape
+  - define runtime behavior
+  - define adapter and boundary rules
+- relation to other layers
+  - constrains how viewer, generator, runtimes, and adapters are implemented
+
+### Generation Layer
+
+- repository areas
+  - `scripts/generate-cpp-config.js`
+  - `examples/m5-temp-fan/config/*.json`
+  - `examples/m5-temp-fan/config/generated_fan_config.h`
+- primary responsibility
+  - convert canonical JSON into generated C++ runtime config artifacts
+- relation to other layers
+  - consumes canonical config from the authoring layer and emits build inputs
+    for the C++ runtime and integration layers
+
+### Runtime Layer
+
+- repository areas
+  - `src/`
+  - `runtimes/cpp/`
+- primary responsibility
+  - evaluate `DecisionInput`
+  - resolve state and action
+  - apply escalation behavior
+- relation to other layers
+  - consumes canonical config or generated config and returns deterministic
+    runtime results to adapters or tests
+
+### Integration Layer
+
+- repository areas
+  - `examples/node-temp-sim/`
+  - `examples/m5-temp-fan/`
+- primary responsibility
+  - connect runtime behavior to mock deployment or embedded execution
+  - hold input/output adapters and hardware-facing code
+- relation to other layers
+  - uses runtime outputs together with generated config and platform-specific
+    integration code
+
+### Verification Layer
+
+- repository areas
+  - `test/`
+  - `vectors/`
+  - `runtimes/cpp/run_test_vectors.cpp`
+  - `runtimes/cpp/run_generated_config_test.cpp`
+  - `scripts/check-config.js`
+  - `scripts/check-evaluate.js`
+- primary responsibility
+  - validate canonical config
+  - verify JS/C++ parity
+  - verify generated config artifacts remain executable
+- relation to other layers
+  - checks that authoring, generation, runtime, and integration assumptions stay
+    aligned

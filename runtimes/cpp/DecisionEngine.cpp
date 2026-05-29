@@ -23,7 +23,7 @@ void DecisionEngine::loadConfig(const DecisionConfig& config) {
 
 DecisionResult DecisionEngine::evaluate(const DecisionInput& input) const {
   const float stateRate = input.value - input.previousValue;
-  std::string baseState = "normal";
+  std::string baseState = config_.defaultState;
 
   for (const Rule& rule : config_.rules) {
     if (rule.type == "value_gte" && input.value >= rule.threshold) {
@@ -48,15 +48,19 @@ DecisionResult DecisionEngine::evaluate(const DecisionInput& input) const {
   }
 
   std::string stateName = baseState;
-  if (baseState == "hot" && input.previousState == "hot" && input.stateDurationMs >= config_.hotToCriticalDurationMs) {
-    stateName = "critical";
+  if (!config_.stateEscalationFromState.empty() && !config_.stateEscalationToState.empty() &&
+      baseState == config_.stateEscalationFromState && input.previousState == config_.stateEscalationFromState &&
+      input.stateDurationMs >= config_.stateEscalationDurationMs) {
+    stateName = config_.stateEscalationToState;
   }
 
   const StateConfig state = findStateConfig(config_, stateName);
   std::string action = state.action;
-  if (state.action == "fan_low" && input.stateDurationMs >= config_.fanLowToHighDurationMs) {
+  if (!config_.actionEscalationFromAction.empty() && !config_.actionEscalationToAction.empty() &&
+      state.action == config_.actionEscalationFromAction &&
+      input.stateDurationMs >= config_.actionEscalationDurationMs) {
     if (!config_.requireNoCoolingEffect || !input.coolingEffect) {
-      action = "fan_high";
+      action = config_.actionEscalationToAction;
     }
   }
 

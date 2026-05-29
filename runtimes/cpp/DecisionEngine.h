@@ -35,18 +35,16 @@ struct Rule {
 };
 
 struct DecisionConfig {
-  unsigned long hotToCriticalDurationMs = 5000UL;
-  unsigned long fanLowToHighDurationMs = 1000UL;
+  std::string defaultState{};
+  std::string stateEscalationFromState{};
+  std::string stateEscalationToState{};
+  unsigned long stateEscalationDurationMs = 0UL;
+  std::string actionEscalationFromAction{};
+  std::string actionEscalationToAction{};
+  unsigned long actionEscalationDurationMs = 0UL;
   bool requireNoCoolingEffect = true;
-  std::vector<StateConfig> states{
-      {"normal", "no_action"},
-      {"warm", "fan_low"},
-      {"hot", "fan_high"},
-  };
-  std::vector<Rule> rules{
-      {"value_gte", 30.0F, "hot"},
-      {"value_gte", 26.0F, "warm"},
-  };
+  std::vector<StateConfig> states{};
+  std::vector<Rule> rules{};
 };
 
 class DecisionEngine {

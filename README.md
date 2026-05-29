@@ -46,6 +46,29 @@ Current JS runtime note: `runtimes/js/core` is the source-of-truth for portable 
 `src/evaluate.js` is the current JS convenience runtime wrapper and future main runtime entry candidate.
 For the current internal structure and runtime boundary notes, see [docs/runtime-integration.md](docs/runtime-integration.md).
 
+## Supported JS API
+
+The current supported JS runtime API is the root `evaluate(input, config)`
+entry exposed by `src/index.js`.
+
+- supported now
+  - `evaluate(input, config)`
+- accepted use
+  - canonical-ready config evaluation
+  - JS convenience runtime input handling
+  - `state` / `action` results with diagnostics presence
+
+Not supported as public API at this stage:
+
+- direct use of JS core helpers
+- a `decision-engine-core/core` subpath export
+- public ESM package entrypoints
+
+Those remain future candidates while the package keeps its current CommonJS
+root entry and without `package.exports` yet. See
+[docs/runtime-integration.md](docs/runtime-integration.md) for the detailed
+public/internal boundary notes.
+
 ## Config Shape Policy
 
 The canonical config shape of this project is:
@@ -137,14 +160,22 @@ JS and C++ runtimes are intended to evaluate the same canonical config under the
 
 ## Quick Start
 
-Use `node-temp-sim` for the shortest end-to-end path:
+For the shortest public API path:
+
+```bash
+npm install
+node examples/minimal-evaluate.js
+```
+
+For a fuller end-to-end sample using exported config:
 
 ```bash
 npm install
 npm run example:node-temp-sim:sample
 ```
 
-This runs the engine against a sample input sequence and prints the evaluated timeline.
+This runs the engine against a sample input sequence and prints the evaluated
+timeline.
 
 Output includes rows such as:
 
@@ -154,7 +185,21 @@ value -> state -> action
 26.2 -> hot -> fan_high
 ```
 
-For a smaller inline example, see [examples/temperature.js](examples/temperature.js).
+For a small inline example, see [examples/temperature.js](examples/temperature.js).
+
+## Choose an Example
+
+- [examples/minimal-evaluate.js](examples/minimal-evaluate.js)
+  - shortest path to the supported public `evaluate(input, config)` API
+- [examples/node-single-step/](examples/node-single-step)
+  - JS application-side single-step adapter flow
+  - raw input -> input adapter -> `evaluate()` -> action adapter -> diagnostics
+- [examples/node-temp-sim/](examples/node-temp-sim)
+  - exported config consume path with time-series simulation
+- [examples/m5-temp-fan/](examples/m5-temp-fan)
+  - embedded-oriented generated-config consume flow
+
+For the fuller example map, see [examples/README.md](examples/README.md).
 
 ## Config Validation
 
@@ -200,8 +245,14 @@ npm run evaluate -- examples/inputs/input.simple-warm.json --preset simpleTemper
 
 - `examples/inputs/input.normal.json`
 - `examples/inputs/input.simple-warm.json`
+- `examples/minimal-evaluate.js`
+  - public API shortest path
+- `examples/node-single-step/`
+  - JS application-side single-step adapter flow
+- `examples/node-temp-sim/`
+  - exported config time-series simulation
 - `examples/m5-temp-fan/`
-  - embedded end-to-end example
+  - embedded/generated-config consume flow
   - M5Stack Gray + Si7021 input -> DecisionEngine -> PWM LED verification
 
 ## Additional Docs

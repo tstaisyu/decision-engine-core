@@ -324,6 +324,28 @@ Public contract fixation note:
   - `decision-engine-core/core`
     but `package.json` / `package.exports` remain intentionally unchanged for now
 
+Compatibility / Support Expectations note:
+
+- supported now
+  - `evaluate(input, config)`
+- compatibility expectations
+  - the `evaluate(input, config)` call shape remains the supported JS entry
+  - minimal input fields remain accepted
+  - canonical-ready config remains accepted
+  - `state` / `action` remain available in the result
+  - diagnostics remain present through `reason` / `debug`
+  - omitted JS convenience fields remain accepted as long as evaluation can proceed
+- intentionally not frozen
+  - exact `reason` string format
+  - full `debug` object shape
+  - exact fallback derivation formulas
+  - future additive debug fields
+- not yet supported
+  - direct use of core helpers
+  - `decision-engine-core/core`
+  - public ESM entrypoints
+  - `package.exports`-based subpath imports
+
 Core subpath export note:
 
 - `decision-engine-core/core` remains a future public candidate

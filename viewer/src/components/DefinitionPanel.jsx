@@ -3,6 +3,8 @@
 
 import { useState } from "react";
 
+const IMPORTED_CONFIG_PRESET = "__imported_config__";
+
 function DefinitionPanel({
   presetNames,
   selectedPreset,
@@ -22,6 +24,10 @@ function DefinitionPanel({
   const baseActions = Object.fromEntries(baseStates.map((state) => [state.name, state.action]));
   const baseStateEscalations = baseSelectedConfig?.escalations?.state || {};
   const baseActionEscalations = baseSelectedConfig?.escalations?.action || {};
+
+  function getPresetLabel(name) {
+    return name === IMPORTED_CONFIG_PRESET ? "imported/custom" : name;
+  }
 
   function updateRuleNumber(index, key, rawValue) {
     const value = Number(rawValue);
@@ -305,7 +311,7 @@ function DefinitionPanel({
         <summary className="definition-collapsible-summary">
           <span className="definition-collapsible-toggle" aria-hidden="true" />
           <span className="definition-collapsible-title">編集パネル（Edit Config）</span>
-          <span className="definition-collapsible-meta">preset: {selectedPreset}</span>
+          <span className="definition-collapsible-meta">preset: {getPresetLabel(selectedPreset)}</span>
           <span className="definition-collapsible-meta">
             changes: {changesCount === 0 ? "none" : `${changesCount} item${changesCount === 1 ? "" : "s"}`}
           </span>
@@ -319,7 +325,7 @@ function DefinitionPanel({
           <select id="preset-select" value={selectedPreset} onChange={(event) => onPresetChange(event.target.value)}>
             {presetNames.map((name) => (
               <option key={name} value={name}>
-                {name}
+                {getPresetLabel(name)}
               </option>
             ))}
           </select>

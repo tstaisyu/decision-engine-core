@@ -21,6 +21,21 @@ npm run dev
 6. Run `npm run example:node-temp-sim:sample` from the repository root to verify the mock deploy flow.
 7. Confirm `state`, `action`, and `pwm` in the output.
 
+## Import Config
+
+1. Click `Import Config` in the header controls.
+2. Choose a canonical/exported config JSON file.
+3. The imported config is loaded as `imported/custom` and replaces the current
+   edited config.
+4. The preset display switches to `imported/custom`, making it clear that the
+   current config is no longer tied to a built-in preset.
+5. Run single-step evaluation or timeline simulation to verify the imported
+   config.
+6. Re-export if you want to continue the canonical config round-trip.
+
+This import flow is for portable canonical/exported config artifacts.
+Workspace save/load remains a separate viewer-local session feature.
+
 ## Config Shape
 
 - The viewer now prefers canonical config shape internally: `states[]` and `rules[]`.

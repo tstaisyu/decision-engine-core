@@ -17,6 +17,7 @@ import { evaluateWithConfig, getPresets } from "../lib/engineAdapter.js";
 // replay, and viewer-local simulation flow are viewer responsibilities.
 const WORKSPACE_STORAGE_KEY = "decision-engine-viewer.workspace.v1";
 const TIMELINE_PLAY_INTERVAL_MS = 1000;
+const IMPORTED_CONFIG_PRESET = "__imported_config__";
 
 const defaultInput = {
   value: 31.5,
@@ -205,11 +206,12 @@ function buildTimelineRows(sequence, selectedConfig, limit = sequence.length) {
 
 export function useSimulation() {
   const presets = useMemo(() => getPresets(), []);
-  const presetNames = Object.keys(presets);
+  const builtinPresetNames = Object.keys(presets);
   const timelineTimerRef = useRef(null);
-  const [selectedPreset, setSelectedPreset] = useState(presetNames[0] || "");
+  const [selectedPreset, setSelectedPreset] = useState(builtinPresetNames[0] || "");
+  const [importedBaseConfig, setImportedBaseConfig] = useState(null);
   const [selectedConfig, setSelectedConfig] = useState(() => {
-    const firstPresetName = presetNames[0];
+    const firstPresetName = builtinPresetNames[0];
     return firstPresetName ? normalizeViewerReadyConfig(structuredClone(presets[firstPresetName])) : null;
   });
   const [inputText, setInputText] = useState(JSON.stringify(defaultInput, null, 2));
@@ -221,9 +223,16 @@ export function useSimulation() {
   const [timelineError, setTimelineError] = useState("");
   const [isTimelinePlaying, setIsTimelinePlaying] = useState(false);
   const [workspaceStatus, setWorkspaceStatus] = useState("");
-  const baseSelectedConfig = selectedPreset
-    ? normalizeViewerReadyConfig(structuredClone(presets[selectedPreset]))
-    : null;
+  const presetNames =
+    selectedPreset === IMPORTED_CONFIG_PRESET && !builtinPresetNames.includes(IMPORTED_CONFIG_PRESET)
+      ? [...builtinPresetNames, IMPORTED_CONFIG_PRESET]
+      : builtinPresetNames;
+  const baseSelectedConfig =
+    selectedPreset === IMPORTED_CONFIG_PRESET
+      ? importedBaseConfig
+      : selectedPreset
+        ? normalizeViewerReadyConfig(structuredClone(presets[selectedPreset]))
+        : null;
 
   function clearTimelineTimer() {
     if (timelineTimerRef.current !== null) {
@@ -247,9 +256,15 @@ export function useSimulation() {
   useEffect(() => clearTimelineTimer, []);
 
   function changePreset(presetName) {
+    if (presetName === IMPORTED_CONFIG_PRESET) {
+      return;
+    }
     resetTimelinePlayback();
+    setImportedBaseConfig(null);
     setSelectedPreset(presetName);
     setSelectedConfig(normalizeViewerReadyConfig(structuredClone(presets[presetName])));
+    setResult(null);
+    setError("");
   }
 
   function updateSelectedConfig(nextConfig) {
@@ -371,12 +386,16 @@ export function useSimulation() {
         version: 1,
         selectedPreset,
         selectedConfig: normalizeExportConfig(selectedConfig),
+        importedBaseConfig:
+          selectedPreset === IMPORTED_CONFIG_PRESET
+            ? normalizeExportConfig(importedBaseConfig ?? selectedConfig)
+            : null,
         inputText,
         sequenceText
       };
 
       window.localStorage.setItem(WORKSPACE_STORAGE_KEY, JSON.stringify(payload));
-      setWorkspaceStatus("saved");
+      setWorkspaceStatus("saved workspace");
     } catch (err) {
       setWorkspaceStatus(`save error: ${err instanceof Error ? err.message : String(err)}`);
     }
@@ -401,7 +420,10 @@ export function useSimulation() {
       if (parsed.version !== 1) {
         throw new Error(`未対応バージョンです: ${String(parsed.version)}`);
       }
-      if (typeof parsed.selectedPreset !== "string" || !presets[parsed.selectedPreset]) {
+      if (
+        typeof parsed.selectedPreset !== "string" ||
+        (parsed.selectedPreset !== IMPORTED_CONFIG_PRESET && !presets[parsed.selectedPreset])
+      ) {
         throw new Error("selectedPreset が不正です。");
       }
       if (typeof parsed.inputText !== "string") {
@@ -419,14 +441,28 @@ export function useSimulation() {
         throw new Error("selectedConfig が評価に必要な shape を満たしていません。");
       }
 
+      let nextImportedBaseConfig = null;
+      if (parsed.selectedPreset === IMPORTED_CONFIG_PRESET) {
+        const candidateBaseConfig = parsed.importedBaseConfig ?? parsed.selectedConfig;
+        if (!candidateBaseConfig || typeof candidateBaseConfig !== "object") {
+          throw new Error("importedBaseConfig が不正です。");
+        }
+
+        nextImportedBaseConfig = normalizeViewerReadyConfig(candidateBaseConfig);
+        if (!nextImportedBaseConfig) {
+          throw new Error("importedBaseConfig が評価に必要な shape を満たしていません。");
+        }
+      }
+
       setSelectedPreset(parsed.selectedPreset);
+      setImportedBaseConfig(nextImportedBaseConfig);
       setSelectedConfig(nextConfig);
       setInputText(parsed.inputText);
       setSequenceText(parsed.sequenceText);
       setResult(null);
       setError("");
       resetTimelinePlayback();
-      setWorkspaceStatus("loaded");
+      setWorkspaceStatus("loaded workspace");
     } catch (err) {
       setWorkspaceStatus(`load error: ${err instanceof Error ? err.message : String(err)}`);
     }
@@ -438,9 +474,35 @@ export function useSimulation() {
         throw new Error("localStorage が利用できません。");
       }
       window.localStorage.removeItem(WORKSPACE_STORAGE_KEY);
-      setWorkspaceStatus("cleared");
+      setWorkspaceStatus("cleared workspace");
     } catch (err) {
       setWorkspaceStatus(`clear error: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
+  async function importConfigFromFile(file) {
+    try {
+      if (!file) {
+        throw new Error("import 対象の file がありません。");
+      }
+
+      const raw = await file.text();
+      const parsed = JSON.parse(raw);
+      const nextConfig = normalizeViewerReadyConfig(parsed);
+
+      if (!nextConfig) {
+        throw new Error("imported config が評価に必要な canonical-ready shape を満たしていません。");
+      }
+
+      resetTimelinePlayback();
+      setSelectedPreset(IMPORTED_CONFIG_PRESET);
+      setImportedBaseConfig(structuredClone(nextConfig));
+      setSelectedConfig(nextConfig);
+      setResult(null);
+      setError("");
+      setWorkspaceStatus("config imported: imported/custom preset ready");
+    } catch (err) {
+      setWorkspaceStatus(`import error: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
 
@@ -465,7 +527,7 @@ export function useSimulation() {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(downloadUrl);
 
-      setWorkspaceStatus("config exported");
+      setWorkspaceStatus("config exported: canonical JSON downloaded");
     } catch (err) {
       setWorkspaceStatus(`export error: ${err instanceof Error ? err.message : String(err)}`);
     }
@@ -496,6 +558,7 @@ export function useSimulation() {
     saveWorkspace,
     loadWorkspace,
     clearWorkspace,
+    importConfigFromFile,
     exportConfig,
     workspaceStatus
   };

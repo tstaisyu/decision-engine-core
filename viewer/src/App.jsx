@@ -1,6 +1,7 @@
 // Copyright (c) 2026- taisyu shibata
 // SPDX-License-Identifier: Apache-2.0
 
+import { useRef } from "react";
 import { useSimulation } from "./hooks/useSimulation";
 import DefinitionPanel from "./components/DefinitionPanel";
 import InputPanel from "./components/InputPanel";
@@ -16,7 +17,13 @@ function getWorkspaceStatusTone(status) {
     return "workspace-status-error";
   }
 
-  if (status === "saved" || status === "loaded" || status === "cleared" || status === "config exported") {
+  if (
+    status.startsWith("saved") ||
+    status.startsWith("loaded") ||
+    status.startsWith("cleared") ||
+    status.startsWith("config exported") ||
+    status.startsWith("config imported")
+  ) {
     return "workspace-status-success";
   }
 
@@ -24,6 +31,7 @@ function getWorkspaceStatusTone(status) {
 }
 
 function App() {
+  const importInputRef = useRef(null);
   const {
     presetNames,
     selectedPreset,
@@ -49,6 +57,7 @@ function App() {
     saveWorkspace,
     loadWorkspace,
     clearWorkspace,
+    importConfigFromFile,
     exportConfig,
     workspaceStatus
   } = useSimulation();
@@ -62,8 +71,8 @@ function App() {
       <header className="app-header">
         <h1>Decision Config Studio</h1>
         <p className="subtitle">
-          canonical config を編集し、入力に対する判定結果を確認し、timeline simulation で挙動を見ながら export
-          できます。
+          canonical config を編集し、Import / Export round-trip を試しながら、単発評価と timeline
+          simulation で挙動を確認できます。
         </p>
         <div className="workspace-controls">
           <div className="control-group">
@@ -81,8 +90,24 @@ function App() {
             </div>
           </div>
           <div className="control-group control-group-export">
-            <span className="control-group-label">Export</span>
+            <span className="control-group-label">Config</span>
             <div className="control-group-buttons">
+              <input
+                ref={importInputRef}
+                type="file"
+                accept="application/json,.json"
+                hidden
+                onChange={async (event) => {
+                  const file = event.target.files?.[0];
+                  if (file) {
+                    await importConfigFromFile(file);
+                  }
+                  event.target.value = "";
+                }}
+              />
+              <button type="button" className="secondary button-small" onClick={() => importInputRef.current?.click()}>
+                Import Config
+              </button>
               <button type="button" className="secondary button-small" onClick={exportConfig}>
                 Export Config
               </button>

@@ -9,6 +9,7 @@
     "example:node-temp-sim": "node examples/node-temp-sim/index.js",
     "example:node-temp-sim:sample": "node examples/node-temp-sim/index.js --config examples/node-temp-sim/config/exported-config.sample.json --input examples/node-temp-sim/inputs/input-sequence.sample.json",
     "viewer:build": "npm --prefix viewer run build",
+    "viewer:test": "npm --prefix viewer test",
     "check:evaluate": "node scripts/check-evaluate.js",
     "check:config": "node scripts/check-config.js",
     "check:generated-config": "node scripts/check-generated-cpp-config.js",

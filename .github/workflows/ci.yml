@@ -31,6 +31,9 @@ jobs:
       - name: Run tests
         run: npm test
 
+      - name: Run viewer tests
+        run: npm run viewer:test
+
       - name: Run viewer build
         run: npm run viewer:build
 

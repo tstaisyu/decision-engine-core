@@ -32,6 +32,9 @@ These files are not part of the published runtime API.
   - used because the C++ runtime does not include a JSON parser
 - `npm run viewer:build`
   - build the React + Vite viewer and fail on bundle/import/build errors
+- `npm run viewer:test`
+  - run the existing viewer-side `node:test` suite for `browserEngine` and
+    `browserRuntimeCore`
 - `npm run generate:m5-config`
   - regenerate `examples/m5-temp-fan/config/generated_fan_config.h`
     from `fan_config.sample.json`
@@ -46,6 +49,7 @@ These files are not part of the published runtime API.
 npm run check:config
 npm run check:generated-config
 npm run generate:m5-config
+npm run viewer:test
 npm run viewer:build
 npm run verify:release
 npm run check:evaluate
@@ -107,6 +111,7 @@ It runs:
 - `npm run lint`
 - `npm run format:check`
 - `npm test`
+- `npm run viewer:test`
 - `npm run viewer:build`
 - `npm run cpp:test-vectors`
 - `node examples/minimal-evaluate.js`

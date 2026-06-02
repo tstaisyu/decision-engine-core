@@ -3,6 +3,14 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { evaluateWithConfig, getPresets } from "../lib/engineAdapter.js";
+import {
+  buildExportConfigJson,
+  IMPORTED_CONFIG_PRESET,
+  isViewerCanonicalReadyConfig,
+  normalizeExportConfig,
+  normalizeViewerReadyConfig,
+  parseImportedConfigText
+} from "../lib/viewerConfigRoundTrip.js";
 
 // Viewer application orchestrator:
 // this hook owns preset selection, edited config state, single-step evaluation
@@ -17,7 +25,6 @@ import { evaluateWithConfig, getPresets } from "../lib/engineAdapter.js";
 // replay, and viewer-local simulation flow are viewer responsibilities.
 const WORKSPACE_STORAGE_KEY = "decision-engine-viewer.workspace.v1";
 const TIMELINE_PLAY_INTERVAL_MS = 1000;
-const IMPORTED_CONFIG_PRESET = "__imported_config__";
 
 const defaultInput = {
   value: 31.5,
@@ -52,84 +59,6 @@ function getMatchedRuleLabel(result) {
     result?.matchedRule ||
     (result?.debug?.baseState ? `baseState: ${result.debug.baseState}` : result?.reason || "-")
   );
-}
-
-function normalizeRule(rule) {
-  if (!rule || typeof rule !== "object" || Array.isArray(rule)) {
-    return null;
-  }
-
-  const nextRule = { ...rule };
-  if (typeof nextRule.state !== "string" || nextRule.state.length === 0) {
-    return null;
-  }
-  delete nextRule.name;
-
-  return nextRule;
-}
-
-function isCanonicalConfigShape(config) {
-  return Boolean(config && Array.isArray(config.states) && Array.isArray(config.rules));
-}
-
-function isViewerCanonicalReadyConfig(config) {
-  const actionEscalation = config?.escalations?.action?.fanLowToHigh;
-  const stateEscalation = config?.escalations?.state?.hotToCritical;
-
-  return Boolean(
-    config &&
-    typeof config === "object" &&
-    !Array.isArray(config) &&
-    Array.isArray(config.states) &&
-    Array.isArray(config.rules) &&
-    config.escalations &&
-    typeof config.escalations === "object" &&
-    !Array.isArray(config.escalations) &&
-    actionEscalation &&
-    typeof actionEscalation === "object" &&
-    typeof actionEscalation.durationMs === "number" &&
-    typeof actionEscalation.requireNoCoolingEffect === "boolean" &&
-    stateEscalation &&
-    typeof stateEscalation === "object" &&
-    typeof stateEscalation.durationMs === "number"
-  );
-}
-
-function normalizeExportConfig(config) {
-  if (!config || typeof config !== "object" || Array.isArray(config)) {
-    return {
-      states: [],
-      rules: []
-    };
-  }
-
-  if (isCanonicalConfigShape(config)) {
-    const { states: _states, rules: _rules, actions: _actions, ...rest } = config;
-    const canonicalStates = config.states.map((state) => ({ ...state }));
-    const canonicalRules = config.rules.map(normalizeRule).filter(Boolean);
-
-    return {
-      ...rest,
-      states: canonicalStates,
-      rules: canonicalRules
-    };
-  }
-
-  console.warn("Viewer expects canonical config shape with states[] and rules[]. Legacy config was ignored.");
-
-  return {
-    states: [],
-    rules: []
-  };
-}
-
-function normalizeViewerConfig(config) {
-  return normalizeExportConfig(config);
-}
-
-function normalizeViewerReadyConfig(config) {
-  const normalized = normalizeViewerConfig(config);
-  return isViewerCanonicalReadyConfig(normalized) ? normalized : null;
 }
 
 function parseSequenceText(sequenceText) {
@@ -487,17 +416,12 @@ export function useSimulation() {
       }
 
       const raw = await file.text();
-      const parsed = JSON.parse(raw);
-      const nextConfig = normalizeViewerReadyConfig(parsed);
-
-      if (!nextConfig) {
-        throw new Error("imported config が評価に必要な canonical-ready shape を満たしていません。");
-      }
+      const importedState = parseImportedConfigText(raw);
 
       resetTimelinePlayback();
-      setSelectedPreset(IMPORTED_CONFIG_PRESET);
-      setImportedBaseConfig(structuredClone(nextConfig));
-      setSelectedConfig(nextConfig);
+      setSelectedPreset(importedState.selectedPreset);
+      setImportedBaseConfig(importedState.importedBaseConfig);
+      setSelectedConfig(importedState.selectedConfig);
       setResult(null);
       setError("");
       setWorkspaceStatus("config imported: imported/custom preset ready");
@@ -515,7 +439,7 @@ export function useSimulation() {
         throw new Error("export 対象の config がありません。");
       }
 
-      const json = JSON.stringify(normalizeExportConfig(selectedConfig), null, 2);
+      const json = buildExportConfigJson(selectedConfig);
       const blob = new Blob([json], { type: "application/json" });
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement("a");

@@ -71,8 +71,8 @@ function App() {
       <header className="app-header">
         <h1>Decision Config Studio</h1>
         <p className="subtitle">
-          canonical config を編集し、Import / Export round-trip を試しながら、単発評価と timeline
-          simulation で挙動を確認できます。
+          canonical config を編集し、Import / Export round-trip を試しながら、単発評価と timeline simulation
+          で挙動を確認できます。
         </p>
         <div className="workspace-controls">
           <div className="control-group">

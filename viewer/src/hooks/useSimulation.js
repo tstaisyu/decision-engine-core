@@ -10,6 +10,7 @@ import {
   normalizeViewerReadyConfig,
   parseImportedConfigText
 } from "../lib/viewerConfigRoundTrip.js";
+import { buildPresetSelectionState, resolveBaseSelectedConfig } from "../lib/viewerAuthoringWorkflow.js";
 import { buildWorkspacePayload, parseWorkspacePayload } from "../lib/viewerWorkspacePersistence.js";
 
 // Viewer application orchestrator:
@@ -141,7 +142,7 @@ export function useSimulation() {
   const [importedBaseConfig, setImportedBaseConfig] = useState(null);
   const [selectedConfig, setSelectedConfig] = useState(() => {
     const firstPresetName = builtinPresetNames[0];
-    return firstPresetName ? normalizeViewerReadyConfig(structuredClone(presets[firstPresetName])) : null;
+    return firstPresetName ? buildPresetSelectionState(presets, firstPresetName).selectedConfig : null;
   });
   const [inputText, setInputText] = useState(JSON.stringify(defaultInput, null, 2));
   const [result, setResult] = useState(null);
@@ -156,12 +157,7 @@ export function useSimulation() {
     selectedPreset === IMPORTED_CONFIG_PRESET && !builtinPresetNames.includes(IMPORTED_CONFIG_PRESET)
       ? [...builtinPresetNames, IMPORTED_CONFIG_PRESET]
       : builtinPresetNames;
-  const baseSelectedConfig =
-    selectedPreset === IMPORTED_CONFIG_PRESET
-      ? importedBaseConfig
-      : selectedPreset
-        ? normalizeViewerReadyConfig(structuredClone(presets[selectedPreset]))
-        : null;
+  const baseSelectedConfig = resolveBaseSelectedConfig({ selectedPreset, importedBaseConfig, presets });
 
   function clearTimelineTimer() {
     if (timelineTimerRef.current !== null) {
@@ -188,10 +184,11 @@ export function useSimulation() {
     if (presetName === IMPORTED_CONFIG_PRESET) {
       return;
     }
+    const nextPresetState = buildPresetSelectionState(presets, presetName);
     resetTimelinePlayback();
-    setImportedBaseConfig(null);
-    setSelectedPreset(presetName);
-    setSelectedConfig(normalizeViewerReadyConfig(structuredClone(presets[presetName])));
+    setImportedBaseConfig(nextPresetState.importedBaseConfig);
+    setSelectedPreset(nextPresetState.selectedPreset);
+    setSelectedConfig(nextPresetState.selectedConfig);
     setResult(null);
     setError("");
   }

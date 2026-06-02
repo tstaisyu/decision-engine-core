@@ -25,8 +25,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install viewer dependencies
+        run: npm ci --prefix viewer
+
       - name: Run tests
         run: npm test
+
+      - name: Run viewer build
+        run: npm run viewer:build
 
       - name: Run lint
         run: npm run lint

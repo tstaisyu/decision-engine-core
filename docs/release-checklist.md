@@ -9,6 +9,7 @@
 - [ ] `npm run lint` が通る
 - [ ] `npm run format:check` が通る
 - [ ] `npm test` が通る
+- [ ] `npm run viewer:build` が通る
 - [ ] `npm run cpp:test-vectors` が通る
 - [ ] `node examples/minimal-evaluate.js` が通る
 - [ ] `node examples/node-single-step/index.js` が通る
@@ -22,7 +23,9 @@
   - `npm test`
   - example smoke tests
   - `npm run cpp:test-vectors`
-- [ ] lint / format workflow が green
+- [ ] `CI` workflow が green
+  - `npm test`
+  - `npm run viewer:build`
   - `npm run lint`
   - `npm run format:check`
 
@@ -44,6 +47,7 @@
 - [ ] release 対象 commit で `Verify Runtime` workflow の最新成功を確認する
 - [ ] `npm run lint` が通る
 - [ ] `npm run format:check` が通る
+- [ ] `npm run viewer:build` が通る
 - [ ] `dev` から `main` へマージする
 - [ ] リリース対象の version を確認する
 - [ ] `git tag vX.Y.Z` を作成する

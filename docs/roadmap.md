@@ -143,7 +143,7 @@ M7 completion note:
       - `node-temp-sim`: time-series simulation
       - `m5-temp-fan`: embedded adapter flow
       - `node-single-step`: JS application-side single-step adapter flow
-- More explicit generated-config verification in local and CI-friendly flows
+  - More explicit generated-config verification in local and CI-friendly flows
   - M9-5 progress:
     - added `.github/workflows/verify-runtime.yml` with the `Verify Runtime`
       workflow for `push` and `pull_request`
@@ -162,8 +162,33 @@ M7 completion note:
       config time-series simulation flow
     - this runtime verification flow is intentionally separated from the
       existing lint/format CI workflow
-    - deferred items remain `check:evaluate`, viewer build/test, a larger
-      example matrix, and a Node version matrix
+    - deferred items remain `check:evaluate`, a larger example matrix, and a
+      Node version matrix
+
+M12 completion note:
+
+- M12 is treated as complete as a viewer workflow / config round-trip polish
+  phase
+- the viewer now supports canonical/exported config import as the inverse of
+  `Export Config`
+- imported config is treated as `imported/custom` rather than as a built-in
+  preset
+- workspace save/load remains a separate viewer-local session concern
+- import/export wording and README guidance now make the round-trip workflow
+  clearer for first-time users
+
+M13 completion note:
+
+- M13 is treated as complete as a viewer verification baseline phase
+- root verification now includes:
+  - `npm run viewer:build`
+  - `npm run viewer:test`
+- the `CI` workflow now installs viewer dependencies and runs both viewer tests
+  and the viewer build
+- `verify:release` and the release checklist now include viewer test/build
+  verification
+- this baseline intentionally stops short of browser automation, E2E, workspace
+  persistence tests, or import/export integration tests
 
 M10 completion note:
 

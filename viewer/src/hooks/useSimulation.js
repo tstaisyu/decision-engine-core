@@ -7,10 +7,10 @@ import {
   buildExportConfigJson,
   IMPORTED_CONFIG_PRESET,
   isViewerCanonicalReadyConfig,
-  normalizeExportConfig,
   normalizeViewerReadyConfig,
   parseImportedConfigText
 } from "../lib/viewerConfigRoundTrip.js";
+import { buildWorkspacePayload, parseWorkspacePayload } from "../lib/viewerWorkspacePersistence.js";
 
 // Viewer application orchestrator:
 // this hook owns preset selection, edited config state, single-step evaluation
@@ -311,17 +311,13 @@ export function useSimulation() {
         throw new Error("localStorage が利用できません。");
       }
 
-      const payload = {
-        version: 1,
+      const payload = buildWorkspacePayload({
         selectedPreset,
-        selectedConfig: normalizeExportConfig(selectedConfig),
-        importedBaseConfig:
-          selectedPreset === IMPORTED_CONFIG_PRESET
-            ? normalizeExportConfig(importedBaseConfig ?? selectedConfig)
-            : null,
+        selectedConfig,
+        importedBaseConfig,
         inputText,
         sequenceText
-      };
+      });
 
       window.localStorage.setItem(WORKSPACE_STORAGE_KEY, JSON.stringify(payload));
       setWorkspaceStatus("saved workspace");
@@ -342,52 +338,13 @@ export function useSimulation() {
         return;
       }
 
-      const parsed = JSON.parse(raw);
-      if (!parsed || typeof parsed !== "object") {
-        throw new Error("保存データ形式が不正です。");
-      }
-      if (parsed.version !== 1) {
-        throw new Error(`未対応バージョンです: ${String(parsed.version)}`);
-      }
-      if (
-        typeof parsed.selectedPreset !== "string" ||
-        (parsed.selectedPreset !== IMPORTED_CONFIG_PRESET && !presets[parsed.selectedPreset])
-      ) {
-        throw new Error("selectedPreset が不正です。");
-      }
-      if (typeof parsed.inputText !== "string") {
-        throw new Error("inputText が不正です。");
-      }
-      if (typeof parsed.sequenceText !== "string") {
-        throw new Error("sequenceText が不正です。");
-      }
-      if (!parsed.selectedConfig || typeof parsed.selectedConfig !== "object") {
-        throw new Error("selectedConfig が不正です。");
-      }
+      const restoredWorkspace = parseWorkspacePayload(raw, presets);
 
-      const nextConfig = normalizeViewerReadyConfig(parsed.selectedConfig);
-      if (!nextConfig) {
-        throw new Error("selectedConfig が評価に必要な shape を満たしていません。");
-      }
-
-      let nextImportedBaseConfig = null;
-      if (parsed.selectedPreset === IMPORTED_CONFIG_PRESET) {
-        const candidateBaseConfig = parsed.importedBaseConfig ?? parsed.selectedConfig;
-        if (!candidateBaseConfig || typeof candidateBaseConfig !== "object") {
-          throw new Error("importedBaseConfig が不正です。");
-        }
-
-        nextImportedBaseConfig = normalizeViewerReadyConfig(candidateBaseConfig);
-        if (!nextImportedBaseConfig) {
-          throw new Error("importedBaseConfig が評価に必要な shape を満たしていません。");
-        }
-      }
-
-      setSelectedPreset(parsed.selectedPreset);
-      setImportedBaseConfig(nextImportedBaseConfig);
-      setSelectedConfig(nextConfig);
-      setInputText(parsed.inputText);
-      setSequenceText(parsed.sequenceText);
+      setSelectedPreset(restoredWorkspace.selectedPreset);
+      setImportedBaseConfig(restoredWorkspace.importedBaseConfig);
+      setSelectedConfig(restoredWorkspace.selectedConfig);
+      setInputText(restoredWorkspace.inputText);
+      setSequenceText(restoredWorkspace.sequenceText);
       setResult(null);
       setError("");
       resetTimelinePlayback();

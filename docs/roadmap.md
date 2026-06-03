@@ -190,6 +190,66 @@ M13 completion note:
 - this baseline intentionally stops short of browser automation, E2E, workspace
   persistence tests, or import/export integration tests
 
+M14 completion note:
+
+- M14 is treated as complete as a viewer integration verification phase
+- Flow A is now protected through import/export round-trip regression tests for:
+  - import
+  - imported/custom transition
+  - edit
+  - simulate
+  - export
+  - re-import
+- Flow C is now protected through workspace persistence regression tests for:
+  - workspace payload build/parse
+  - `selectedPreset`
+  - `selectedConfig`
+  - `inputText`
+  - `sequenceText`
+  - `importedBaseConfig`
+  - version mismatch rejection
+
+M15 completion note:
+
+- M15 is treated as complete as a viewer authoring workflow verification phase
+- Flow B is now protected through authoring workflow regression tests for:
+  - built-in preset baseline
+  - imported baseline
+  - diff detection
+  - reset-all behavior
+  - imported/custom to built-in preset reselection
+- Flow T is now protected through timeline workflow regression tests for:
+  - sequence parsing
+  - row generation
+  - state/action progression
+  - elapsed/stateDuration accumulation
+  - invalid sequence rejection
+  - reset-state clearing
+
+M16 completion note:
+
+- M16 is treated as complete as a browser verification strategy decision phase
+- current viewer coverage is considered strong at:
+  - pure/helper verification
+  - orchestration/integration verification
+  - build verification
+  - release verification
+- browser-only gaps remain limited to interaction wiring around:
+  - file import
+  - workspace save/load/clear buttons
+  - preset select
+  - compare/reset buttons
+  - timeline playback controls
+- browser verification is therefore deferred for now rather than introduced in
+  this cycle
+- if browser verification is introduced later, the preferred first option is a
+  minimal Playwright smoke layer
+- trigger conditions for future browser verification include:
+  - repeated regressions in browser-only interaction wiring
+  - increased viewer usage or contributor count
+  - higher cost of manual browser checks during release work
+  - a clear need to validate file chooser or localStorage behavior in CI
+
 M10 completion note:
 
 - M10 is treated as complete as a release / verification consolidation phase

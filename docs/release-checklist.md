@@ -3,28 +3,25 @@
 ## Local Verification
 
 - [ ] `npm run verify:release` が通る
-- [ ] `npm run check:config` が通る
-- [ ] `npm run check:generated-config` が通る
+- [ ] `npm run verify:release` が以下を含む local verification source of truth であることを前提にする
+  - config / generated-config verification
+  - lint / format check
+  - root test / viewer test / viewer build
+  - C++ parity / generated-config test
+  - example smoke
 - [ ] generated artifact が stale の場合、`npm run generate:m5-config` で再生成して再度 `npm run check:generated-config` を通す
-- [ ] `npm run lint` が通る
-- [ ] `npm run format:check` が通る
-- [ ] `npm test` が通る
-- [ ] `npm run viewer:test` が通る
-- [ ] `npm run viewer:build` が通る
-- [ ] `npm run cpp:test-vectors` が通る
-- [ ] `node examples/minimal-evaluate.js` が通る
-- [ ] `node examples/node-single-step/index.js` が通る
-- [ ] `npm run example:node-temp-sim:sample` が通る
 
 ## CI Verification
 
 - [ ] `Verify Runtime` workflow が green
+  - runtime / config / parity / example smoke verification
   - `npm run check:config`
   - `npm run check:generated-config`
   - `npm test`
   - example smoke tests
   - `npm run cpp:test-vectors`
 - [ ] `CI` workflow が green
+  - repo / viewer / lint / format verification
   - `npm test`
   - `npm run viewer:test`
   - `npm run viewer:build`

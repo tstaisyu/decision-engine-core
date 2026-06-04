@@ -35,6 +35,7 @@
 
 - [ ] README の onboarding 導線が最新
 - [ ] `examples/README.md` の example 導線が最新
+- [ ] `docs/viewer-manual-browser-smoke.md` に沿って viewer manual browser smoke を実施する
 - [ ] `CHANGELOG.md` が今回の release 対象差分を反映している
 - [ ] `CONFIG_SPEC.md` が最新
 - [ ] `docs/runtime-spec.md` が最新

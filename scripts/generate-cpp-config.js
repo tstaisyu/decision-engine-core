@@ -95,31 +95,60 @@ ${config.rules.map(ruleLine).join("\n")}
 `;
 }
 
-function main() {
-  const inputPath = process.argv[2];
-  const outputPath = process.argv[3];
-
-  if (!inputPath || !outputPath) {
-    usage();
-    process.exit(1);
-  }
-
+function generateCppConfig(inputPath, outputPath) {
   const resolvedInputPath = path.resolve(process.cwd(), inputPath);
   const resolvedOutputPath = path.resolve(process.cwd(), outputPath);
   const rawConfig = JSON.parse(fs.readFileSync(resolvedInputPath, "utf8"));
   const validationResult = validateConfig(rawConfig);
 
   if (!validationResult.valid) {
-    console.error("Invalid canonical config:");
-    for (const error of validationResult.errors) {
-      console.error(`- ${error}`);
-    }
-    process.exit(1);
+    const error = new Error("Invalid canonical config");
+    error.validationErrors = validationResult.errors;
+    throw error;
   }
 
   fs.mkdirSync(path.dirname(resolvedOutputPath), { recursive: true });
   fs.writeFileSync(resolvedOutputPath, buildHeader(rawConfig, resolvedOutputPath));
-  console.log(`Generated ${resolvedOutputPath}`);
+  return resolvedOutputPath;
 }
 
-main();
+function main(argv = process.argv.slice(2)) {
+  const inputPath = argv[0];
+  const outputPath = argv[1];
+
+  if (!inputPath || !outputPath) {
+    usage();
+    process.exit(1);
+  }
+
+  try {
+    const resolvedOutputPath = generateCppConfig(inputPath, outputPath);
+    console.log(`Generated ${resolvedOutputPath}`);
+  } catch (error) {
+    if (error.validationErrors) {
+      console.error("Invalid canonical config:");
+      for (const validationError of error.validationErrors) {
+        console.error(`- ${validationError}`);
+      }
+      process.exit(1);
+    }
+
+    throw error;
+  }
+}
+
+if (require.main === module) {
+  main();
+}
+
+module.exports = {
+  buildHeader,
+  escapeCppString,
+  generateCppConfig,
+  main,
+  numberLiteral,
+  ruleLine,
+  stateLine,
+  toDecisionEngineInclude,
+  toHeaderGuard
+};

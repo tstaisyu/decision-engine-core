@@ -33,3 +33,15 @@ function runCase(name, input, expectedState, expectedAction) {
 runCase("generated_config.normal", { value: 31.0, previousValue: 31.0, stateDurationMs: 1000 }, "normal", "no_action");
 runCase("generated_config.warm", { value: 32.0, previousValue: 32.0, stateDurationMs: 2000 }, "warm", "fan_low");
 runCase("generated_config.hot", { value: 34.0, previousValue: 34.0, stateDurationMs: 3000 }, "hot", "fan_high");
+runCase(
+  "generated_config.action_escalation_with_cooling_effect_false",
+  { value: 32.0, previousValue: 32.0, previousState: "warm", stateDurationMs: 10000, coolingEffect: false },
+  "warm",
+  "fan_high"
+);
+runCase(
+  "generated_config.action_escalation_with_cooling_effect_true",
+  { value: 32.0, previousValue: 32.0, previousState: "warm", stateDurationMs: 10000, coolingEffect: true },
+  "warm",
+  "fan_high"
+);

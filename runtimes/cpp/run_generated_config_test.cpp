@@ -43,6 +43,14 @@ int main() {
       {"generated_config.normal", {31.0F, 1000UL}, "normal", "no_action"},
       {"generated_config.warm", {32.0F, 2000UL}, "warm", "fan_low"},
       {"generated_config.hot", {34.0F, 3000UL}, "hot", "fan_high"},
+      {"generated_config.action_escalation_with_cooling_effect_false",
+       {32.0F, 10000UL, 32.0F, 10000UL, false, "warm"},
+       "warm",
+       "fan_high"},
+      {"generated_config.action_escalation_with_cooling_effect_true",
+       {32.0F, 10000UL, 32.0F, 10000UL, true, "warm"},
+       "warm",
+       "fan_high"},
   };
 
   for (const TestCase& testCase : testCases) {
